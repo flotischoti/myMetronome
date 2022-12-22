@@ -1,16 +1,21 @@
-import React from 'react';
-import './globals.scss';
-import './styles.module.scss';
-import Navbar from '../components/Navbar';
+import React, { Suspense } from 'react'
+import './globals.scss'
+import './styles.module.scss'
+import Navbar from '../components/Navbar'
+import Loading from './loading'
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang='en'>
+    <html lang="en">
       <head />
-      <body className="container mx-auto">
-        <Navbar/>
-        {children}
+      <body>
+        <Navbar />
+        <Suspense fallback={<Loading />}>{children}</Suspense>
       </body>
     </html>
-  );
+  )
 }
