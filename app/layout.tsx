@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import './globals.scss'
 import './styles.module.scss'
-import Navbar from '../components/Navbar'
+import Navbar from '../components/navigation/Navbar'
 import Loading from './loading'
 
 export default function RootLayout({
