@@ -5,7 +5,17 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "next dev",
+    "migrate": "npx prisma migrate dev",
+    "seed": "npx prisma db seed",
+    "docker:stop": "docker stop metroDb",
+    "docker:remove": "docker rm metroDb",
+    "docker:start": "docker run -rm --name metroDb -p 5432:5432 -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=metronome -d postgres",
+    "db:startup": "npm-run-all -s -c docker:start migrate",
+    "db:refresh": "npm-run-all -s -c db:startup db:init",
+    "db:init": "npx prisma migrate reset --force",
+    "dev:clean": "npm-run-all -s -c db:refresh next",
+    "dev": "npm-run-all -s -c db:startup next",
+    "next": "next dev",
     "build": "next build",
     "start": "next start",
     "prepare": "husky install"
@@ -13,25 +23,35 @@
   "author": "FlotiSchoti",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^4.8.0",
     "eslint-config-next": "13.0.6",
     "next": "13.0.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.6.0",
     "@types/node": "18.11.17",
     "@types/react": "18.0.26",
     "autoprefixer": "^10.4.13",
+    "dotenv": "^16.0.3",
     "eslint": "8.30.0",
     "husky": "^8.0.2",
     "lint-staged": "^13.1.0",
+    "node-fetch": "^3.3.0",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8.4.20",
     "prettier": "2.8.1",
+    "prisma": "^4.8.0",
     "sass": "^1.57.0",
     "tailwindcss": "^3.2.4",
+    "ts-node": "^10.9.1",
     "typescript": "4.9.4"
   },
   "lint-staged": {
     "*": "prettier --ignore-unknown --write"
+  },
+  "prisma": {
+    "seed": "ts-node --esm prisma/seed.mts"
   }
 }
