@@ -1,3 +1,5 @@
+import Metronome from '../components/metronome/Metronome'
+
 export default function Page() {
-  return <h1 className="text-3xl font-bold underline">MAIN</h1>
+  return <Metronome />
 }
