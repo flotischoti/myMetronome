@@ -2,17 +2,29 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPenToSquare, faCheck } from '@fortawesome/free-solid-svg-icons'
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
+import styles from './metronome.module.scss'
 
-export interface metronome {
+export interface Metronome {
   title: string
+  bpm: number
 }
 
 export default function Metronome() {
+  const m: Metronome = {
+    title: 'Goldfinger - Superman',
+    bpm: 110,
+  }
   const [isEditTitle, setEditTitle] = useState(false)
+  const [metronome, setMetronome] = useState(m)
+
+  const changeBpm = (e: ChangeEvent<HTMLInputElement>) => {
+    m.bpm = +e.target.value
+    setMetronome(m)
+  }
 
   return (
-    <section className="m-2 border-2">
+    <section className="border-2">
       <div id="metronomeTitleArea-1" className="p-2 border-b-2 ">
         {isEditTitle ? (
           <div id="displayTitleArea-1" className="flex space-x-2 items-center">
@@ -37,6 +49,23 @@ export default function Metronome() {
             />
           </div>
         )}
+      </div>
+      <div id="metronomeBodyArea-1">
+        <div id="metronomeBpmArea-1" className="flex flex-col items-center">
+          <div id="metronomeBpmDisplay-1">
+            <span className="text-7xl font-bold">{metronome.bpm}</span>
+          </div>
+          <div id="metronomeBpmControls-1" className="w-full px-4">
+            <input
+              type="range"
+              min="1"
+              max="250"
+              value={metronome.bpm}
+              onChange={changeBpm}
+              className={`${styles.slider} appearance-none w-full h-0.5 mb-6 cursor-pointer bg-blue-200 rounded-lg`}
+            />
+          </div>
+        </div>
       </div>
     </section>
   )

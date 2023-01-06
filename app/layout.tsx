@@ -15,7 +15,9 @@ export default function RootLayout({
       <head />
       <body>
         <Navbar />
-        <Suspense fallback={<Loading />}>{children}</Suspense>
+        <main className="container mx-auto py-4">
+          <Suspense fallback={<Loading />}>{children}</Suspense>
+        </main>
       </body>
     </html>
   )
