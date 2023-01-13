@@ -11,6 +11,7 @@ export interface Metronome {
   bpm: number
   isPlaying: boolean
   beats: number
+  stressFirst: boolean
 }
 
 const m: Metronome = {
@@ -18,6 +19,7 @@ const m: Metronome = {
   bpm: 110,
   isPlaying: false,
   beats: 4,
+  stressFirst: false,
 }
 
 const ts: number[] = []
@@ -35,12 +37,20 @@ export default function Metronome() {
     setMetronome({ ...metronome, bpm: +e.target.value })
   }
 
-  const decrease = (e: MouseEvent<HTMLButtonElement>) => {
+  const decreaseBpm = (e: MouseEvent<HTMLButtonElement>) => {
     setMetronome({ ...metronome, bpm: metronome.bpm - 1 })
   }
 
-  const increase = (e: MouseEvent<HTMLButtonElement>) => {
+  const increaseBpm = (e: MouseEvent<HTMLButtonElement>) => {
     setMetronome({ ...metronome, bpm: metronome.bpm + 1 })
+  }
+
+  const decreaseBeats = (e: MouseEvent<HTMLButtonElement>) => {
+    setMetronome({ ...metronome, beats: metronome.beats - 1 })
+  }
+
+  const increaseBeats = (e: MouseEvent<HTMLButtonElement>) => {
+    setMetronome({ ...metronome, beats: metronome.beats + 1 })
   }
 
   const playPause = (e: MouseEvent<HTMLButtonElement>) => {
@@ -57,6 +67,10 @@ export default function Metronome() {
     } else {
       setTapSequence([...tapSequence, currentClickTimeStamp])
     }
+  }
+
+  const stressFirst = (e: ChangeEvent<HTMLInputElement>) => {
+    setMetronome({ ...metronome, stressFirst: !metronome.stressFirst })
   }
 
   const calculateBpmFromTaps = (): void => {
@@ -98,12 +112,15 @@ export default function Metronome() {
           </div>
         )}
       </div>
-      <div id="metronomeBodyArea-1">
+      <div id="metronomeBodyArea-1" className="px-4 pb-4">
         <div id="metronomeBpmArea-1" className="flex flex-col items-center">
           <div id="metronomeBpmDisplay-1">
             <span className="text-7xl font-bold">{metronome.bpm}</span>
           </div>
-          <div id="metronomeBpmControls-1" className="w-full px-4">
+          {new Array(metronome.beats).map((v, i) => (
+            <span key={i + 1}>{i + 1}</span>
+          ))}
+          <div id="metronomeBpmControls-1" className="w-full">
             <input
               type="range"
               min={minBpm}
@@ -114,7 +131,7 @@ export default function Metronome() {
             />
             <div className="flex justify-between">
               <MainButton
-                onClick={decrease}
+                onClick={decreaseBpm}
                 className="w-1/6 rounded-sm border-black-600"
               >
                 -
@@ -126,7 +143,7 @@ export default function Metronome() {
                 {metronome.isPlaying ? 'Pause' : 'Play'}
               </MainButton>
               <MainButton
-                onClick={increase}
+                onClick={increaseBpm}
                 className="w-1/6 rounded-sm border-black-600"
               >
                 +
@@ -139,6 +156,56 @@ export default function Metronome() {
             >
               Tap
             </MainButton>
+          </div>
+        </div>
+        <div id="metronomeSettingsArea-1">
+          <div id="beatArea">
+            <div id="beatControlArea" className="flex justify-between mt-4">
+              <div id="stressCheckboxPane-1" className="flex items-center ">
+                <input
+                  id="stressCheckbox-1"
+                  type="checkbox"
+                  checked={metronome.stressFirst}
+                  onChange={stressFirst}
+                  className="appearance-none w-5 h-5 bg-violet-500 text-violet-500 border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-0 cursor-pointer transition duration-200"
+                />
+                <label
+                  htmlFor="stressCheckbox-1"
+                  className="ml-2 text-sm cursor-pointer"
+                >
+                  Stress 1<sup>st</sup> beat
+                </label>
+              </div>
+              <div id="beatCountArea-1" className="flex items-center">
+                <button
+                  className="border border-grey-600 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
+                  disabled={metronome.beats <= 1}
+                  onClick={decreaseBeats}
+                >
+                  -
+                </button>
+                <span className="mr-1 ml-3">{metronome.beats}</span>
+                <span className="mr-3 ml-1">Beats</span>
+                <button
+                  className="border border-grey-600 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
+                  disabled={metronome.beats >= 12}
+                  onClick={increaseBeats}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div
+              id="beatVisualizationArea"
+              className="flex justify-center space-x-2 mt-3"
+            >
+              {Array.from(Array(metronome.beats)).map((v, i) => (
+                <span
+                  key={i}
+                  className="border-2 border-grey-600 rounded-full h-4 w-4"
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
