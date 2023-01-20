@@ -2,7 +2,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPenToSquare, faCheck } from '@fortawesome/free-solid-svg-icons'
-import { ChangeEvent, MouseEvent, useEffect, useState } from 'react'
+import { ChangeEvent, MouseEvent, useEffect, useState, useRef } from 'react'
 import styles from './metronome.module.scss'
 import MainButton from '../shared/Button'
 
@@ -30,19 +30,53 @@ export default function Metronome() {
   const [isEditTitle, setEditTitle] = useState(false)
   const [metronome, setMetronome] = useState(m)
   const [tapSequence, setTapSequence] = useState(ts)
+  const bpmIncreaseState = useRef(null)
+  const bpmDecreaseState = useRef(null)
+  const bpmChangeInterval = useRef(1000)
 
   useEffect(() => calculateBpmFromTaps(), [JSON.stringify(tapSequence)])
+
+  useEffect(() => {
+    return () => {
+      stopIncreaseBpm()
+      stopDecreaseBpm()
+    }
+  }, [])
 
   const changeBpm = (e: ChangeEvent<HTMLInputElement>) => {
     setMetronome({ ...metronome, bpm: +e.target.value })
   }
 
-  const decreaseBpm = (e: MouseEvent<HTMLButtonElement>) => {
-    setMetronome({ ...metronome, bpm: metronome.bpm - 1 })
+  const startDecreaseBpm = (e: MouseEvent<HTMLButtonElement>) => {
+    if (bpmDecreaseState.current) return
+    bpmDecreaseState.current = setInterval(() => {
+      setMetronome((prev) => {
+        return { ...prev, bpm: prev.bpm - 1 }
+      })
+    }, 50)
   }
 
-  const increaseBpm = (e: MouseEvent<HTMLButtonElement>) => {
-    setMetronome({ ...metronome, bpm: metronome.bpm + 1 })
+  const stopDecreaseBpm = () => {
+    if (bpmDecreaseState.current) {
+      clearInterval(bpmDecreaseState.current)
+      bpmDecreaseState.current = null
+    }
+  }
+
+  const startIncreaseBpm = (e: MouseEvent<HTMLButtonElement>) => {
+    if (bpmIncreaseState.current) return
+    bpmIncreaseState.current = setInterval(() => {
+      setMetronome((prev) => {
+        return { ...prev, bpm: prev.bpm + 1 }
+      })
+    }, 50)
+  }
+
+  const stopIncreaseBpm = () => {
+    if (bpmIncreaseState.current) {
+      clearInterval(bpmIncreaseState.current)
+      bpmIncreaseState.current = null
+    }
   }
 
   const decreaseBeats = (e: MouseEvent<HTMLButtonElement>) => {
@@ -131,7 +165,9 @@ export default function Metronome() {
             />
             <div className="flex justify-between">
               <MainButton
-                onClick={decreaseBpm}
+                onMouseDown={startDecreaseBpm}
+                onMouseUp={stopDecreaseBpm}
+                onMouseLeave={stopDecreaseBpm}
                 className="w-1/6 rounded-sm border-black-600"
               >
                 -
@@ -143,7 +179,9 @@ export default function Metronome() {
                 {metronome.isPlaying ? 'Pause' : 'Play'}
               </MainButton>
               <MainButton
-                onClick={increaseBpm}
+                onMouseDown={startIncreaseBpm}
+                onMouseUp={stopIncreaseBpm}
+                onMouseLeave={stopIncreaseBpm}
                 className="w-1/6 rounded-sm border-black-600"
               >
                 +

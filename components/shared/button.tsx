@@ -6,10 +6,16 @@ import { twMerge } from 'tailwind-merge'
 export default function MainButton({
   children,
   onClick = () => {},
+  onMouseDown = () => {},
+  onMouseUp = () => {},
+  onMouseLeave = () => {},
   className = '',
 }: {
   children: React.ReactNode
   onClick?: (e: MouseEvent<HTMLButtonElement>) => void
+  onMouseDown?: (e: MouseEvent<HTMLButtonElement>) => void
+  onMouseUp?: (e: MouseEvent<HTMLButtonElement>) => void
+  onMouseLeave?: (e: MouseEvent<HTMLButtonElement>) => void
   className?: string
 }) {
   const style = {
@@ -33,7 +39,13 @@ export default function MainButton({
   const classes = Object.values(style).flat().join(' ')
 
   return (
-    <button className={twMerge(classes, className)} onClick={onClick}>
+    <button
+      className={twMerge(classes, className)}
+      onClick={onClick}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseLeave}
+    >
       {children}
     </button>
   )
