@@ -5,14 +5,29 @@ import { faPenToSquare, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { ChangeEvent, MouseEvent, useEffect, useState, useRef } from 'react'
 import styles from './metronome.module.scss'
 import MainButton from '../shared/Button'
+import { faLess } from '@fortawesome/free-brands-svg-icons'
 
-export interface Metronome {
+export interface StoredMetronome {
   title: string
   bpm: number
-  isPlaying: boolean
   beats: number
   stressFirst: boolean
+  totalTime: number
+  useTimer: boolean
+  timer: number
 }
+
+export interface Metronome extends StoredMetronome {
+  isPlaying: boolean
+  currentTime: number
+  sessionTime: number
+  activeTimer: number
+}
+
+const ts: number[] = []
+const maxBpm = 300
+const minBpm = 20
+const timerChangeInterval = 30000
 
 const m: Metronome = {
   title: 'Goldfinger - Superman',
@@ -20,11 +35,13 @@ const m: Metronome = {
   isPlaying: false,
   beats: 4,
   stressFirst: false,
+  totalTime: 90000,
+  currentTime: 0,
+  sessionTime: 0,
+  useTimer: false,
+  timer: timerChangeInterval * 4,
+  activeTimer: timerChangeInterval * 4,
 }
-
-const ts: number[] = []
-const maxBpm = 300
-const minBpm = 20
 
 export default function Metronome() {
   const [isEditTitle, setEditTitle] = useState(false)
@@ -32,7 +49,6 @@ export default function Metronome() {
   const [tapSequence, setTapSequence] = useState(ts)
   const bpmIncreaseState = useRef(null)
   const bpmDecreaseState = useRef(null)
-  const bpmChangeInterval = useRef(1000)
 
   useEffect(() => calculateBpmFromTaps(), [JSON.stringify(tapSequence)])
 
@@ -42,6 +58,34 @@ export default function Metronome() {
       stopDecreaseBpm()
     }
   }, [])
+
+  useEffect(() => {
+    let interval: NodeJS.Timer
+    if (metronome.isPlaying) {
+      // setMetronome((prev) => {
+      //   return { ...prev, currentTime: 0 }
+      // })
+      interval = setInterval(() => {
+        setMetronome((prev) => {
+          return {
+            ...prev,
+            totalTime: prev.totalTime + 1000,
+            currentTime: prev.currentTime + 1000,
+            sessionTime: prev.sessionTime + 1000,
+            activeTimer: !prev.useTimer
+              ? prev.timer
+              : prev.activeTimer > 1000
+              ? prev.activeTimer - 1000
+              : 0,
+            isPlaying: prev.activeTimer > 1000 ? true : false,
+          }
+        })
+      }, 1000)
+    } else {
+      clearInterval(interval)
+    }
+    return () => clearInterval(interval)
+  }, [metronome.isPlaying])
 
   const changeBpm = (e: ChangeEvent<HTMLInputElement>) => {
     setMetronome({ ...metronome, bpm: +e.target.value })
@@ -87,8 +131,13 @@ export default function Metronome() {
     setMetronome({ ...metronome, beats: metronome.beats + 1 })
   }
 
-  const playPause = (e: MouseEvent<HTMLButtonElement>) => {
-    setMetronome({ ...metronome, isPlaying: !metronome.isPlaying })
+  const playPause = (e?: MouseEvent<HTMLButtonElement>) => {
+    setMetronome({
+      ...metronome,
+      isPlaying: !metronome.isPlaying,
+      currentTime: metronome.isPlaying ? metronome.currentTime : 0,
+      activeTimer: metronome.timer,
+    })
   }
 
   const handleTap = (e: MouseEvent<HTMLButtonElement>) => {
@@ -116,6 +165,44 @@ export default function Metronome() {
       const newBpm = Math.floor((taps / timeWindow) * 60000)
       const normalizedBpm = Math.min(Math.max(newBpm, minBpm), maxBpm)
       setMetronome({ ...metronome, bpm: normalizedBpm })
+    }
+  }
+
+  const setTimer = (e: ChangeEvent<HTMLInputElement>) => {
+    setMetronome({
+      ...metronome,
+      useTimer: !metronome.useTimer,
+      activeTimer: metronome.timer,
+    })
+  }
+
+  const increaseTimer = (e: MouseEvent<HTMLButtonElement>) => {
+    if (metronome.isPlaying && metronome.useTimer) {
+      setMetronome({
+        ...metronome,
+        activeTimer: metronome.activeTimer + timerChangeInterval,
+      })
+    } else {
+      setMetronome({
+        ...metronome,
+        timer: metronome.timer + timerChangeInterval,
+        activeTimer: metronome.timer + timerChangeInterval,
+      })
+    }
+  }
+
+  const decreaseTimer = (e: MouseEvent<HTMLButtonElement>) => {
+    if (metronome.isPlaying && metronome.useTimer) {
+      setMetronome({
+        ...metronome,
+        activeTimer: metronome.activeTimer - timerChangeInterval,
+      })
+    } else {
+      setMetronome({
+        ...metronome,
+        timer: metronome.timer - timerChangeInterval,
+        activeTimer: metronome.timer - timerChangeInterval,
+      })
     }
   }
 
@@ -244,6 +331,85 @@ export default function Metronome() {
                 />
               ))}
             </div>
+          </div>
+        </div>
+        <div id="metronomeTimeArea-1">
+          <div
+            id="metronomeCountdownArea-1"
+            className="flex justify-between mt-4"
+          >
+            <div id="countdownCheckboxPane-1" className="flex items-center ">
+              <input
+                id="timerCheckbox-1"
+                type="checkbox"
+                checked={metronome.useTimer}
+                onChange={setTimer}
+                className="appearance-none w-5 h-5 bg-violet-500 text-violet-500 border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-0 cursor-pointer transition duration-200"
+              />
+              <label
+                htmlFor="timerCheckbox-1"
+                className="ml-2 text-sm cursor-pointer"
+              >
+                User timer
+              </label>
+            </div>
+            <div id="countdownSettingsArea-1" className="">
+              <button
+                className="border border-grey-600 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
+                disabled={metronome.timer <= timerChangeInterval}
+                onClick={decreaseTimer}
+              >
+                -
+              </button>
+              <span className="ml-3">
+                {('0' + Math.floor((metronome.activeTimer / 60000) % 60)).slice(
+                  -2
+                )}
+                :
+              </span>
+              <span className="mr-3">
+                {('0' + Math.floor((metronome.activeTimer / 1000) % 60)).slice(
+                  -2
+                )}
+              </span>
+              <button
+                className="border border-grey-600 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
+                disabled={metronome.timer >= timerChangeInterval * 119}
+                onClick={increaseTimer}
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <div
+            id="metronomeStopwatchArea-1"
+            className="flex justify-between mt-3"
+          >
+            {['current', 'session', 'total'].map((type, i) => {
+              const timerName = type + 'Time'
+              return (
+                <div
+                  id={`${type}TimeArea-1`}
+                  className="flex flex-col items-center"
+                  key={i}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                  <div id={`${type}TimeNumbers-1`}>
+                    <span>
+                      {(
+                        '0' + Math.floor((metronome[timerName] / 60000) % 60)
+                      ).slice(-2)}
+                      :
+                    </span>
+                    <span>
+                      {(
+                        '0' + Math.floor((metronome[timerName] / 1000) % 60)
+                      ).slice(-2)}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
