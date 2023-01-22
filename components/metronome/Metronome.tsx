@@ -49,6 +49,7 @@ export default function Metronome() {
   const [tapSequence, setTapSequence] = useState(ts)
   const bpmIncreaseState = useRef(null)
   const bpmDecreaseState = useRef(null)
+  const clickInterval = useRef(null)
 
   useEffect(() => calculateBpmFromTaps(), [JSON.stringify(tapSequence)])
 
@@ -60,12 +61,11 @@ export default function Metronome() {
   }, [])
 
   useEffect(() => {
-    let interval: NodeJS.Timer
+    let timeInterval: NodeJS.Timer
     if (metronome.isPlaying) {
-      // setMetronome((prev) => {
-      //   return { ...prev, currentTime: 0 }
-      // })
-      interval = setInterval(() => {
+      new Audio('click.mp3').play()
+
+      timeInterval = setInterval(() => {
         setMetronome((prev) => {
           return {
             ...prev,
@@ -81,11 +81,27 @@ export default function Metronome() {
           }
         })
       }, 1000)
+      clickInterval.current = setInterval(() => {
+        new Audio('click.mp3').play()
+      }, 60000 / metronome.bpm)
     } else {
-      clearInterval(interval)
+      clearInterval(timeInterval)
+      clearInterval(clickInterval.current)
     }
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(timeInterval)
+      clearInterval(clickInterval.current)
+    }
   }, [metronome.isPlaying])
+
+  useEffect(() => {
+    if (metronome.isPlaying) {
+      clearInterval(clickInterval.current)
+      clickInterval.current = setInterval(() => {
+        new Audio('click.mp3').play()
+      }, 60000 / metronome.bpm)
+    }
+  }, [metronome.bpm])
 
   const changeBpm = (e: ChangeEvent<HTMLInputElement>) => {
     setMetronome({ ...metronome, bpm: +e.target.value })
