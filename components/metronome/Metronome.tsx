@@ -15,6 +15,7 @@ export interface StoredMetronome {
   totalTime: number
   useTimer: boolean
   timer: number
+  showStats: boolean
 }
 
 export interface Metronome extends StoredMetronome {
@@ -28,6 +29,10 @@ const ts: number[] = []
 const maxBpm = 300
 const minBpm = 20
 const timerChangeInterval = 30000
+const clickStressed = 'click_stressed.mp3'
+const clickNormal = 'click_normal.mp3'
+const maxBeats = 12
+const minBeats = 2
 
 const m: Metronome = {
   title: 'Goldfinger - Superman',
@@ -41,12 +46,14 @@ const m: Metronome = {
   useTimer: false,
   timer: timerChangeInterval * 4,
   activeTimer: timerChangeInterval * 4,
+  showStats: false,
 }
 
 export default function Metronome() {
   const [isEditTitle, setEditTitle] = useState(false)
   const [metronome, setMetronome] = useState(m)
   const [tapSequence, setTapSequence] = useState(ts)
+  const [currentBeat, setCurrentBeat] = useState(1)
   const bpmIncreaseState = useRef(null)
   const bpmDecreaseState = useRef(null)
   const clickInterval = useRef(null)
@@ -63,8 +70,6 @@ export default function Metronome() {
   useEffect(() => {
     let timeInterval: NodeJS.Timer
     if (metronome.isPlaying) {
-      new Audio('click.mp3').play()
-
       timeInterval = setInterval(() => {
         setMetronome((prev) => {
           return {
@@ -81,16 +86,21 @@ export default function Metronome() {
           }
         })
       }, 1000)
-      clickInterval.current = setInterval(() => {
-        new Audio('click.mp3').play()
-      }, 60000 / metronome.bpm)
+      if (!clickInterval.current) {
+        clickInterval.current = setInterval(() => {
+          play()
+        }, 60000 / metronome.bpm)
+      }
     } else {
       clearInterval(timeInterval)
       clearInterval(clickInterval.current)
+      clickInterval.current = null
+      setCurrentBeat(1)
     }
     return () => {
       clearInterval(timeInterval)
       clearInterval(clickInterval.current)
+      clickInterval.current = null
     }
   }, [metronome.isPlaying])
 
@@ -98,10 +108,21 @@ export default function Metronome() {
     if (metronome.isPlaying) {
       clearInterval(clickInterval.current)
       clickInterval.current = setInterval(() => {
-        new Audio('click.mp3').play()
+        play()
       }, 60000 / metronome.bpm)
     }
-  }, [metronome.bpm])
+  }, [metronome.bpm, metronome.beats, metronome.stressFirst])
+
+  function play() {
+    setCurrentBeat((prev) => {
+      new Audio(
+        metronome.stressFirst && prev == metronome.beats
+          ? clickStressed
+          : clickNormal
+      ).play()
+      return (prev % metronome.beats) + 1
+    })
+  }
 
   const changeBpm = (e: ChangeEvent<HTMLInputElement>) => {
     setMetronome({ ...metronome, bpm: +e.target.value })
@@ -148,6 +169,9 @@ export default function Metronome() {
   }
 
   const playPause = (e?: MouseEvent<HTMLButtonElement>) => {
+    if (!metronome.isPlaying) {
+      new Audio(metronome.stressFirst ? clickStressed : clickNormal).play()
+    }
     setMetronome({
       ...metronome,
       isPlaying: !metronome.isPlaying,
@@ -170,6 +194,10 @@ export default function Metronome() {
 
   const stressFirst = (e: ChangeEvent<HTMLInputElement>) => {
     setMetronome({ ...metronome, stressFirst: !metronome.stressFirst })
+  }
+
+  const showStats = (e: ChangeEvent<HTMLInputElement>) => {
+    setMetronome({ ...metronome, showStats: !metronome.showStats })
   }
 
   const calculateBpmFromTaps = (): void => {
@@ -301,52 +329,66 @@ export default function Metronome() {
         </div>
         <div id="metronomeSettingsArea-1">
           <div id="beatArea">
-            <div id="beatControlArea" className="flex justify-between mt-4">
+            <div id="beatControlArea" className="flex justify-between mt-8">
               <div id="stressCheckboxPane-1" className="flex items-center ">
                 <input
                   id="stressCheckbox-1"
                   type="checkbox"
                   checked={metronome.stressFirst}
                   onChange={stressFirst}
-                  className="appearance-none w-5 h-5 bg-violet-500 text-violet-500 border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-0 cursor-pointer transition duration-200"
+                  className="appearance-none w-5 h-5 bg-zinc-100 text-zinc-100 border-2 border-gray-200 rounded-sm focus:outline-none focus:ring-0 cursor-pointer transition duration-200"
                 />
                 <label
                   htmlFor="stressCheckbox-1"
                   className="ml-2 text-sm cursor-pointer"
                 >
-                  Stress 1<sup>st</sup> beat
+                  <span className="text-gray-600">
+                    Stress 1<sup>st</sup> beat
+                  </span>
                 </label>
               </div>
-              <div id="beatCountArea-1" className="flex items-center">
-                <button
-                  className="border border-grey-600 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
-                  disabled={metronome.beats <= 1}
-                  onClick={decreaseBeats}
-                >
-                  -
-                </button>
-                <span className="mr-1 ml-3">{metronome.beats}</span>
-                <span className="mr-3 ml-1">Beats</span>
-                <button
-                  className="border border-grey-600 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
-                  disabled={metronome.beats >= 12}
-                  onClick={increaseBeats}
-                >
-                  +
-                </button>
+              {metronome.stressFirst && (
+                <div id="beatCountArea-1" className="flex items-center">
+                  <button
+                    className="border border-grey-600 text-gray-600 bg-zinc-100 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
+                    disabled={metronome.beats <= minBeats}
+                    onClick={decreaseBeats}
+                  >
+                    -
+                  </button>
+                  <span className="mr-1 ml-3 text-gray-600">
+                    {metronome.beats}
+                  </span>
+                  <span className="mr-3 ml-1 text-gray-600">
+                    Beat{metronome.beats > 1 && <span>s</span>}
+                  </span>
+                  <button
+                    className="border border-grey-600 text-gray-600 bg-zinc-100 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
+                    disabled={metronome.beats >= maxBeats}
+                    onClick={increaseBeats}
+                  >
+                    +
+                  </button>
+                </div>
+              )}
+            </div>
+            {metronome.stressFirst && (
+              <div
+                id="beatVisualizationArea"
+                className="flex justify-center space-x-2 mt-3"
+              >
+                {Array.from(Array(metronome.beats)).map((v, i) => (
+                  <span
+                    key={i}
+                    className={`border-2 rounded-full h-4 w-4 ${
+                      metronome.isPlaying && i + 1 == currentBeat
+                        ? 'border-red-600'
+                        : 'border-grey-600'
+                    }`}
+                  />
+                ))}
               </div>
-            </div>
-            <div
-              id="beatVisualizationArea"
-              className="flex justify-center space-x-2 mt-3"
-            >
-              {Array.from(Array(metronome.beats)).map((v, i) => (
-                <span
-                  key={i}
-                  className="border-2 border-grey-600 rounded-full h-4 w-4"
-                />
-              ))}
-            </div>
+            )}
           </div>
         </div>
         <div id="metronomeTimeArea-1">
@@ -360,72 +402,94 @@ export default function Metronome() {
                 type="checkbox"
                 checked={metronome.useTimer}
                 onChange={setTimer}
-                className="appearance-none w-5 h-5 bg-violet-500 text-violet-500 border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-0 cursor-pointer transition duration-200"
+                className="appearance-none w-5 h-5 bg-zinc-100 text-zinc-100 border-2 border-gray-200 rounded-sm focus:outline-none focus:ring-0 cursor-pointer transition duration-200"
               />
               <label
                 htmlFor="timerCheckbox-1"
                 className="ml-2 text-sm cursor-pointer"
               >
-                User timer
+                <span className="text-gray-600">Use timer</span>
               </label>
             </div>
-            <div id="countdownSettingsArea-1" className="">
-              <button
-                className="border border-grey-600 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
-                disabled={metronome.timer <= timerChangeInterval}
-                onClick={decreaseTimer}
-              >
-                -
-              </button>
-              <span className="ml-3">
-                {('0' + Math.floor((metronome.activeTimer / 60000) % 60)).slice(
-                  -2
-                )}
-                :
-              </span>
-              <span className="mr-3">
-                {('0' + Math.floor((metronome.activeTimer / 1000) % 60)).slice(
-                  -2
-                )}
-              </span>
-              <button
-                className="border border-grey-600 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
-                disabled={metronome.timer >= timerChangeInterval * 119}
-                onClick={increaseTimer}
-              >
-                +
-              </button>
-            </div>
+            {metronome.useTimer && (
+              <div id="countdownSettingsArea-1" className="">
+                <button
+                  className="border border-grey-600 text-gray-600 bg-zinc-100 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
+                  disabled={metronome.timer <= timerChangeInterval}
+                  onClick={decreaseTimer}
+                >
+                  -
+                </button>
+                <span className="ml-3 text-gray-600">
+                  {(
+                    '0' + Math.floor((metronome.activeTimer / 60000) % 60)
+                  ).slice(-2)}
+                  :
+                </span>
+                <span className="mr-3 text-gray-600">
+                  {(
+                    '0' + Math.floor((metronome.activeTimer / 1000) % 60)
+                  ).slice(-2)}
+                </span>
+                <button
+                  className="border border-grey-600 text-gray-600 bg-zinc-100 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
+                  disabled={metronome.timer >= timerChangeInterval * 119}
+                  onClick={increaseTimer}
+                >
+                  +
+                </button>
+              </div>
+            )}
           </div>
+        </div>
+        <div id="metronomeStatsArea-1" className="mt-3">
           <div
             id="metronomeStopwatchArea-1"
-            className="flex justify-between mt-3"
+            className="flex justify-between items-center mt-3"
           >
-            {['current', 'session', 'total'].map((type, i) => {
-              const timerName = type + 'Time'
-              return (
-                <div
-                  id={`${type}TimeArea-1`}
-                  className="flex flex-col items-center"
-                  key={i}
-                >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                  <div id={`${type}TimeNumbers-1`}>
-                    <span>
-                      {(
-                        '0' + Math.floor((metronome[timerName] / 60000) % 60)
-                      ).slice(-2)}
-                      :
+            <div id="metronomeStopWatchControl-1">
+              <input
+                id="stopWatchCheckbox-1"
+                type="checkbox"
+                checked={metronome.showStats}
+                onChange={showStats}
+                className="appearance-none w-5 h-5 bg-zinc-100 text-zinc-100 border-2 border-gray-200 rounded-sm focus:outline-none focus:ring-0 cursor-pointer transition duration-200"
+              />
+              <label
+                htmlFor="stopWatchCheckbox-1"
+                className="ml-2 text-sm cursor-pointer"
+              >
+                <span className="text-gray-600">Show usage</span>
+              </label>
+            </div>
+            {metronome.showStats &&
+              ['current', 'session', 'total'].map((type, i) => {
+                const timerName = type + 'Time'
+                return (
+                  <div
+                    id={`${type}TimeArea-1`}
+                    className="flex flex-col items-center"
+                    key={i}
+                  >
+                    <span className="text-gray-600 text-sm">
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
                     </span>
-                    <span>
-                      {(
-                        '0' + Math.floor((metronome[timerName] / 1000) % 60)
-                      ).slice(-2)}
-                    </span>
+                    <div id={`${type}TimeNumbers-1`}>
+                      <span className="text-gray-600">
+                        {(
+                          '0' + Math.floor((metronome[timerName] / 60000) % 60)
+                        ).slice(-2)}
+                        :
+                      </span>
+                      <span className="text-gray-600">
+                        {(
+                          '0' + Math.floor((metronome[timerName] / 1000) % 60)
+                        ).slice(-2)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
           </div>
         </div>
       </div>

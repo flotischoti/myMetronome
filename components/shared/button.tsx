@@ -21,10 +21,10 @@ export default function MainButton({
   const style = {
     mobile: ['px-4', 'text-400', 'py-2'],
     sm: ['sm:px-6', 'text-600'],
-    font: ['uppercase', 'tracking-widest', 'text-white'],
-    general: ['bg-violet-500'],
+    font: ['uppercase', 'tracking-widest', 'text-gray-600'],
+    general: ['bg-zinc-100'],
     hover: [
-      'hover:bg-violet-600',
+      'hover:bg-zinc-200',
       'focus:outline-none',
       'focus:ring-0',
       'transition',
@@ -33,7 +33,7 @@ export default function MainButton({
     ],
     border: ['rounded-full', 'border-2', 'border-orange-200'],
     shoadow: ['shadow-lg'],
-    active: ['active:bg-violet-700'],
+    active: ['active:bg-zinc-300'],
   }
 
   const classes = Object.values(style).flat().join(' ')
