@@ -53,7 +53,7 @@ export default function Metronome() {
   const [isEditTitle, setEditTitle] = useState(false)
   const [metronome, setMetronome] = useState(m)
   const [tapSequence, setTapSequence] = useState(ts)
-  const [currentBeat, setCurrentBeat] = useState(1)
+  const [currentBeat, setCurrentBeat] = useState(0)
   const bpmIncreaseState = useRef(null)
   const bpmDecreaseState = useRef(null)
   const clickInterval = useRef(null)
@@ -70,6 +70,12 @@ export default function Metronome() {
   useEffect(() => {
     let timeInterval: NodeJS.Timer
     if (metronome.isPlaying) {
+      if (!clickInterval.current) {
+        clickInterval.current = setInterval(() => {
+          console.log(Date.now())
+          // changeCurrentBeat()
+        }, 60000 / metronome.bpm)
+      }
       timeInterval = setInterval(() => {
         setMetronome((prev) => {
           return {
@@ -86,16 +92,11 @@ export default function Metronome() {
           }
         })
       }, 1000)
-      if (!clickInterval.current) {
-        clickInterval.current = setInterval(() => {
-          play()
-        }, 60000 / metronome.bpm)
-      }
     } else {
       clearInterval(timeInterval)
       clearInterval(clickInterval.current)
       clickInterval.current = null
-      setCurrentBeat(1)
+      setCurrentBeat(0)
     }
     return () => {
       clearInterval(timeInterval)
@@ -108,20 +109,20 @@ export default function Metronome() {
     if (metronome.isPlaying) {
       clearInterval(clickInterval.current)
       clickInterval.current = setInterval(() => {
-        play()
+        changeCurrentBeat()
       }, 60000 / metronome.bpm)
     }
   }, [metronome.bpm, metronome.beats, metronome.stressFirst])
 
-  function play() {
-    setCurrentBeat((prev) => {
+  useEffect(() => {
+    if (metronome.isPlaying)
       new Audio(
-        metronome.stressFirst && prev == metronome.beats
-          ? clickStressed
-          : clickNormal
+        metronome.stressFirst && currentBeat == 1 ? clickStressed : clickNormal
       ).play()
-      return (prev % metronome.beats) + 1
-    })
+  }, [currentBeat])
+
+  function changeCurrentBeat() {
+    setCurrentBeat((prev) => (prev % metronome.beats) + 1)
   }
 
   const changeBpm = (e: ChangeEvent<HTMLInputElement>) => {
@@ -169,9 +170,6 @@ export default function Metronome() {
   }
 
   const playPause = (e?: MouseEvent<HTMLButtonElement>) => {
-    if (!metronome.isPlaying) {
-      new Audio(metronome.stressFirst ? clickStressed : clickNormal).play()
-    }
     setMetronome({
       ...metronome,
       isPlaying: !metronome.isPlaying,
@@ -285,7 +283,7 @@ export default function Metronome() {
           {new Array(metronome.beats).map((v, i) => (
             <span key={i + 1}>{i + 1}</span>
           ))}
-          <div id="metronomeBpmControls-1" className="w-full">
+          <div id="metronomeBpmControls-1" className="w-full mt-4">
             <input
               type="range"
               min={minBpm}
