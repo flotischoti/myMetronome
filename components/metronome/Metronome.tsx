@@ -8,22 +8,24 @@ import MainButton from '../shared/Button'
 import { faLess } from '@fortawesome/free-brands-svg-icons'
 
 export interface StoredMetronome {
-  title: string
+  name: string
   bpm: number
   beats: number
   stressFirst: boolean
-  totalTime: number
-  useTimer: boolean
-  timer: number
+  timeUsed: number
+  timerActive: boolean
+  timerValue: number
   showStats: boolean
 }
 
-export interface Metronome extends StoredMetronome {
+interface LocalMetronomeSettings {
   isPlaying: boolean
-  currentTime: number
-  sessionTime: number
+  currentUsed: number
+  sessionUsed: number
   activeTimer: number
 }
+
+export interface Metronome extends StoredMetronome {}
 
 const ts: number[] = []
 const maxBpm = 300
@@ -33,25 +35,25 @@ const clickStressed = 'click_stressed.mp3'
 const clickNormal = 'click_normal.mp3'
 const maxBeats = 12
 const minBeats = 2
+const user = 'Flo'
 
-const m: Metronome = {
-  title: 'Goldfinger - Superman',
-  bpm: 110,
+const defaultLocalMetronome: LocalMetronomeSettings = {
   isPlaying: false,
-  beats: 4,
-  stressFirst: false,
-  totalTime: 90000,
-  currentTime: 0,
-  sessionTime: 0,
-  useTimer: false,
-  timer: timerChangeInterval * 4,
-  activeTimer: timerChangeInterval * 4,
-  showStats: false,
+  currentUsed: 0,
+  sessionUsed: 0,
+  activeTimer: 0,
 }
 
-export default function Metronome() {
+export default function Metronome({
+  dbMetronome,
+}: {
+  dbMetronome: StoredMetronome
+}) {
   const [isEditTitle, setEditTitle] = useState(false)
-  const [metronome, setMetronome] = useState(m)
+  const [metronome, setMetronome] = useState({
+    ...dbMetronome,
+    ...defaultLocalMetronome,
+  })
   const [tapSequence, setTapSequence] = useState(ts)
   const [currentBeat, setCurrentBeat] = useState(0)
   const bpmIncreaseState = useRef(null)
@@ -72,19 +74,19 @@ export default function Metronome() {
     if (metronome.isPlaying) {
       if (!clickInterval.current) {
         clickInterval.current = setInterval(() => {
-          console.log(Date.now())
-          // changeCurrentBeat()
+          // console.log(Date.now())
+          changeCurrentBeat()
         }, 60000 / metronome.bpm)
       }
       timeInterval = setInterval(() => {
         setMetronome((prev) => {
           return {
             ...prev,
-            totalTime: prev.totalTime + 1000,
-            currentTime: prev.currentTime + 1000,
-            sessionTime: prev.sessionTime + 1000,
-            activeTimer: !prev.useTimer
-              ? prev.timer
+            timeUsed: prev.timeUsed + 1000,
+            currentUsed: prev.currentUsed + 1000,
+            sessionUsed: prev.sessionUsed + 1000,
+            activeTimer: !prev.timerActive
+              ? prev.timerValue
               : prev.activeTimer > 1000
               ? prev.activeTimer - 1000
               : 0,
@@ -173,8 +175,8 @@ export default function Metronome() {
     setMetronome({
       ...metronome,
       isPlaying: !metronome.isPlaying,
-      currentTime: metronome.isPlaying ? metronome.currentTime : 0,
-      activeTimer: metronome.timer,
+      currentUsed: metronome.isPlaying ? metronome.currentUsed : 0,
+      activeTimer: metronome.timerValue,
     })
   }
 
@@ -213,13 +215,13 @@ export default function Metronome() {
   const setTimer = (e: ChangeEvent<HTMLInputElement>) => {
     setMetronome({
       ...metronome,
-      useTimer: !metronome.useTimer,
-      activeTimer: metronome.timer,
+      timerActive: !metronome.timerActive,
+      activeTimer: metronome.timerValue,
     })
   }
 
   const increaseTimer = (e: MouseEvent<HTMLButtonElement>) => {
-    if (metronome.isPlaying && metronome.useTimer) {
+    if (metronome.isPlaying && metronome.timerActive) {
       setMetronome({
         ...metronome,
         activeTimer: metronome.activeTimer + timerChangeInterval,
@@ -227,14 +229,14 @@ export default function Metronome() {
     } else {
       setMetronome({
         ...metronome,
-        timer: metronome.timer + timerChangeInterval,
-        activeTimer: metronome.timer + timerChangeInterval,
+        timerValue: metronome.timerValue + timerChangeInterval,
+        activeTimer: metronome.timerValue + timerChangeInterval,
       })
     }
   }
 
   const decreaseTimer = (e: MouseEvent<HTMLButtonElement>) => {
-    if (metronome.isPlaying && metronome.useTimer) {
+    if (metronome.isPlaying && metronome.timerActive) {
       setMetronome({
         ...metronome,
         activeTimer: metronome.activeTimer - timerChangeInterval,
@@ -242,10 +244,16 @@ export default function Metronome() {
     } else {
       setMetronome({
         ...metronome,
-        timer: metronome.timer - timerChangeInterval,
-        activeTimer: metronome.timer - timerChangeInterval,
+        timerValue: metronome.timerValue - timerChangeInterval,
+        activeTimer: metronome.timerValue - timerChangeInterval,
       })
     }
+  }
+
+  const saveManually = async (e: MouseEvent<HTMLButtonElement>) => {
+    console.log('Saving')
+    const res = await fetch('/api/test').then((res) => res.json())
+    console.log(res)
   }
 
   return (
@@ -255,7 +263,7 @@ export default function Metronome() {
           <div id="displayTitleArea-1" className="flex space-x-2 items-center">
             <input
               type="text"
-              value="Metronome Name"
+              value={metronome.name}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             />
             <FontAwesomeIcon
@@ -266,7 +274,7 @@ export default function Metronome() {
           </div>
         ) : (
           <div id="editTitleArea-1" className="flex space-x-2 items-center">
-            <h1 className="font-extrabold">Metronome Name</h1>
+            <h1 className="font-extrabold">{metronome.name}</h1>
             <FontAwesomeIcon
               icon={faPenToSquare}
               className="hover:cursor-pointer"
@@ -398,7 +406,7 @@ export default function Metronome() {
               <input
                 id="timerCheckbox-1"
                 type="checkbox"
-                checked={metronome.useTimer}
+                checked={metronome.timerActive}
                 onChange={setTimer}
                 className="appearance-none w-5 h-5 bg-zinc-100 text-zinc-100 border-2 border-gray-200 rounded-sm focus:outline-none focus:ring-0 cursor-pointer transition duration-200"
               />
@@ -409,11 +417,11 @@ export default function Metronome() {
                 <span className="text-gray-600">Use timer</span>
               </label>
             </div>
-            {metronome.useTimer && (
+            {metronome.timerActive && (
               <div id="countdownSettingsArea-1" className="">
                 <button
                   className="border border-grey-600 text-gray-600 bg-zinc-100 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
-                  disabled={metronome.timer <= timerChangeInterval}
+                  disabled={metronome.timerValue <= timerChangeInterval}
                   onClick={decreaseTimer}
                 >
                   -
@@ -431,7 +439,7 @@ export default function Metronome() {
                 </span>
                 <button
                   className="border border-grey-600 text-gray-600 bg-zinc-100 rounded w-6 h-6 leading-none inline-flex justify-center items-center"
-                  disabled={metronome.timer >= timerChangeInterval * 119}
+                  disabled={metronome.timerValue >= timerChangeInterval * 119}
                   onClick={increaseTimer}
                 >
                   +
@@ -461,8 +469,8 @@ export default function Metronome() {
               </label>
             </div>
             {metronome.showStats &&
-              ['current', 'session', 'total'].map((type, i) => {
-                const timerName = type + 'Time'
+              ['current', 'session', 'time'].map((type, i) => {
+                const timerName = type + 'Used'
                 return (
                   <div
                     id={`${type}TimeArea-1`}
@@ -489,6 +497,14 @@ export default function Metronome() {
                 )
               })}
           </div>
+        </div>
+        <div id="metronomeButtonArea-1" className="mt-3 flex justify-end">
+          <MainButton
+            className="rounded-sm  border-black-600"
+            onClick={saveManually}
+          >
+            Save
+          </MainButton>
         </div>
       </div>
     </section>
