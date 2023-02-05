@@ -8,7 +8,8 @@ import MainButton from '../shared/Button'
 import { faLess } from '@fortawesome/free-brands-svg-icons'
 
 export interface StoredMetronome {
-  name: string
+  id?: number
+  name?: string
   bpm: number
   beats: number
   stressFirst: boolean
@@ -25,8 +26,6 @@ interface LocalMetronomeSettings {
   activeTimer: number
 }
 
-export interface Metronome extends StoredMetronome {}
-
 const ts: number[] = []
 const maxBpm = 300
 const minBpm = 20
@@ -35,7 +34,18 @@ const clickStressed = 'click_stressed.mp3'
 const clickNormal = 'click_normal.mp3'
 const maxBeats = 12
 const minBeats = 2
-const user = 'Flo'
+const user = 1
+
+const defaultStoredMetronome: StoredMetronome = {
+  name: 'Enter name',
+  bpm: 120,
+  beats: 4,
+  stressFirst: false,
+  timeUsed: 0,
+  timerActive: false,
+  timerValue: 120000,
+  showStats: false,
+}
 
 const defaultLocalMetronome: LocalMetronomeSettings = {
   isPlaying: false,
@@ -47,11 +57,12 @@ const defaultLocalMetronome: LocalMetronomeSettings = {
 export default function Metronome({
   dbMetronome,
 }: {
-  dbMetronome: StoredMetronome
+  dbMetronome: StoredMetronome | null
 }) {
+  const m = dbMetronome ? dbMetronome : defaultStoredMetronome
   const [isEditTitle, setEditTitle] = useState(false)
   const [metronome, setMetronome] = useState({
-    ...dbMetronome,
+    ...m,
     ...defaultLocalMetronome,
   })
   const [tapSequence, setTapSequence] = useState(ts)
@@ -129,6 +140,10 @@ export default function Metronome({
 
   const changeBpm = (e: ChangeEvent<HTMLInputElement>) => {
     setMetronome({ ...metronome, bpm: +e.target.value })
+  }
+
+  const editTitle = (e) => {
+    setMetronome({ ...metronome, name: e.target.value })
   }
 
   const startDecreaseBpm = (e: MouseEvent<HTMLButtonElement>) => {
@@ -251,8 +266,13 @@ export default function Metronome({
   }
 
   const saveManually = async (e: MouseEvent<HTMLButtonElement>) => {
-    console.log('Saving')
-    const res = await fetch('/api/test').then((res) => res.json())
+    const res = await fetch(`/api/users/${user}/metronomes`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(metronome),
+    }).then((res) => res.json())
     console.log(res)
   }
 
@@ -264,6 +284,7 @@ export default function Metronome({
             <input
               type="text"
               value={metronome.name}
+              onChange={editTitle}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             />
             <FontAwesomeIcon
@@ -499,12 +520,14 @@ export default function Metronome({
           </div>
         </div>
         <div id="metronomeButtonArea-1" className="mt-3 flex justify-end">
-          <MainButton
-            className="rounded-sm  border-black-600"
-            onClick={saveManually}
-          >
-            Save
-          </MainButton>
+          {!metronome.id && (
+            <MainButton
+              className="rounded-sm  border-black-600"
+              onClick={saveManually}
+            >
+              Save
+            </MainButton>
+          )}
         </div>
       </div>
     </section>

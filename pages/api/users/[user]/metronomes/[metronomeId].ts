@@ -5,7 +5,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { metronomeId } = req.query
+  const { userId, metronomeId } = req.query
 
   switch (req.method) {
     case 'GET':
@@ -16,6 +16,9 @@ export default async function handler(
       const metronome = await metronomeDb.get(Number(metronomeId))
       res.status(200).json(metronome)
     case 'POST':
+      console.log(userId)
+      // console.log(metronome)
+      break
     case 'PUT':
   }
 }

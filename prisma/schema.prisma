@@ -23,12 +23,13 @@ model Metronome {
   showStats   Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  ownerRef    User        @relation(fields: [owner], references: [email])
-  owner       String         
+  ownerRef    User        @relation(fields: [owner], references: [id])
+  owner       Int         
 }
 
 model User {
-  email       String      @id
+  id          Int         @id @default(autoincrement())
+  email       String      @unique
   password    String
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
