@@ -15,7 +15,9 @@ export default async function handler(
       res.status(200).send('HALLO')
       break
     case 'POST':
-      metronomeDb.create(req.body, Number(user))
+      const metronome = await metronomeDb.create(req.body, Number(user))
+      console.log(`saved metronome: ${metronome}`)
+      res.status(201).send(metronome)
       break
     case 'PUT':
   }

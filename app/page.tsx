@@ -16,7 +16,7 @@ async function getMetronome(id: number) {
 }
 
 export default async function Page() {
-  const metronome: StoredMetronome = await getMetronome(5)
+  const metronome: StoredMetronome = null //await getMetronome(5)
 
-  return <Metronome dbMetronome={null} />
+  return <Metronome dbMetronome={metronome} />
 }

@@ -17,6 +17,7 @@ export interface StoredMetronome {
   timerActive: boolean
   timerValue: number
   showStats: boolean
+  owner?: number
 }
 
 interface LocalMetronomeSettings {
@@ -265,7 +266,7 @@ export default function Metronome({
     }
   }
 
-  const saveManually = async (e: MouseEvent<HTMLButtonElement>) => {
+  const saveManually = async () => {
     const res = await fetch(`/api/users/${user}/metronomes`, {
       headers: {
         'Content-Type': 'application/json',
@@ -273,7 +274,8 @@ export default function Metronome({
       method: 'POST',
       body: JSON.stringify(metronome),
     }).then((res) => res.json())
-    console.log(res)
+    console.log(`Saved in metronome comp: ${res}`)
+    setMetronome(res)
   }
 
   return (

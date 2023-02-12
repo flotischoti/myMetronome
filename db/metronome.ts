@@ -8,10 +8,30 @@ export function getLastOpened(user: string): StoredMetronome | null {
   return null
 }
 
-export function create(metronome: StoredMetronome, userId: number): boolean {
+export async function create(
+  metronome: StoredMetronome,
+  userId: number
+): Promise<StoredMetronome> {
   console.log(`user: ${userId}`)
   console.log(`metronome: ${util.inspect(metronome, false, null, true)}`)
-  return true
+
+  let metronomeToCreate = { ...metronome, owner: userId }
+  delete metronomeToCreate.id
+
+  const createdMetronome = await prisma.metronome.create({
+    data: {
+      bpm: metronome.bpm,
+      name: metronome.name,
+      beats: metronome.beats,
+      owner: userId,
+      showStats: metronome.showStats,
+      stressFirst: metronome.stressFirst,
+      timerActive: metronome.timerActive,
+      timerValue: metronome.timerValue,
+      timeUsed: metronome.timeUsed,
+    },
+  })
+  return createdMetronome
 }
 
 export function save(metronome: StoredMetronome): boolean {
