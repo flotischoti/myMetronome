@@ -7,12 +7,12 @@ export default async function handler(
 ) {
   const { userId, metronomeId } = req.query
 
+  if (!isValidMetronomeId(metronomeId)) {
+    res.status(403).json({ message: `Invalid metronomeId: ${metronomeId}` })
+  }
+
   switch (req.method) {
     case 'GET':
-      if (!isValidMetronomeId(metronomeId)) {
-        res.status(403)
-      }
-      console.log(metronomeId)
       const metronome = await metronomeDb.get(Number(metronomeId))
       res.status(200).json(metronome)
     case 'POST':
@@ -20,6 +20,14 @@ export default async function handler(
       // console.log(metronome)
       break
     case 'PUT':
+      break
+    case 'DELETE':
+      const success = await metronomeDb.deleteMetronome(Number(metronomeId))
+      const status = success ? 200 : 500
+      const message = success
+        ? {}
+        : { message: `Error deleting metronome with Id: ${metronomeId}` }
+      res.status(status).json(message)
   }
 }
 

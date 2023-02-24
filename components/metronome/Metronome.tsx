@@ -278,6 +278,19 @@ export default function Metronome({
     setMetronome(res)
   }
 
+  const deleteMetronome = async () => {
+    await fetch(`/api/users/${user}/metronomes/${metronome.id}`, {
+      method: 'DELETE',
+    })
+      .then(() =>
+        setMetronome({
+          ...m,
+          ...defaultLocalMetronome,
+        })
+      )
+      .catch(async (res) => console.log(await res.json()))
+  }
+
   return (
     <section className="border-2">
       <div id="metronomeTitleArea-1" className="p-2 border-b-2 ">
@@ -528,6 +541,14 @@ export default function Metronome({
               onClick={saveManually}
             >
               Save
+            </MainButton>
+          )}
+          {metronome.id && (
+            <MainButton
+              className="rounded-sm  border-black-600"
+              onClick={deleteMetronome}
+            >
+              Delete
             </MainButton>
           )}
         </div>

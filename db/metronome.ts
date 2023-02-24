@@ -38,6 +38,18 @@ export function save(metronome: StoredMetronome): boolean {
   return true
 }
 
+export async function deleteMetronome(metronomeId: number): Promise<boolean> {
+  if (
+    await prisma.metronome.delete({
+      where: {
+        id: metronomeId,
+      },
+    })
+  )
+    return true
+  return false
+}
+
 export async function get(id: number): Promise<StoredMetronome | null> {
   return await prisma.metronome.findUnique({
     where: {
