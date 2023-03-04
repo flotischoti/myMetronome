@@ -15,9 +15,6 @@ export async function create(
   console.log(`user: ${userId}`)
   console.log(`metronome: ${util.inspect(metronome, false, null, true)}`)
 
-  let metronomeToCreate = { ...metronome, owner: userId }
-  delete metronomeToCreate.id
-
   const createdMetronome = await prisma.metronome.create({
     data: {
       bpm: metronome.bpm,
@@ -34,8 +31,25 @@ export async function create(
   return createdMetronome
 }
 
-export function save(metronome: StoredMetronome): boolean {
-  return true
+export async function updateMetronome(
+  metronome: StoredMetronome
+): Promise<StoredMetronome> {
+  const updatedMetronome = await prisma.metronome.update({
+    where: {
+      id: metronome.id,
+    },
+    data: {
+      bpm: metronome.bpm,
+      name: metronome.name,
+      beats: metronome.beats,
+      showStats: metronome.showStats,
+      stressFirst: metronome.stressFirst,
+      timerActive: metronome.timerActive,
+      timerValue: metronome.timerValue,
+      timeUsed: metronome.timeUsed,
+    },
+  })
+  return updatedMetronome
 }
 
 export async function deleteMetronome(metronomeId: number): Promise<boolean> {

@@ -11,6 +11,7 @@ export default async function handler(
     res.status(403).json({ message: `Invalid metronomeId: ${metronomeId}` })
   }
 
+  let success
   switch (req.method) {
     case 'GET':
       const metronome = await metronomeDb.get(Number(metronomeId))
@@ -20,9 +21,11 @@ export default async function handler(
       // console.log(metronome)
       break
     case 'PUT':
+      const updatedMetronome = await metronomeDb.updateMetronome(req.body)
+      res.status(201).send(updatedMetronome)
       break
     case 'DELETE':
-      const success = await metronomeDb.deleteMetronome(Number(metronomeId))
+      success = await metronomeDb.deleteMetronome(Number(metronomeId))
       const status = success ? 200 : 500
       const message = success
         ? {}
