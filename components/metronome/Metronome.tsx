@@ -71,8 +71,7 @@ export default function Metronome({
   const bpmIncreaseState = useRef(null)
   const bpmDecreaseState = useRef(null)
   const clickInterval = useRef(null)
-  const autoSaveInProgress = useRef(false)
-  const alwaysLatestMetronome = useRef(metronome)
+  const autoSaveTimer = useRef(null)
 
   useEffect(() => calculateBpmFromTaps(), [JSON.stringify(tapSequence)])
 
@@ -113,6 +112,7 @@ export default function Metronome({
       clearInterval(clickInterval.current)
       clickInterval.current = null
       setCurrentBeat(0)
+      autosave()
     }
     return () => {
       clearInterval(timeInterval)
@@ -139,11 +139,7 @@ export default function Metronome({
 
   // AutoSave
   useEffect(() => {
-    console.log('Autosaving')
-    alwaysLatestMetronome.current = metronome
-    if (metronome.id && !autoSaveInProgress.current) {
-      autoSave()
-    }
+    autosave()
   }, [
     metronome.showStats,
     metronome.bpm,
@@ -153,6 +149,15 @@ export default function Metronome({
     metronome.timerValue,
     metronome.name,
   ])
+
+  const autosave = () => {
+    if (metronome.id) {
+      clearTimeout(autoSaveTimer.current)
+      autoSaveTimer.current = setTimeout(() => {
+        updateMetronome()
+      }, 3000)
+    }
+  }
 
   function changeCurrentBeat() {
     setCurrentBeat((prev) => (prev % metronome.beats) + 1)
@@ -235,44 +240,6 @@ export default function Metronome({
     setMetronome({ ...metronome, showStats: !metronome.showStats })
   }
 
-  const autoSave = async () => {
-    let metronomeChanged = false
-    let metronomeToBeSaved = Object.assign({}, alwaysLatestMetronome.current)
-    autoSaveInProgress.current = true
-    do {
-      console.log(`Waiting 1 second`)
-      await saveDelay(3000)
-      metronomeChanged = hasMetronomeChanged(metronomeToBeSaved)
-      metronomeToBeSaved = Object.assign({}, alwaysLatestMetronome.current)
-    } while (metronomeChanged)
-    autoSaveInProgress.current = false
-    updateMetronome()
-  }
-
-  const saveDelay = async (ms: number): Promise<void> => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(), ms)
-    })
-  }
-
-  const hasMetronomeChanged = (
-    metronomeTobeChecked: StoredMetronome & LocalMetronomeSettings
-  ): boolean => {
-    return (
-      metronomeTobeChecked.showStats !=
-        alwaysLatestMetronome.current.showStats ||
-      metronomeTobeChecked.bpm != alwaysLatestMetronome.current.bpm ||
-      metronomeTobeChecked.beats != alwaysLatestMetronome.current.beats ||
-      metronomeTobeChecked.timerActive !=
-        alwaysLatestMetronome.current.timerActive ||
-      metronomeTobeChecked.name != alwaysLatestMetronome.current.name ||
-      metronomeTobeChecked.stressFirst !=
-        alwaysLatestMetronome.current.stressFirst ||
-      metronomeTobeChecked.timerValue !=
-        alwaysLatestMetronome.current.timerValue
-    )
-  }
-
   const updateMetronome = async () => {
     console.log(`saving`)
     const res = await fetch(`/api/users/${user}/metronomes/${metronome.id}`, {
@@ -280,14 +247,14 @@ export default function Metronome({
         'Content-Type': 'application/json',
       },
       method: 'PUT',
-      body: JSON.stringify(alwaysLatestMetronome.current),
+      body: JSON.stringify(metronome),
     }).then((res) => res.json())
     setMetronome({
       ...res,
-      currentUsed: alwaysLatestMetronome.current.currentUsed,
-      sessionUsed: alwaysLatestMetronome.current.sessionUsed,
-      isPlaying: alwaysLatestMetronome.current.isPlaying,
-      activeTimer: alwaysLatestMetronome.current.activeTimer,
+      currentUsed: metronome.currentUsed,
+      sessionUsed: metronome.sessionUsed,
+      isPlaying: metronome.isPlaying,
+      activeTimer: metronome.activeTimer,
     })
   }
 
