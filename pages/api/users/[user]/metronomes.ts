@@ -1,5 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import * as metronomeDb from '../../../../db/metronome'
+import { ParsedUrlQuery } from 'querystring'
+
+interface MetronomesGetQuery extends ParsedUrlQuery {
+  top?: string
+  sortBy?: string
+  sortOrder?: string
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,7 +19,18 @@ export default async function handler(
 
   switch (req.method) {
     case 'GET':
-      res.status(200).send('HALLO')
+      const {
+        top = '10',
+        sortBy = 'name',
+        sortOrder = 'asc',
+      } = req.query as MetronomesGetQuery
+      const metronomes = await metronomeDb.list(
+        Number(user),
+        Number(top),
+        sortBy,
+        sortOrder
+      )
+      res.status(200).send(metronomes)
       break
     case 'POST':
       const metronome = await metronomeDb.create(req.body, Number(user))
