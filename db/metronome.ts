@@ -4,21 +4,26 @@ import util from 'util'
 
 const prisma = new PrismaClient()
 
-function getOrderBy(field = 'name', sortOrder = 'asc') {
-  let orderBy = {}
-  orderBy[field] = sortOrder
-  return orderBy
+function getOrderBy(orderBy = 'name', sortOrder = 'asc') {
+  const order = {}
+  order[orderBy!] = sortOrder
+  return order
 }
 
 export async function list(
   user: number,
   top = 10,
   sortBy = 'name',
-  sortOrder = 'asc'
+  sortOrder = 'asc',
+  name?
 ): Promise<StoredMetronome[]> {
   const metronomes = await prisma.metronome.findMany({
     where: {
       owner: user,
+      name: {
+        contains: (name == null ? '' : name)!,
+        mode: 'insensitive',
+      },
     },
     orderBy: getOrderBy(sortBy, sortOrder),
     take: top,

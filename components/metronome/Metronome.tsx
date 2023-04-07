@@ -6,10 +6,11 @@ import { ChangeEvent, MouseEvent, useEffect, useState, useRef } from 'react'
 import styles from './metronome.module.scss'
 import MainButton from '../shared/Button'
 import { faLess } from '@fortawesome/free-brands-svg-icons'
+import { useRouter } from 'next/navigation'
 
 export interface StoredMetronome {
   id?: number
-  name?: string
+  name: string
   bpm: number
   beats: number
   stressFirst: boolean
@@ -68,10 +69,11 @@ export default function Metronome({
   })
   const [tapSequence, setTapSequence] = useState(ts)
   const [currentBeat, setCurrentBeat] = useState(0)
-  const bpmIncreaseState = useRef(null)
-  const bpmDecreaseState = useRef(null)
-  const clickInterval = useRef(null)
-  const autoSaveTimer = useRef(null)
+  const bpmIncreaseState = useRef(null as unknown as NodeJS.Timer)
+  const bpmDecreaseState = useRef(null as unknown as NodeJS.Timer)
+  const clickInterval = useRef(null as unknown as NodeJS.Timer)
+  const autoSaveTimer = useRef(null as unknown as NodeJS.Timer)
+  const router = useRouter()
 
   useEffect(() => calculateBpmFromTaps(), [JSON.stringify(tapSequence)])
 
@@ -83,11 +85,10 @@ export default function Metronome({
   }, [])
 
   useEffect(() => {
-    let timeInterval: NodeJS.Timer
+    let timeInterval: NodeJS.Timer = null as unknown as NodeJS.Timer
     if (metronome.isPlaying) {
       if (!clickInterval.current) {
         clickInterval.current = setInterval(() => {
-          // console.log(Date.now())
           changeCurrentBeat()
         }, 60000 / metronome.bpm)
       }
@@ -110,14 +111,14 @@ export default function Metronome({
     } else {
       clearInterval(timeInterval)
       clearInterval(clickInterval.current)
-      clickInterval.current = null
+      clickInterval.current = null as unknown as NodeJS.Timer
       setCurrentBeat(0)
       autosave()
     }
     return () => {
       clearInterval(timeInterval)
       clearInterval(clickInterval.current)
-      clickInterval.current = null
+      clickInterval.current = null as unknown as NodeJS.Timer
     }
   }, [metronome.isPlaying])
 
@@ -183,7 +184,7 @@ export default function Metronome({
   const stopDecreaseBpm = () => {
     if (bpmDecreaseState.current) {
       clearInterval(bpmDecreaseState.current)
-      bpmDecreaseState.current = null
+      bpmDecreaseState.current = null as unknown as NodeJS.Timer
     }
   }
 
@@ -199,7 +200,7 @@ export default function Metronome({
   const stopIncreaseBpm = () => {
     if (bpmIncreaseState.current) {
       clearInterval(bpmIncreaseState.current)
-      bpmIncreaseState.current = null
+      bpmIncreaseState.current = null as unknown as NodeJS.Timer
     }
   }
 
@@ -224,7 +225,7 @@ export default function Metronome({
     const currentClickTimeStamp = Date.now()
     if (
       tapSequence.length == 0 ||
-      (currentClickTimeStamp - tapSequence.at(-1)) / 1000 > 2
+      (currentClickTimeStamp - tapSequence.at(-1)!) / 1000 > 2
     ) {
       setTapSequence([currentClickTimeStamp])
     } else {
@@ -261,8 +262,8 @@ export default function Metronome({
   const calculateBpmFromTaps = (): void => {
     if (tapSequence.length > 1) {
       const timeWindow =
-        tapSequence.at(-1) -
-        tapSequence.at(Math.min(tapSequence.length, metronome.beats) * -1)
+        tapSequence.at(-1)! -
+        tapSequence.at(Math.min(tapSequence.length, metronome.beats) * -1)!
       const taps = Math.min(tapSequence.length, metronome.beats)
       const newBpm = Math.floor((taps / timeWindow) * 60000)
       const normalizedBpm = Math.min(Math.max(newBpm, minBpm), maxBpm)
@@ -316,25 +317,14 @@ export default function Metronome({
       method: 'POST',
       body: JSON.stringify(metronome),
     }).then((res) => res.json())
-    setMetronome({
-      ...res,
-      currentUsed: metronome.currentUsed,
-      sessionUsed: metronome.sessionUsed,
-      isPlaying: metronome.isPlaying,
-      activeTimer: metronome.activeTimer,
-    })
+    router.push(`/metronome/${res.id}`)
   }
 
   const deleteMetronome = async () => {
     await fetch(`/api/users/${user}/metronomes/${metronome.id}`, {
       method: 'DELETE',
     })
-      .then(() =>
-        setMetronome({
-          ...m,
-          ...defaultLocalMetronome,
-        })
-      )
+      .then(() => router.push('/metronome/'))
       .catch(async (res) => console.log(await res.json()))
   }
 
