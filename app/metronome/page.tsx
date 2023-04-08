@@ -1,7 +1,5 @@
-import Metronome, {
-  StoredMetronome,
-} from '../../components/metronome/Metronome'
-import SearchBox from '../../components/searchbox/searchbox'
+import { StoredMetronome } from '../../components/metronome/Metronome'
+import Redirect from '../../components/redirect/Redirect'
 
 async function getLastMetronome(user: number) {
   const res = await fetch(
@@ -22,11 +20,8 @@ export default async function Page() {
   let lastMmetronome: StoredMetronome[] = await getLastMetronome(1)
   let metronome: StoredMetronome | null =
     !lastMmetronome || lastMmetronome.length != 1 ? null : lastMmetronome[0]
+  const path =
+    metronome == null ? '/metronome/new' : `/metronome/${metronome.id}`
 
-  return (
-    <div>
-      <SearchBox />
-      <Metronome dbMetronome={metronome} />
-    </div>
-  )
+  return <Redirect path={path} />
 }

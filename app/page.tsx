@@ -1,12 +1,5 @@
-'use client'
+import Redirect from '../components/redirect/Redirect'
 
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-
-export default async function Page() {
-  const router = useRouter()
-
-  useEffect(() => router.push('/metronome/'), [])
-
-  return <></>
+export default function Page() {
+  return <Redirect path="/metronome" />
 }
