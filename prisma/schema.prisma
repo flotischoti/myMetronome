@@ -16,7 +16,7 @@ model Metronome {
   bpm         Int         
   beats       Int         @default(4)
   stressFirst Boolean     @default(false)
-  lastOpened  DateTime?
+  lastOpened  DateTime?   @updatedAt
   timerValue  Int         @default(120000)
   timerActive Boolean     @default(false)
   timeUsed    Int         @default(0)
