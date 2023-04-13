@@ -2,7 +2,16 @@ import { PrismaClient } from '@prisma/client'
 import { StoredMetronome } from '../components/metronome/Metronome'
 import util from 'util'
 
-const prisma = new PrismaClient()
+let prisma
+
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient()
+} else {
+  if (!global.prisma) {
+    global.prisma = new PrismaClient()
+  }
+  prisma = global.prisma
+}
 
 function getOrderBy(orderBy = 'name', sortOrder = 'asc') {
   const order = {}
@@ -13,6 +22,7 @@ function getOrderBy(orderBy = 'name', sortOrder = 'asc') {
 export async function list(
   user: number,
   top = 10,
+  offset = 0,
   sortBy = 'name',
   sortOrder = 'asc',
   name?
@@ -27,6 +37,7 @@ export async function list(
     },
     orderBy: getOrderBy(sortBy, sortOrder),
     take: top,
+    skip: offset,
   })
 
   return metronomes
