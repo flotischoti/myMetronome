@@ -10,6 +10,7 @@ export async function GET(
 ) {
   const { searchParams } = new URL(request.url)
   const top = getSearchParam(searchParams, 'top')
+  const offset = getSearchParam(searchParams, 'offset')
   const user = params.userId
   const sortBy = getSearchParam(searchParams, 'sortBy')
   const sortOrder = getSearchParam(searchParams, 'sortOrder')
@@ -22,6 +23,7 @@ export async function GET(
   const metronomes = await metronomeDb.list(
     Number(user),
     getValidNumberOrUndefined(top),
+    getValidNumberOrUndefined(offset),
     sortBy,
     sortOrder,
     name

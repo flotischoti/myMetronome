@@ -12,7 +12,7 @@ async function getMetronome(user: number, metronomeId: string) {
   )
 
   if (!res.ok) {
-    throw new Error('Failed to load metronome')
+    throw new Error(`Failed to load metronome with id: ${metronomeId}`)
   }
 
   return res.json()
