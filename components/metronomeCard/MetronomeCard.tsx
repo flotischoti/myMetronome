@@ -37,8 +37,12 @@ export default function MetronomeCard({
         </div>
       </Link>
       <div id="controls" className="flex items-center">
-        <div className="hover:drop-shadow-xl" onClick={handleDelete}>
-          <FontAwesomeIcon icon={faTrash} className="hover:cursor-pointer" />
+        <div className="hover:drop-shadow-xl mr-2" onClick={handleDelete}>
+          <FontAwesomeIcon
+            icon={faTrash}
+            className="hover:cursor-pointer"
+            size="lg"
+          />
         </div>
       </div>
     </div>

@@ -27,20 +27,29 @@ export async function list(
   sortOrder = 'asc',
   name?
 ): Promise<StoredMetronome[]> {
-  const metronomes = await prisma.metronome.findMany({
-    where: {
-      owner: user,
-      name: {
-        contains: (name == null ? '' : name)!,
-        mode: 'insensitive',
+  return await prisma.$transaction([
+    prisma.metronome.count({
+      where: {
+        owner: user,
+        name: {
+          contains: (name == null ? '' : name)!,
+          mode: 'insensitive',
+        },
       },
-    },
-    orderBy: getOrderBy(sortBy, sortOrder),
-    take: top,
-    skip: offset,
-  })
-
-  return metronomes
+    }),
+    prisma.metronome.findMany({
+      where: {
+        owner: user,
+        name: {
+          contains: (name == null ? '' : name)!,
+          mode: 'insensitive',
+        },
+      },
+      orderBy: getOrderBy(sortBy, sortOrder),
+      take: top,
+      skip: offset,
+    }),
+  ])
 }
 
 export async function create(

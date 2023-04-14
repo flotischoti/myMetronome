@@ -11,7 +11,7 @@ export default function SearchBox() {
   async function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const search = e.target.value
     if (search.length > 2) {
-      const matchingMetronomes: StoredMetronome[] = await fetch(
+      const { metronomes }: { metronomes: StoredMetronome[] } = await fetch(
         `/api/users/1/metronomes?name=${search}`,
         {
           headers: {
@@ -19,7 +19,7 @@ export default function SearchBox() {
           },
         }
       ).then((res) => res.json())
-      setResultList(matchingMetronomes)
+      setResultList(metronomes)
     } else {
       setResultList([])
     }

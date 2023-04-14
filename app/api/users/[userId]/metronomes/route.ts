@@ -20,7 +20,7 @@ export async function GET(
     NextResponse.json({}, { status: 403 })
   }
 
-  const metronomes = await metronomeDb.list(
+  const [count, metronomes] = await metronomeDb.list(
     Number(user),
     getValidNumberOrUndefined(top),
     getValidNumberOrUndefined(offset),
@@ -29,7 +29,7 @@ export async function GET(
     name
   )
 
-  return NextResponse.json(metronomes, { status: 200 })
+  return NextResponse.json({ metronomes, count }, { status: 200 })
 }
 
 export async function POST(

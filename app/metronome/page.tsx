@@ -17,7 +17,8 @@ async function getLastMetronome(user: number) {
 }
 
 export default async function Page() {
-  let lastMmetronome: StoredMetronome[] = await getLastMetronome(1)
+  const res = await getLastMetronome(1)
+  let lastMmetronome: StoredMetronome[] = res.metronomes
   let metronome: StoredMetronome | null =
     !lastMmetronome || lastMmetronome.length != 1 ? null : lastMmetronome[0]
   const path =
