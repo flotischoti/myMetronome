@@ -56,11 +56,12 @@ const defaultLocalMetronome: LocalMetronomeSettings = {
   activeTimer: 0,
 }
 
-export default function Metronome({
+const Metronome = ({
   dbMetronome,
 }: {
   dbMetronome: StoredMetronome | null
-}) {
+}) => {
+  const media = useRef<HTMLAudioElement>(null)
   const m = dbMetronome ? dbMetronome : defaultStoredMetronome
   const [isEditTitle, setEditTitle] = useState(false)
   const [metronome, setMetronome] = useState({
@@ -69,6 +70,7 @@ export default function Metronome({
   })
   const [tapSequence, setTapSequence] = useState(ts)
   const [currentBeat, setCurrentBeat] = useState(0)
+  const [saveState, setSaveState] = useState('')
   const bpmIncreaseState = useRef(null as unknown as NodeJS.Timer)
   const bpmDecreaseState = useRef(null as unknown as NodeJS.Timer)
   const clickInterval = useRef(null as unknown as NodeJS.Timer)
@@ -132,10 +134,11 @@ export default function Metronome({
   }, [metronome.bpm, metronome.beats, metronome.stressFirst])
 
   useEffect(() => {
-    if (metronome.isPlaying)
-      new Audio(
-        metronome.stressFirst && currentBeat == 1 ? clickStressed : clickNormal
-      ).play()
+    // new Audio(
+    //   // metronome.stressFirst && currentBeat == 1 ? clickStressed : clickNormal
+    //   clickNormal
+    // )
+    if (metronome.isPlaying) media.current?.play()
   }, [currentBeat])
 
   // AutoSave
@@ -150,6 +153,14 @@ export default function Metronome({
     metronome.timerValue,
     metronome.name,
   ])
+
+  // useEffect(() => {
+  //   if (saveState == null) {
+  //     setTimeout(() => {
+  //       setSaveState('')
+  //     }, 1000);
+  //   }
+  // })
 
   const autosave = () => {
     if (metronome.id) {
@@ -249,7 +260,12 @@ export default function Metronome({
       },
       method: 'PUT',
       body: JSON.stringify(metronome),
-    }).then((res) => res.json())
+    })
+      .then((res) => {
+        setSaveState('success')
+        return res.json()
+      })
+      .catch(() => setSaveState('error'))
     setMetronome({
       ...res,
       currentUsed: metronome.currentUsed,
@@ -257,6 +273,9 @@ export default function Metronome({
       isPlaying: metronome.isPlaying,
       activeTimer: metronome.activeTimer,
     })
+    setTimeout(() => {
+      setSaveState('')
+    }, 2000)
   }
 
   const calculateBpmFromTaps = (): void => {
@@ -388,6 +407,9 @@ export default function Metronome({
               >
                 {metronome.isPlaying ? 'Pause' : 'Play'}
               </MainButton>
+              <audio ref={media}>
+                <source src="click_normal.mp3" type="audio/mpeg" />
+              </audio>
               <MainButton
                 onMouseDown={startIncreaseBpm}
                 onMouseUp={stopIncreaseBpm}
@@ -571,25 +593,33 @@ export default function Metronome({
               })}
           </div>
         </div>
-        <div id="metronomeButtonArea-1" className="mt-3 flex justify-end">
-          {!metronome.id && (
-            <MainButton
-              className="rounded-sm  border-black-600"
-              onClick={createMetronome}
-            >
-              Save
-            </MainButton>
-          )}
-          {metronome.id && (
-            <MainButton
-              className="rounded-sm  border-black-600"
-              onClick={deleteMetronome}
-            >
-              Delete
-            </MainButton>
-          )}
+        <div className="mt-3 flex justify-between items-center">
+          <div id="popup">
+            {saveState == 'success' && <span>Autosaved</span>}
+            {saveState == 'error' && <span>Autosave failed</span>}
+          </div>
+          <div id="metronomeButtonArea-1">
+            {!metronome.id && (
+              <MainButton
+                className="rounded-sm  border-black-600"
+                onClick={createMetronome}
+              >
+                Save
+              </MainButton>
+            )}
+            {metronome.id && (
+              <MainButton
+                className="rounded-sm  border-black-600"
+                onClick={deleteMetronome}
+              >
+                Delete
+              </MainButton>
+            )}
+          </div>
         </div>
       </div>
     </section>
   )
 }
+
+export default Metronome

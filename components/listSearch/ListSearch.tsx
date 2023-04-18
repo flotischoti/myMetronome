@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
-export default function ListSearch({ oldSearch }: { oldSearch: string }) {
+const ListSearch = ({ oldSearch }: { oldSearch: string }) => {
   const [searchValue, setSearchValue] = useState(oldSearch)
 
   return (
@@ -56,3 +56,5 @@ export default function ListSearch({ oldSearch }: { oldSearch: string }) {
     </div>
   )
 }
+
+export default ListSearch

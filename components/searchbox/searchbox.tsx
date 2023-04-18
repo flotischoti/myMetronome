@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState, ChangeEvent, MouseEvent } from 'react'
 import { StoredMetronome } from '../metronome/Metronome'
 
-export default function SearchBox() {
+const SearchBox = () => {
   const [resultList, setResultList] = useState<StoredMetronome[]>([])
   const [searchValue, setSearchValue] = useState('')
 
@@ -57,3 +57,5 @@ export default function SearchBox() {
     </div>
   )
 }
+
+export default SearchBox

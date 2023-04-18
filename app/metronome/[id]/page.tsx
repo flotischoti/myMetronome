@@ -4,6 +4,7 @@ import Metronome, {
 import SearchBox from '../../../components/searchbox/searchbox'
 
 async function getMetronome(user: number, metronomeId: string) {
+  console.log(`Load Metronome for ID: ${metronomeId}`)
   const res = await fetch(
     `http://localhost:3000/api/users/${user}/metronomes/${metronomeId}`,
     {

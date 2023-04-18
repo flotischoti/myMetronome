@@ -3,7 +3,7 @@
 import { MouseEvent } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-export default function MainButton({
+const MainButton = ({
   children,
   onClick = () => {},
   onMouseDown = () => {},
@@ -17,7 +17,7 @@ export default function MainButton({
   onMouseUp?: (e: MouseEvent<HTMLButtonElement>) => void
   onMouseLeave?: (e: MouseEvent<HTMLButtonElement>) => void
   className?: string
-}) {
+}) => {
   const style = {
     mobile: ['px-4', 'text-400', 'py-2'],
     sm: ['sm:px-6', 'text-600'],
@@ -50,3 +50,5 @@ export default function MainButton({
     </button>
   )
 }
+
+export default MainButton

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
-export default function Navigation() {
+const Navigation = () => {
   const [currentNav, setCurrentNav] = useState('')
 
   useEffect(() => {
@@ -51,3 +51,5 @@ export default function Navigation() {
     </div>
   )
 }
+
+export default Navigation

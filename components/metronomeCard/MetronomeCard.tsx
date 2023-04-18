@@ -7,11 +7,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { MouseEvent } from 'react'
 
-export default function MetronomeCard({
-  metronome,
-}: {
-  metronome: StoredMetronome
-}) {
+const MetronomeCard = ({ metronome }: { metronome: StoredMetronome }) => {
   const router = useRouter()
 
   async function handleDelete(e: MouseEvent<HTMLElement>) {
@@ -48,3 +44,5 @@ export default function MetronomeCard({
     </div>
   )
 }
+
+export default MetronomeCard
