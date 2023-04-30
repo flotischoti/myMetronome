@@ -1,17 +1,8 @@
-import { PrismaClient } from '@prisma/client'
 import { StoredMetronome } from '../components/metronome/Metronome'
 import util from 'util'
+import { getDb } from './db'
 
-let prisma
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient()
-} else {
-  if (!global.prisma) {
-    global.prisma = new PrismaClient()
-  }
-  prisma = global.prisma
-}
+const prisma = getDb()
 
 function getOrderBy(orderBy = 'name', sortOrder = 'asc') {
   const order = {}

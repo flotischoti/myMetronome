@@ -1,6 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next'
 import * as metronomeDb from '../../../../../db/metronome'
-import { ParsedUrlQuery } from 'querystring'
 
 import { NextResponse } from 'next/server'
 
@@ -42,24 +40,6 @@ export async function POST(
   )
   return NextResponse.json(metronome, { status: 201 })
 }
-
-// export default async function handler(
-//   req: NextApiRequest,
-//   res: NextApiResponse
-// ) {
-//   const { user } = req.query
-
-//   switch (req.method) {
-//     case 'GET':
-//       break
-//     case 'POST':
-//       const metronome = await metronomeDb.create(req.body, Number(user))
-//       console.log(`saved metronome: ${metronome}`)
-//       res.status(201).send(metronome)
-//       break
-//     case 'PUT':
-//   }
-// }
 
 function getSearchParam(
   searchParams: URLSearchParams,
