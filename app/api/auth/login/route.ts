@@ -19,7 +19,12 @@ export async function POST(request: Request) {
 
   if (user && (await bcrypt.compare(password, user.password))) {
     user.token = utils.getJwt(user.id!, email)
-    return NextResponse.json(user, { status: 200 })
+    return NextResponse.json(user, {
+      status: 200,
+      headers: {
+        'Set-Cookie': `token=${user.token}; secure; httpOnly; sameSite=Lax`,
+      },
+    })
   }
   return NextResponse.json(utils.getErrorResponse(`Invalid Credentials`), {
     status: 400,

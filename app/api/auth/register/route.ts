@@ -1,3 +1,4 @@
+import { headers } from 'next/headers'
 import * as userDb from '../../../../db/user'
 import * as utils from '../../util'
 import * as bcrypt from 'bcrypt'
@@ -7,6 +8,8 @@ import { NextResponse } from 'next/server'
 export async function POST(request: Request) {
   const { email, password }: { email: string; password: string } =
     await request.json()
+
+  console.log(`email: ${email} | password: ${password}`)
 
   if (!email || !password) {
     return NextResponse.json(
@@ -38,5 +41,15 @@ export async function POST(request: Request) {
 
   user.token = utils.getJwt(user.id!, email)
 
-  return NextResponse.json(user, { status: 200 })
+  return NextResponse.json(user, {
+    status: 200,
+    headers: {
+      'Set-Cookie': `token=${user.token}; secure; httpOnly; sameSite=Lax`,
+    },
+  })
+}
+
+export async function GET(request: Request) {
+  const headerList = headers()
+  return NextResponse.json(headerList.get('x-access-token'))
 }
