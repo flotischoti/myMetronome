@@ -407,9 +407,9 @@ const Metronome = ({
               >
                 {metronome.isPlaying ? 'Pause' : 'Play'}
               </MainButton>
-              <audio ref={media}>
+              {/* <audio ref={media}>
                 <source src="click_normal.mp3" type="audio/mpeg" />
-              </audio>
+              </audio> */}
               <MainButton
                 onMouseDown={startIncreaseBpm}
                 onMouseUp={stopIncreaseBpm}

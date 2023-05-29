@@ -18,11 +18,11 @@ export async function POST(request: Request) {
   const user = await userDb.get(email)
 
   if (user && (await bcrypt.compare(password, user.password))) {
-    user.token = utils.getJwt(user.id!, email)
+    user.token = await utils.getJwt(user.id!, email)
     return NextResponse.json(user, {
       status: 200,
       headers: {
-        'Set-Cookie': `token=${user.token}; secure; httpOnly; sameSite=Lax`,
+        'Set-Cookie': `token=${user.token};path=/;secure;httpOnly;sameSite=Lax`,
       },
     })
   }

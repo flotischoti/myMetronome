@@ -2,9 +2,9 @@ import { StoredMetronome } from '../../components/metronome/Metronome'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons'
 import MetronomeCard from '../../components/metronomeCard/MetronomeCard'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ListSearch from '../../components/listSearch/ListSearch'
+import { cookies } from 'next/headers'
 
 const pageSize = 3
 
@@ -14,11 +14,16 @@ function getOffest(page: number) {
 }
 
 async function getMetronomes(user: number, page: number, search: string) {
+  const cookieStore = cookies()
+  const token = cookieStore.get('token')
   const offset = getOffest(page)
   const res = await fetch(
     `http://localhost:3000/api/users/${user}/metronomes?name=${search}&top=${pageSize}&offset=${offset}&sortBy=name&sortOrder=asc`,
     {
       cache: 'no-store',
+      headers: {
+        'x-access-token': token!.value,
+      },
     }
   )
 

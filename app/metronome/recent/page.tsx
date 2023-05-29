@@ -1,14 +1,21 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import Metronome, {
   StoredMetronome,
 } from '../../../components/metronome/Metronome'
 
 export default async function Page({ params }: { params: { id: string } }) {
+  const cookieStore = cookies()
+  const token = cookieStore.get('token')
+
   async function getLastMetronome(user: number) {
     const res = await fetch(
       `http://localhost:3000/api/users/${user}/metronomes?top=1&sortBy=lastOpened&sortOrder=desc`,
       {
         cache: 'no-store',
+        headers: {
+          'x-access-token': token!.value,
+        },
       }
     )
 

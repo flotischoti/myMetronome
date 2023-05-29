@@ -2,13 +2,19 @@ import Metronome, {
   StoredMetronome,
 } from '../../../components/metronome/Metronome'
 import SearchBox from '../../../components/searchbox/searchbox'
+import { cookies } from 'next/headers'
 
 async function getMetronome(user: number, metronomeId: string) {
+  const cookieStore = cookies()
+  const token = cookieStore.get('token')
   console.log(`Load Metronome for ID: ${metronomeId}`)
   const res = await fetch(
     `http://localhost:3000/api/users/${user}/metronomes/${metronomeId}`,
     {
       cache: 'no-store',
+      headers: {
+        'x-access-token': token!.value,
+      },
     }
   )
 

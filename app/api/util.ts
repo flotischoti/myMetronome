@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken'
+import * as jose from 'jose'
 
 export function getErrorResponse(text: string) {
   return { status: text }
@@ -29,8 +29,30 @@ export function isEmailValid(email) {
   return true
 }
 
-export function getJwt(id: number, email: string): string {
-  return jwt.sign({ user_id: id, email }, process.env.TOKEN_KEY!, {
-    expiresIn: '2h',
-  })
+export async function getJwt(id: number, email: string): Promise<string> {
+  const secret = new TextEncoder().encode(process.env.TOKEN_KEY!)
+  const alg = 'HS256'
+
+  const jwt = await new jose.SignJWT({ use_id: id, email })
+    .setProtectedHeader({ alg })
+    .setIssuedAt()
+    .setExpirationTime('2h')
+    .setIssuer('flotischoti')
+    .sign(secret)
+
+  return jwt
+}
+
+export async function verifyToken(token: string) {
+  const secret = new TextEncoder().encode(process.env.TOKEN_KEY!)
+
+  try {
+    await jose.jwtVerify(token, secret)
+    console.log('Token verification succeded')
+    return true
+  } catch (err) {
+    console.log('Token verification failed')
+    console.log(err)
+    return false
+  }
 }

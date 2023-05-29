@@ -14,9 +14,28 @@ export default function Navbar() {
             Add
           </Link>
         </div>
+
         <Navigation />
+
         <div id="accountArea">
-          <MainButton>Login</MainButton>
+          <Link
+            href="/logout"
+            className="px-4 text-400 py-2 uppercase bg-zinc-100 shadow-lg"
+          >
+            Logout
+          </Link>
+          <Link
+            href="/register"
+            className="px-4 text-400 py-2 uppercase bg-zinc-100 shadow-lg"
+          >
+            Register
+          </Link>
+          <Link
+            href="/login"
+            className="px-4 text-400 py-2 uppercase bg-zinc-100 shadow-lg"
+          >
+            Login
+          </Link>
         </div>
       </div>
     </nav>
