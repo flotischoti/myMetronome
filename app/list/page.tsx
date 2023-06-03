@@ -13,23 +13,21 @@ function getOffest(page: number) {
   return (page - 1) * pageSize
 }
 
-async function getMetronomes(user: number, page: number, search: string) {
-  const cookieStore = cookies()
-  const token = cookieStore.get('token')
+async function getMetronomes(token: string, page: number, search: string) {
   const offset = getOffest(page)
   const res = await fetch(
-    `http://localhost:3000/api/users/${user}/metronomes?name=${search}&top=${pageSize}&offset=${offset}&sortBy=name&sortOrder=asc`,
+    `http://localhost:3000/api/metronomes?name=${search}&top=${pageSize}&offset=${offset}&sortBy=name&sortOrder=asc`,
     {
       cache: 'no-store',
       headers: {
-        'x-access-token': token!.value,
+        'x-access-token': token,
       },
     }
   )
 
   if (!res.ok) {
     throw new Error(
-      `Failed to load list of metronomes for user ${user} with error: ${res.statusText}`
+      `Failed to load list of metronomes for user with error: ${res.statusText}`
     )
   }
 
@@ -37,7 +35,8 @@ async function getMetronomes(user: number, page: number, search: string) {
 }
 
 export default async function Page({ searchParams }) {
-  const user = 1
+  const cookieStore = cookies()
+  const token = cookieStore.get('token')
   let { page = 1, s = '' } = searchParams
   if (page < 1) {
     page = 1
@@ -46,13 +45,11 @@ export default async function Page({ searchParams }) {
     count,
     metronomes,
   }: { count: number; metronomes: StoredMetronome[] } = await getMetronomes(
-    user,
+    token!.value,
     page,
     s
   )
   const maxPage = Math.ceil(count / pageSize)
-
-  console.log(count)
 
   function getPagingUrlParams(up: boolean) {
     const params = [
@@ -60,6 +57,17 @@ export default async function Page({ searchParams }) {
       `page=${up ? Number(page) + 1 : Number(page) - 1}`,
     ]
     return params.join('&')
+  }
+
+  if (count == 0) {
+    return (
+      <div>
+        <span>
+          Seems like there is nothing here yet. Let's create{' '}
+          <Link href="/metronome/new">something</Link>
+        </span>
+      </div>
+    )
   }
 
   return (

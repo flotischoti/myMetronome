@@ -33,7 +33,7 @@ export async function getJwt(id: number, email: string): Promise<string> {
   const secret = new TextEncoder().encode(process.env.TOKEN_KEY!)
   const alg = 'HS256'
 
-  const jwt = await new jose.SignJWT({ use_id: id, email })
+  const jwt = await new jose.SignJWT({ userId: id, email })
     .setProtectedHeader({ alg })
     .setIssuedAt()
     .setExpirationTime('2h')
@@ -43,16 +43,32 @@ export async function getJwt(id: number, email: string): Promise<string> {
   return jwt
 }
 
-export async function verifyToken(token: string) {
+export async function decodeToken(
+  token: string
+): Promise<jose.JWTPayload | null> {
   const secret = new TextEncoder().encode(process.env.TOKEN_KEY!)
 
   try {
-    await jose.jwtVerify(token, secret)
+    const { payload } = await jose.jwtVerify(token, secret)
     console.log('Token verification succeded')
-    return true
+    return payload
   } catch (err) {
     console.log('Token verification failed')
     console.log(err)
-    return false
+    return null
   }
+}
+
+export async function verifyToken(token: string): Promise<boolean> {
+  const t = await decodeToken(token)
+  return t != null
+}
+
+export function isValidNumber(metronomeId: String): boolean {
+  return metronomeId && !Number.isNaN(Number(metronomeId))
+}
+
+export async function getUserFromToken(token: string): Promise<number> {
+  const decodedToken = await decodeToken(token)
+  return decodedToken ? (decodedToken.userId as number) : -1
 }

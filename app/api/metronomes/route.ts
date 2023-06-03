@@ -1,25 +1,21 @@
-import * as metronomeDb from '../../../../../db/metronome'
+import * as metronomeDb from '../../../db/metronome'
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { getUserFromToken } from '../util'
 
-export async function GET(
-  request: Request,
-  { params }: { params: { userId: string } }
-) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const top = getSearchParam(searchParams, 'top')
   const offset = getSearchParam(searchParams, 'offset')
-  const user = params.userId
+  const token =
+    request.cookies.get('token')?.value || request.headers.get('x-access-token')
+  const userId = await getUserFromToken(token!)
   const sortBy = getSearchParam(searchParams, 'sortBy')
   const sortOrder = getSearchParam(searchParams, 'sortOrder')
   const name = getSearchParam(searchParams, 'name')
 
-  if (!isValidUserId(user)) {
-    NextResponse.json({}, { status: 403 })
-  }
-
   const [count, metronomes] = await metronomeDb.list(
-    Number(user),
+    userId,
     getValidNumberOrUndefined(top),
     getValidNumberOrUndefined(offset),
     sortBy,
@@ -30,14 +26,11 @@ export async function GET(
   return NextResponse.json({ metronomes, count }, { status: 200 })
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: { userId: string } }
-) {
-  const metronome = await metronomeDb.create(
-    await request.json(),
-    Number(params.userId)
-  )
+export async function POST(request: NextRequest) {
+  const token =
+    request.cookies.get('token')?.value || request.headers.get('x-access-token')
+  const userId = await getUserFromToken(token!)
+  const metronome = await metronomeDb.create(await request.json(), userId)
   return NextResponse.json(metronome, { status: 201 })
 }
 
@@ -50,8 +43,4 @@ function getSearchParam(
 
 function getValidNumberOrUndefined(value: string | undefined) {
   return !value || Number.isNaN(Number(value)) ? undefined : Number(value)
-}
-
-function isValidUserId(userId: String | null): boolean {
-  return userId && !Number.isNaN(Number(userId)) ? true : false
 }

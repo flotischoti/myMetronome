@@ -12,7 +12,7 @@ const SearchBox = () => {
     const search = e.target.value
     if (search.length > 2) {
       const { metronomes }: { metronomes: StoredMetronome[] } = await fetch(
-        `/api/users/1/metronomes?name=${search}`,
+        `/api/metronomes?name=${search}`,
         {
           headers: {
             'Content-Type': 'application/json',

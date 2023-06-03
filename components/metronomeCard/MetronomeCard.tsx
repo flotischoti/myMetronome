@@ -12,7 +12,7 @@ const MetronomeCard = ({ metronome }: { metronome: StoredMetronome }) => {
 
   async function handleDelete(e: MouseEvent<HTMLElement>) {
     e.stopPropagation()
-    await fetch(`/api/users/1/metronomes/${metronome.id}`, {
+    await fetch(`/api/metronomes/${metronome.id}`, {
       method: 'DELETE',
     })
       .then(() => router.push('/list/'))

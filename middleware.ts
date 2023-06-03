@@ -20,7 +20,7 @@ export const config = {
     '/metronome/recent',
     '/list',
     '/logout',
-    '/api/users/(.*)',
+    '/api/metronomes/(.*)',
   ],
 }
 
@@ -46,7 +46,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/metronome/new', request.url))
     }
 
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(
+      new URL(`/login?target=${request.nextUrl.pathname}`, request.url)
+    )
   } else {
     if (['', '/', '/metronome/'].includes(request.nextUrl.pathname)) {
       return NextResponse.redirect(new URL('/metronome/recent', request.url))

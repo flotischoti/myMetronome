@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement
@@ -15,6 +16,7 @@ interface LoginFormElement extends HTMLFormElement {
 export default function Page() {
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   async function handleSubmit(e: FormEvent<LoginFormElement>) {
     e.preventDefault()
@@ -39,7 +41,9 @@ export default function Page() {
       return
     }
 
-    router.push(`/metronome/new`)
+    const targetUrl = searchParams.get('target')
+
+    router.push(targetUrl ? targetUrl : `/metronome/recent`)
   }
 
   return (

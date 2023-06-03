@@ -11,6 +11,8 @@ export default ({ error, reset }: { error: Error; reset: () => void }) => {
   return (
     <div>
       <h2>Something went wrong!</h2>
+      <span>{error.message}</span>
+      <br></br>
       <button
         onClick={
           // Attempt to recover by trying to re-render the segment

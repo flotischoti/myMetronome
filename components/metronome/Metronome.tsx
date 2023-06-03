@@ -36,7 +36,6 @@ const clickStressed = 'click_stressed.mp3'
 const clickNormal = 'click_normal.mp3'
 const maxBeats = 12
 const minBeats = 2
-const user = 1
 
 const defaultStoredMetronome: StoredMetronome = {
   name: 'Enter name',
@@ -58,8 +57,10 @@ const defaultLocalMetronome: LocalMetronomeSettings = {
 
 const Metronome = ({
   dbMetronome,
+  user,
 }: {
   dbMetronome: StoredMetronome | null
+  user: number | null
 }) => {
   const media = useRef<HTMLAudioElement>(null)
   const m = dbMetronome ? dbMetronome : defaultStoredMetronome
@@ -253,29 +254,31 @@ const Metronome = ({
   }
 
   const updateMetronome = async () => {
-    console.log(`saving`)
-    const res = await fetch(`/api/users/${user}/metronomes/${metronome.id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'PUT',
-      body: JSON.stringify(metronome),
-    })
-      .then((res) => {
-        setSaveState('success')
-        return res.json()
+    if (user) {
+      console.log(`saving`)
+      const res = await fetch(`/api/metronomes/${metronome.id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'PUT',
+        body: JSON.stringify(metronome),
       })
-      .catch(() => setSaveState('error'))
-    setMetronome({
-      ...res,
-      currentUsed: metronome.currentUsed,
-      sessionUsed: metronome.sessionUsed,
-      isPlaying: metronome.isPlaying,
-      activeTimer: metronome.activeTimer,
-    })
-    setTimeout(() => {
-      setSaveState('')
-    }, 2000)
+        .then((res) => {
+          setSaveState('success')
+          return res.json()
+        })
+        .catch(() => setSaveState('error'))
+      setMetronome({
+        ...res,
+        currentUsed: metronome.currentUsed,
+        sessionUsed: metronome.sessionUsed,
+        isPlaying: metronome.isPlaying,
+        activeTimer: metronome.activeTimer,
+      })
+      setTimeout(() => {
+        setSaveState('')
+      }, 2000)
+    }
   }
 
   const calculateBpmFromTaps = (): void => {
@@ -329,22 +332,26 @@ const Metronome = ({
   }
 
   const createMetronome = async () => {
-    const res = await fetch(`/api/users/${user}/metronomes`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(metronome),
-    }).then((res) => res.json())
-    router.push(`/metronome/${res.id}`)
+    if (user) {
+      const res = await fetch(`/api/metronomes`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify(metronome),
+      }).then((res) => res.json())
+      router.push(`/metronome/${res.id}`)
+    }
   }
 
   const deleteMetronome = async () => {
-    await fetch(`/api/users/${user}/metronomes/${metronome.id}`, {
-      method: 'DELETE',
-    })
-      .then(() => router.push('/metronome/'))
-      .catch(async (res) => console.log(await res.json()))
+    if (user) {
+      await fetch(`/api/metronomes/${metronome.id}`, {
+        method: 'DELETE',
+      })
+        .then(() => router.push('/'))
+        .catch(async (res) => console.log(await res.json()))
+    }
   }
 
   return (
@@ -599,7 +606,7 @@ const Metronome = ({
             {saveState == 'error' && <span>Autosave failed</span>}
           </div>
           <div id="metronomeButtonArea-1">
-            {!metronome.id && (
+            {!metronome.id && user && (
               <MainButton
                 className="rounded-sm  border-black-600"
                 onClick={createMetronome}

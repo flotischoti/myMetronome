@@ -99,10 +99,12 @@ export async function deleteMetronome(metronomeId: number): Promise<boolean> {
   return false
 }
 
-export async function get(id: number): Promise<StoredMetronome | null> {
+export async function get(
+  metronomeId: number
+): Promise<StoredMetronome | null> {
   return await prisma.metronome.findUnique({
     where: {
-      id: id,
+      id: metronomeId,
     },
   })
 }
