@@ -36,7 +36,9 @@ export default async function Page({ params }: { params: { id: string } }) {
       <div>
         <span>
           Seems like there is nothing here yet. Let's create{' '}
-          <Link href="/metronome/new">something</Link>
+          <Link href="/metronome/new" prefetch={false}>
+            something
+          </Link>
         </span>
       </div>
     )

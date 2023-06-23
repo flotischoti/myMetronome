@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
+import { loginServerAction } from '../actions'
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement
@@ -26,7 +27,7 @@ export default function Page() {
       password: e.currentTarget.elements.password.value,
     }
 
-    const response = await fetch(`/api/auth/login/`, {
+    const response = await fetch(`/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,9 +42,30 @@ export default function Page() {
       return
     }
 
+    // await fetch(`/api/revalidate`, {
+    //   cache: 'no-store',
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({ path: '/' }),
+    // })
+
+    router.refresh()
+
     const targetUrl = searchParams.get('target')
 
     router.push(targetUrl ? targetUrl : `/metronome/recent`)
+  }
+
+  async function callLoginServerAction(formData: FormData) {
+    console.log(`Calling loginServerAction from Client Component`)
+    const { status, text } = await loginServerAction(formData)
+    if (status == 200) {
+      const targetUrl = searchParams.get('target')
+      router.push(targetUrl ? targetUrl : `/metronome/recent`)
+    }
+    setError(text)
   }
 
   return (
@@ -98,6 +120,7 @@ export default function Page() {
                 Don't have an account yet?{' '}
                 <Link
                   href="/register"
+                  prefetch={false}
                   className="font-medium text-primary-600 hover:underline dark:text-primary-500"
                 >
                   Sign up here

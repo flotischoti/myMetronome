@@ -46,7 +46,7 @@ const SearchBox = () => {
         <ul>
           {resultList.map((r) => (
             <li id={'' + r.id} key={r.id} onClick={handleMetronomeSelection}>
-              <Link href={`/metronome/${r.id}`}>
+              <Link href={`/metronome/${r.id}`} prefetch={false}>
                 {' '}
                 {r.id} - {r.name}
               </Link>

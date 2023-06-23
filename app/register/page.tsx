@@ -110,6 +110,7 @@ export default function Page() {
                 Already have an account?{' '}
                 <Link
                   href="/login"
+                  prefetch={false}
                   className="font-medium text-primary-600 hover:underline dark:text-primary-500"
                 >
                   Login here

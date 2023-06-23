@@ -64,7 +64,9 @@ export default async function Page({ searchParams }) {
       <div>
         <span>
           Seems like there is nothing here yet. Let's create{' '}
-          <Link href="/metronome/new">something</Link>
+          <Link href="/metronome/new" prefetch={false}>
+            something
+          </Link>
         </span>
       </div>
     )
@@ -82,7 +84,7 @@ export default async function Page({ searchParams }) {
       {page <= maxPage && (
         <div className="realtive flex justify-center items-center">
           {page > 1 && (
-            <Link href={`/list?${getPagingUrlParams(false)}`}>
+            <Link href={`/list?${getPagingUrlParams(false)}`} prefetch={false}>
               <FontAwesomeIcon
                 icon={faArrowLeft}
                 className="hover:cursor-pointer"
@@ -94,7 +96,7 @@ export default async function Page({ searchParams }) {
             {page}
           </p>
           {page < maxPage && (
-            <Link href={`/list?${getPagingUrlParams(true)}`}>
+            <Link href={`/list?${getPagingUrlParams(true)}`} prefetch={false}>
               <FontAwesomeIcon
                 icon={faArrowRight}
                 className="hover:cursor-pointer"

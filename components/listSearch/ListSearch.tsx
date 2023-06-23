@@ -44,7 +44,7 @@ const ListSearch = ({ oldSearch }: { oldSearch: string }) => {
           onChange={(e) => setSearchValue(e.target.value)}
           required
         />
-        <Link href={`/list?s=${searchValue}`}>
+        <Link href={`/list?s=${searchValue}`} prefetch={false}>
           <button
             type="submit"
             className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2"

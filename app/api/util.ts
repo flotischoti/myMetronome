@@ -1,7 +1,7 @@
 import * as jose from 'jose'
 
 export function getErrorResponse(text: string) {
-  return { status: text }
+  return { text }
 }
 
 export function isEmailValid(email) {

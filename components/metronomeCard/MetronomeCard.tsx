@@ -24,7 +24,11 @@ const MetronomeCard = ({ metronome }: { metronome: StoredMetronome }) => {
       id="card"
       className="h-15 p-3 mb-3 border border-gray-200 rounded-lg shadow hover:bg-gray-100 flex justify-between"
     >
-      <Link href={`/metronome/${metronome.id}`} className="w-full">
+      <Link
+        href={`/metronome/${metronome.id}`}
+        className="w-full"
+        prefetch={false}
+      >
         <div id="info">
           <h5 className="text-1xl font-bold tracking-tight text-gray-900">
             {metronome.name}

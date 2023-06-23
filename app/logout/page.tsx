@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { logoutServerAction } from '../actions'
 
 export default function Page() {
   const [error, setError] = useState(null as unknown as string)
@@ -12,16 +13,25 @@ export default function Page() {
   }, [])
 
   async function logout() {
-    const response = await fetch(`/api/auth/logout/`, {
+    const response = await fetch(`/api/auth/logout`, {
       method: 'POST',
     })
-    console.log(response.status)
 
     if (response.status != 204) {
       setError(response.statusText)
       return
     }
 
+    // await fetch(`/api/revalidate`, {
+    //   cache: 'no-store',
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({ path: '/' }),
+    // })
+
+    router.refresh()
     router.push(`/`)
   }
 
