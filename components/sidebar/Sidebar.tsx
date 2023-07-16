@@ -20,7 +20,7 @@ export default function Sidebar() {
             </Link>
           </li>
           <li>
-            <Link href="/me" className="link" prefetch={false}>
+            <Link href="/account" className="link" prefetch={false}>
               <IconUserCircle />
               Account
             </Link>

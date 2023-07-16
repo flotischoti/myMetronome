@@ -5,20 +5,20 @@ import * as bcrypt from 'bcrypt'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const { email, password }: { email: string; password: string } =
+  const { name, password }: { name: string; password: string } =
     await request.json()
 
-  if (!email || !password) {
+  if (!name || !password) {
     return NextResponse.json(
-      utils.getErrorResponse(`Password or email missing`),
+      utils.getErrorResponse(`Password or name missing`),
       { status: 400 }
     )
   }
 
-  const user = await userDb.get(email)
+  const user = await userDb.get(name)
 
   if (user && (await bcrypt.compare(password, user.password))) {
-    user.token = await utils.getJwt(user.id!, email)
+    user.token = await utils.getJwt(user.id!, name)
     return NextResponse.json(user, {
       status: 200,
       headers: {

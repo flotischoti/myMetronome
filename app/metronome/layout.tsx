@@ -5,10 +5,5 @@ export default function MetronomeLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <div>
-      <SearchBox />
-      <section>{children}</section>
-    </div>
-  )
+  return <section>{children}</section>
 }

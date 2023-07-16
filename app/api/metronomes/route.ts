@@ -1,7 +1,7 @@
 import * as metronomeDb from '../../../db/metronome'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserFromToken } from '../util'
+import { getUserAttrFromToken } from '../util'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const offset = getSearchParam(searchParams, 'offset')
   const token =
     request.cookies.get('token')?.value || request.headers.get('x-access-token')
-  const userId = await getUserFromToken(token!)
+  const userId = await getUserAttrFromToken(token!)
   const sortBy = getSearchParam(searchParams, 'sortBy')
   const sortOrder = getSearchParam(searchParams, 'sortOrder')
   const name = getSearchParam(searchParams, 'name')
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const token =
     request.cookies.get('token')?.value || request.headers.get('x-access-token')
-  const userId = await getUserFromToken(token!)
+  const userId = await getUserAttrFromToken(token!)
   const metronome = await metronomeDb.create(await request.json(), userId)
   return NextResponse.json(metronome, { status: 201 })
 }

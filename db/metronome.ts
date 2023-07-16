@@ -17,7 +17,7 @@ export async function list(
   sortBy = 'name',
   sortOrder = 'asc',
   name?
-): Promise<StoredMetronome[]> {
+): Promise<[number, StoredMetronome[]]> {
   return await prisma.$transaction([
     prisma.metronome.count({
       where: {

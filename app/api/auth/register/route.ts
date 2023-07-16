@@ -6,25 +6,23 @@ import * as bcrypt from 'bcrypt'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const { email, password }: { email: string; password: string } =
+  const { name, password }: { name: string; password: string } =
     await request.json()
 
-  console.log(`email: ${email} | password: ${password}`)
-
-  if (!email || !password) {
+  if (!name || !password) {
     return NextResponse.json(
-      utils.getErrorResponse(`Password or email missing`),
+      utils.getErrorResponse(`Password or name missing`),
       { status: 400 }
     )
   }
 
-  if (!utils.isEmailValid(email)) {
-    return NextResponse.json(utils.getErrorResponse(`Invalid email`), {
-      status: 400,
-    })
-  }
+  // if (!utils.isEmailValid(email)) {
+  //   return NextResponse.json(utils.getErrorResponse(`Invalid email`), {
+  //     status: 400,
+  //   })
+  // }
 
-  const oldUser = await userDb.get(email)
+  const oldUser = await userDb.get(name)
 
   if (oldUser) {
     return NextResponse.json(utils.getErrorResponse(`User already exists`), {
@@ -35,11 +33,11 @@ export async function POST(request: Request) {
   const encryptedPw = await bcrypt.hash(password, 10)
 
   const user: userDb.User = await userDb.create({
-    email,
+    name,
     password: encryptedPw,
   })
 
-  user.token = await utils.getJwt(user.id!, email)
+  user.token = await utils.getJwt(user.id!, name)
 
   return NextResponse.json(user, {
     status: 200,

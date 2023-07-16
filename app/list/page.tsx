@@ -2,9 +2,11 @@ import { StoredMetronome } from '../../components/metronome/Metronome'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons'
 import MetronomeCard from '../../components/metronomeCard/MetronomeCard'
+import * as metronomeDb from '../../db/metronome'
 import Link from 'next/link'
 import ListSearch from '../../components/listSearch/ListSearch'
 import { cookies } from 'next/headers'
+import { getUserAttrFromToken } from '../api/util'
 
 const pageSize = 3
 
@@ -13,42 +15,22 @@ function getOffest(page: number) {
   return (page - 1) * pageSize
 }
 
-async function getMetronomes(token: string, page: number, search: string) {
+async function getMetronomes(
+  userId: number,
+  page: number,
+  search: string
+): Promise<[number, StoredMetronome[]]> {
   const offset = getOffest(page)
-  const res = await fetch(
-    `http://localhost:3000/api/metronomes?name=${search}&top=${pageSize}&offset=${offset}&sortBy=name&sortOrder=asc`,
-    {
-      cache: 'no-store',
-      headers: {
-        'x-access-token': token,
-      },
-    }
-  )
 
-  if (!res.ok) {
-    throw new Error(
-      `Failed to load list of metronomes for user with error: ${res.statusText}`
-    )
-  }
-
-  return res.json()
+  return await metronomeDb.list(userId, pageSize, offset, 'name', 'asc', search)
 }
 
 export default async function Page({ searchParams }) {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
+  const userId = await getUserAttrFromToken(token!.value)
   let { page = 1, s = '' } = searchParams
-  if (page < 1) {
-    page = 1
-  }
-  const {
-    count,
-    metronomes,
-  }: { count: number; metronomes: StoredMetronome[] } = await getMetronomes(
-    token!.value,
-    page,
-    s
-  )
+  const [count, metronomes] = await getMetronomes(userId!, page, s)
   const maxPage = Math.ceil(count / pageSize)
 
   function getPagingUrlParams(up: boolean) {

@@ -33,9 +33,7 @@ export default function Navbar({ isLoggedIn }) {
                 tabIndex={0}
                 className="btn btn-ghost btn-circle  avatar drawer-button"
               >
-                {/* <div className="w-10 rounded-full"> */}
                 <IconMenu2 />
-                {/* </div> */}
               </label>
             </div>
           </>

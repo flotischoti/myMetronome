@@ -9,6 +9,7 @@ import { getErrorResponse, verifyToken } from './app/api/util'
 /metronome/:id      | next                  /login
 /list/              | next                  /login
 /logout             | next                  /metronome/new
+/account/*          | next                  /login
 
 */
 
@@ -21,6 +22,8 @@ export const config = {
     '/list',
     '/logout',
     '/api/metronomes/(.*)',
+    '/account',
+    '/account/(.*)',
   ],
 }
 

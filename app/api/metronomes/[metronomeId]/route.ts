@@ -1,6 +1,10 @@
 import * as metronomeDb from '../../../../db/metronome'
 import { NextRequest, NextResponse } from 'next/server'
-import { isValidNumber, getErrorResponse, getUserFromToken } from '../../util'
+import {
+  isValidNumber,
+  getErrorResponse,
+  getUserAttrFromToken,
+} from '../../util'
 import { StoredMetronome } from '../../../../components/metronome/Metronome'
 
 export async function PUT(request: NextRequest) {
@@ -9,7 +13,7 @@ export async function PUT(request: NextRequest) {
 
   const token =
     request.cookies.get('token')?.value || request.headers.get('x-access-token')
-  const userId = await getUserFromToken(token!)
+  const userId = await getUserAttrFromToken(token!)
 
   // TODO replace all this shit by using where clause with metronome + user ID
   const metronome = await metronomeDb.get(newMetronome.id!)
@@ -43,7 +47,7 @@ export async function GET(
   const { metronomeId } = params
   const token =
     request.cookies.get('token')?.value || request.headers.get('x-access-token')
-  const userId = await getUserFromToken(token!)
+  const userId = await getUserAttrFromToken(token!)
 
   if (!isValidNumber(metronomeId)) {
     return NextResponse.json(
@@ -84,7 +88,7 @@ export async function DELETE(
   const { metronomeId } = params
   const token =
     request.cookies.get('token')?.value || request.headers.get('x-access-token')
-  const userId = await getUserFromToken(token!)
+  const userId = await getUserAttrFromToken(token!)
 
   if (!isValidNumber(metronomeId)) {
     return NextResponse.json(

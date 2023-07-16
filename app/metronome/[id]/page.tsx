@@ -1,42 +1,43 @@
 import Metronome, {
   StoredMetronome,
 } from '../../../components/metronome/Metronome'
-import SearchBox from '../../../components/searchbox/searchbox'
 import { cookies } from 'next/headers'
-import { decodeToken, verifyToken } from '../../api/util'
+import { getUserAttrFromToken, isValidNumber } from '../../api/util'
+import * as metronomeDb from '../../../db/metronome'
 
-async function getMetronome(metronomeId: string, token: string) {
-  console.log(`Page. Loading Metronome. Metronome Id: ${metronomeId}`)
-  const res = await fetch(
-    `http://localhost:3000/api/metronomes/${metronomeId}`,
-    {
-      cache: 'no-store',
-      headers: {
-        'x-access-token': token,
-      },
-    }
+async function getMetronome(metronomeId: string, userId: number) {
+  console.log(
+    `Page. Loading Metronome. Metronome Id: ${metronomeId} for user ${userId}`
   )
 
-  if (!res.ok) {
+  if (!isValidNumber(metronomeId))
+    throw new Error(`GET metronome failed. Metronome ${metronomeId} not valid`)
+
+  const metronome = await metronomeDb.get(Number(metronomeId))
+
+  if (!metronome)
+    throw new Error(`GET metronome failed. Metronome ${metronomeId} not found`)
+
+  // TODO replace all this shit by using where clause with metronome + user ID
+  if (metronome.owner != userId) {
     throw new Error(
-      `Failed to load metronome with id: ${metronomeId}. Error: ${res.statusText}`
+      `GET metronome failed. User ${userId} not allowed to read metronome ${metronomeId}`
     )
   }
 
-  return res.json()
+  return metronome
 }
 
 export default async function Page({ params }: { params: { id: string } }) {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
-  const decodedToken = await decodeToken(token!.value)
-  const user = decodedToken!.userId as number
+  const userId = await getUserAttrFromToken(token!.value)
 
-  let metronome: StoredMetronome = await getMetronome(params.id, token!.value)
+  let metronome: StoredMetronome = await getMetronome(params.id, userId!)
 
   return (
     <div>
-      <Metronome dbMetronome={metronome} user={user} />
+      <Metronome dbMetronome={metronome} user={userId} />
     </div>
   )
 }

@@ -29,11 +29,11 @@ export function isEmailValid(email) {
   return true
 }
 
-export async function getJwt(id: number, email: string): Promise<string> {
+export async function getJwt(id: number, name: string): Promise<string> {
   const secret = new TextEncoder().encode(process.env.TOKEN_KEY!)
   const alg = 'HS256'
 
-  const jwt = await new jose.SignJWT({ userId: id, email })
+  const jwt = await new jose.SignJWT({ userId: id, name })
     .setProtectedHeader({ alg })
     .setIssuedAt()
     .setExpirationTime('2h')
@@ -68,7 +68,12 @@ export function isValidNumber(metronomeId: String): boolean {
   return metronomeId && !Number.isNaN(Number(metronomeId))
 }
 
-export async function getUserFromToken(token: string): Promise<number> {
+export async function getUserAttrFromToken<T = number>(
+  token: string | undefined,
+  attr: string = 'userId'
+): Promise<T | null> {
+  if (!token) return null
   const decodedToken = await decodeToken(token)
-  return decodedToken ? (decodedToken.userId as number) : -1
+
+  return decodedToken ? (decodedToken[attr] as T) : null
 }

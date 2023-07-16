@@ -7,6 +7,7 @@ function createUser() {
   return {
     email: faker.internet.email(),
     password: faker.internet.password(),
+    name: faker.internet.userName(),
     metronomes: {
       create: Array.from(
         Array(faker.datatype.number({ min: 0, max: 20 })),
