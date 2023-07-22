@@ -7,7 +7,7 @@ import Loading from './loading'
 import { cookies } from 'next/headers'
 import Sidebar from '../components/sidebar/Sidebar'
 import Footer from '../components/footer/Footer'
-import { verifyToken } from './api/util'
+import { getUserAttrFromToken, verifyToken } from './api/util'
 
 export default async function RootLayout({
   children,
@@ -16,7 +16,8 @@ export default async function RootLayout({
 }) {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
-  const isLoggedIn = token?.value && (await verifyToken(token.value))
+  const userName = await getUserAttrFromToken<string>(token?.value, 'name')
+  const isLoggedIn = userName ? true : false
 
   return (
     <html lang="en">
@@ -32,7 +33,7 @@ export default async function RootLayout({
           </div>
           <Footer />
         </div>
-        <Sidebar />
+        <Sidebar userName={userName} />
       </body>
     </html>
   )
