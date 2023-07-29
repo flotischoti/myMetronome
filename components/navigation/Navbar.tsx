@@ -1,9 +1,10 @@
 import { IconMenu2, IconPlus } from '@tabler/icons-react'
 import Link from 'next/link'
+import NavbarSearch from './NavbarSearch'
 
 export default function Navbar({ isLoggedIn }) {
   return (
-    <div className="navbar bg-base-100">
+    <div className="navbar bg-base-100 pr-4">
       <div className="flex-1">
         <Link
           href="/"
@@ -12,21 +13,15 @@ export default function Navbar({ isLoggedIn }) {
         >
           MyMetronome
         </Link>
-        <button className="btn btn-accent">
+        <Link className="btn btn-accent" href="/metronome/new">
           <IconPlus />
           New
-        </button>
+        </Link>
       </div>
-      <div className="flex-none gap-2">
+      <div className="flex-none gap-1">
         {isLoggedIn ? (
           <>
-            <div className="form-control">
-              <input
-                type="text"
-                placeholder="Search"
-                className="input input-bordered w-24 md:w-auto"
-              />
-            </div>
+            <NavbarSearch />
             <div>
               <label
                 htmlFor="my-drawer"
@@ -42,7 +37,7 @@ export default function Navbar({ isLoggedIn }) {
             <Link prefetch={false} href="/login" className="link link-hover">
               Login
             </Link>
-            <div className="divider divider-horizontal"></div>
+            <div className="divider divider-horizontal mx-1"></div>
             <Link prefetch={false} href="/register" className="link link-hover">
               Sign up
             </Link>

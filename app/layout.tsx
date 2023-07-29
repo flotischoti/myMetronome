@@ -8,6 +8,7 @@ import { cookies } from 'next/headers'
 import Sidebar from '../components/sidebar/Sidebar'
 import Footer from '../components/footer/Footer'
 import { getUserAttrFromToken, verifyToken } from './api/util'
+import Modal from '../components/searchModal/modal'
 
 export default async function RootLayout({
   children,
@@ -34,6 +35,7 @@ export default async function RootLayout({
           <Footer />
         </div>
         <Sidebar userName={userName} />
+        <Modal />
       </body>
     </html>
   )

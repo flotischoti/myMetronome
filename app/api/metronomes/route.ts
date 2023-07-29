@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const name = getSearchParam(searchParams, 'name')
 
   const [count, metronomes] = await metronomeDb.list(
-    userId,
+    userId!,
     getValidNumberOrUndefined(top),
     getValidNumberOrUndefined(offset),
     sortBy,
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   const token =
     request.cookies.get('token')?.value || request.headers.get('x-access-token')
   const userId = await getUserAttrFromToken(token!)
-  const metronome = await metronomeDb.create(await request.json(), userId)
+  const metronome = await metronomeDb.create(await request.json(), userId!)
   return NextResponse.json(metronome, { status: 201 })
 }
 

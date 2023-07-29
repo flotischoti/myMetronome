@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import {
   IconBrandGithub,
@@ -7,13 +9,26 @@ import {
   IconUserCircle,
 } from '@tabler/icons-react'
 
-export default function Sidebar({ userName }: { userName: string | null }) {
+export default function Sidebar({
+  userName,
+  checkBox,
+}: {
+  userName: string | null
+  checkBox: HTMLInputElement
+}) {
   return (
     <div className="drawer-side">
       <label htmlFor="my-drawer" className="drawer-overlay"></label>
       <div className="menu p-4 w-80 h-full bg-base-200 text-base-content">
-        <h1 className="font-bold text-lg">{userName}</h1>
-        <ul>
+        <h1 className="font-bold text-lg">Hello {userName}!</h1>
+        <ul
+          className="mt-2"
+          onClick={() =>
+            ((document.getElementById(
+              'my-drawer'
+            ) as HTMLInputElement)!.checked = false)
+          }
+        >
           <li>
             <Link href="/list" className="link" prefetch={false}>
               <IconList />

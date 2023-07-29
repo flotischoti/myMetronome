@@ -19,6 +19,7 @@ export interface StoredMetronome {
   timerValue: number
   showStats: boolean
   owner?: number
+  lastOpened?: Date
 }
 
 interface LocalMetronomeSettings {
