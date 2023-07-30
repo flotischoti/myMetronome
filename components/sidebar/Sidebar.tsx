@@ -32,7 +32,7 @@ export default function Sidebar({
           <li>
             <Link href="/list" className="link" prefetch={false}>
               <IconList />
-              All Metronomes
+              My Metronomes
             </Link>
           </li>
           <li>

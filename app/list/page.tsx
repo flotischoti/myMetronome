@@ -7,6 +7,7 @@ import Link from 'next/link'
 import ListSearch from '../../components/listSearch/ListSearch'
 import { cookies } from 'next/headers'
 import { getUserAttrFromToken } from '../api/util'
+import { IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react'
 
 const pageSize = 3
 
@@ -41,57 +42,37 @@ export default async function Page({ searchParams }) {
     return params.join('&')
   }
 
-  if (count == 0) {
-    return (
-      <div>
-        <span>
-          Seems like there is nothing here yet. Let's create{' '}
-          <Link href="/metronome/new" prefetch={false}>
-            something
-          </Link>
-        </span>
-      </div>
-    )
-  }
-
   return (
     <div>
       <ListSearch oldSearch={s} />
-      {metronomes.length == 0 && (
-        <span>There doesn't seem to be anything here</span>
-      )}
+      <div className="divider text-xs">
+        {count} metronome{count > 1 || count == 0 ? 's' : ''} found
+      </div>
+
       {metronomes.map((m, i) => (
         <MetronomeCard key={i} metronome={m} />
       ))}
       {page <= maxPage && (
-        <div className="realtive flex justify-center items-center">
-          {page > 1 && (
-            <Link href={`/list?${getPagingUrlParams(false)}`} prefetch={false}>
-              <FontAwesomeIcon
-                icon={faArrowLeft}
-                className="hover:cursor-pointer"
-                size="xl"
-              />
+        <div className="realtive flex justify-center items-center mt-8">
+          <div className="join">
+            <Link
+              href={`/list?${getPagingUrlParams(false)}`}
+              prefetch={false}
+              className={`join-item btn ${page <= 1 ? 'btn-disabled' : ''}`}
+            >
+              <IconChevronsLeft />
             </Link>
-          )}
-          <p className="mx-3 p-2 border border-solid border-2 rounded-full">
-            {page}
-          </p>
-          {page < maxPage && (
-            <Link href={`/list?${getPagingUrlParams(true)}`} prefetch={false}>
-              <FontAwesomeIcon
-                icon={faArrowRight}
-                className="hover:cursor-pointer"
-                size="xl"
-              />
+            <button className="join-item btn no-animation">Page {page}</button>
+            <Link
+              href={`/list?${getPagingUrlParams(true)}`}
+              prefetch={false}
+              className={`join-item btn ${
+                page >= maxPage ? 'btn-disabled' : ''
+              }`}
+            >
+              <IconChevronsRight />
             </Link>
-          )}
-
-          {count > 0 && (
-            <p className="absolute right-10">
-              {count} metronome{count > 1 ? 's' : ''} found
-            </p>
-          )}
+          </div>
         </div>
       )}
     </div>
