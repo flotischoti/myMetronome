@@ -4,7 +4,7 @@ import NavbarSearch from './NavbarSearch'
 
 export default function Navbar({ isLoggedIn }) {
   return (
-    <div className="navbar bg-base-100 pr-4">
+    <div className="navbar bg-base-100 pr-4 shadow">
       <div className="flex-1">
         <Link
           href="/"

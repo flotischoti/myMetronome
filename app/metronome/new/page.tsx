@@ -9,9 +9,5 @@ export default async function Page({ params }: { params: { id: string } }) {
   const token = cookieStore.get('token')
   let user = await getUserAttrFromToken(token?.value)
 
-  return (
-    <div>
-      <Metronome dbMetronome={null} user={user} />
-    </div>
-  )
+  return <Metronome dbMetronome={null} user={user} />
 }

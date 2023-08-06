@@ -28,7 +28,7 @@ export default async function RootLayout({
         <div className="drawer-content flex flex-col h-screen justify-between">
           <div>
             <Navbar isLoggedIn={isLoggedIn} />
-            <main className="container mx-auto py-4">
+            <main className="container mx-auto py-2">
               <Suspense fallback={<Loading />}>{children}</Suspense>
             </main>
           </div>

@@ -9,13 +9,7 @@ import {
   IconUserCircle,
 } from '@tabler/icons-react'
 
-export default function Sidebar({
-  userName,
-  checkBox,
-}: {
-  userName: string | null
-  checkBox: HTMLInputElement
-}) {
+export default function Sidebar({ userName }: { userName: string | null }) {
   return (
     <div className="drawer-side">
       <label htmlFor="my-drawer" className="drawer-overlay"></label>
