@@ -5,7 +5,6 @@ import styles from './metronome.module.scss'
 import { useRouter } from 'next/navigation'
 import {
   IconDeviceFloppy,
-  IconDisc,
   IconEdit,
   IconMinus,
   IconPlayerPause,
@@ -39,10 +38,10 @@ const ts: number[] = []
 const maxBpm = 300
 const minBpm = 20
 const timerChangeInterval = 30000
-const clickStressed = 'click_stressed.mp3'
-const clickNormal = 'click_normal.mp3'
 const maxBeats = 12
 const minBeats = 2
+const scheduleAheadTime = 0.1
+const lookahead = 25
 
 const defaultStoredMetronome: StoredMetronome = {
   name: '',
@@ -69,87 +68,54 @@ const Metronome = ({
   dbMetronome: StoredMetronome | null
   user: number | null
 }) => {
-  const media = useRef<HTMLAudioElement>(null)
   const m = dbMetronome ? dbMetronome : defaultStoredMetronome
   const [isEditTitle, setEditTitle] = useState(false)
   const [metronome, setMetronome] = useState({
     ...m,
     ...defaultLocalMetronome,
   })
-  const [tapSequence, setTapSequence] = useState(ts)
-  const [currentBeat, setCurrentBeat] = useState(0)
+  const [tapTimes, setTapTimes] = useState<number[]>([])
+  const [currentBeatInBar, setCurrentBeatInBar] = useState<number>(-1)
   const [saveState, setSaveState] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const bpmIncreaseState = useRef(null as unknown as NodeJS.Timer)
   const bpmDecreaseState = useRef(null as unknown as NodeJS.Timer)
-  const clickInterval = useRef(null as unknown as NodeJS.Timer)
   const autoSaveTimer = useRef(null as unknown as NodeJS.Timer)
+  const timeInterval = useRef(null as unknown as NodeJS.Timer)
+  const audioContext = useRef<AudioContext | null>(null)
+  const nextNoteTime = useRef<number>(0)
+  const schedulerIntervalId = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const router = useRouter()
 
-  useEffect(() => calculateBpmFromTaps(), [JSON.stringify(tapSequence)])
-
   useEffect(() => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext
+    audioContext.current = new AudioContext()
     return () => {
+      if (audioContext.current) {
+        audioContext.current.close()
+      }
       stopIncreaseBpm()
       stopDecreaseBpm()
+      clearInterval(timeInterval.current)
     }
   }, [])
 
   useEffect(() => {
-    let timeInterval: NodeJS.Timer = null as unknown as NodeJS.Timer
     if (metronome.isPlaying) {
-      if (!clickInterval.current) {
-        clickInterval.current = setInterval(() => {
-          changeCurrentBeat()
-        }, 60000 / metronome.bpm)
-      }
-      timeInterval = setInterval(() => {
-        setMetronome((prev) => {
-          return {
-            ...prev,
-            timeUsed: prev.timeUsed + 1000,
-            currentUsed: prev.currentUsed + 1000,
-            sessionUsed: prev.sessionUsed + 1000,
-            activeTimer: !prev.timerActive
-              ? prev.timerValue
-              : prev.activeTimer > 1000
-              ? prev.activeTimer - 1000
-              : 0,
-            isPlaying: prev.activeTimer > 1000 ? true : false,
-          }
-        })
-      }, 1000)
-    } else {
-      clearInterval(timeInterval)
-      clearInterval(clickInterval.current)
-      clickInterval.current = null as unknown as NodeJS.Timer
-      setCurrentBeat(0)
-      autosave()
+      if (schedulerIntervalId.current)
+        clearInterval(schedulerIntervalId.current)
+      schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
     }
-    return () => {
-      clearInterval(timeInterval)
-      clearInterval(clickInterval.current)
-      clickInterval.current = null as unknown as NodeJS.Timer
-    }
-  }, [metronome.isPlaying])
+  }, [nextNoteTime.current])
 
   useEffect(() => {
     if (metronome.isPlaying) {
-      clearInterval(clickInterval.current)
-      clickInterval.current = setInterval(() => {
-        changeCurrentBeat()
-      }, 60000 / metronome.bpm)
+      pause()
+      play()
     }
   }, [metronome.bpm, metronome.beats, metronome.stressFirst])
-
-  useEffect(() => {
-    // new Audio(
-    //   // metronome.stressFirst && currentBeat == 1 ? clickStressed : clickNormal
-    //   clickNormal
-    // )
-    if (metronome.isPlaying) media.current?.play()
-  }, [currentBeat])
 
   // AutoSave
   useEffect(() => {
@@ -164,13 +130,50 @@ const Metronome = ({
     metronome.name,
   ])
 
-  // useEffect(() => {
-  //   if (saveState == null) {
-  //     setTimeout(() => {
-  //       setSaveState('')
-  //     }, 1000);
-  //   }
-  // })
+  const scheduleNote = () => {
+    if (!audioContext.current) return
+
+    const time = nextNoteTime.current
+    const osc = audioContext.current.createOscillator()
+    const envelope = audioContext.current.createGain()
+    osc.frequency.value =
+      currentBeatInBar == 0 && metronome.stressFirst ? 1000 : 800
+    envelope.gain.value = 1
+    envelope.gain.exponentialRampToValueAtTime(1, time + 0.001)
+    envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02)
+
+    osc.connect(envelope)
+    envelope.connect(audioContext.current.destination)
+
+    osc.start(time)
+    osc.stop(time + 0.05)
+  }
+
+  const scheduler = () => {
+    if (!audioContext.current) return
+    const secondsPerBeat = 60.0 / metronome.bpm
+    while (
+      nextNoteTime.current <
+      audioContext.current.currentTime + scheduleAheadTime
+    ) {
+      nextNoteTime.current += secondsPerBeat
+      scheduleNote()
+      setCurrentBeatInBar((currentBeatInBar + 1) % metronome.beats)
+    }
+  }
+
+  const play = () => {
+    if (!audioContext.current) {
+      return
+    }
+    setCurrentBeatInBar(0)
+    nextNoteTime.current = audioContext.current.currentTime
+    schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
+  }
+
+  const pause = () => {
+    if (schedulerIntervalId.current) clearInterval(schedulerIntervalId.current)
+  }
 
   const autosave = () => {
     if (metronome.id) {
@@ -179,10 +182,6 @@ const Metronome = ({
         updateMetronome()
       }, 3000)
     }
-  }
-
-  function changeCurrentBeat() {
-    setCurrentBeat((prev) => (prev % metronome.beats) + 1)
   }
 
   const changeBpm = (e: ChangeEvent<HTMLInputElement>) => {
@@ -236,6 +235,30 @@ const Metronome = ({
   }
 
   const playPause = (e?: MouseEvent<HTMLButtonElement>) => {
+    if (metronome.isPlaying) {
+      pause()
+      clearInterval(timeInterval.current)
+      setCurrentBeatInBar(0)
+      autosave()
+    } else {
+      play()
+      timeInterval.current = setInterval(() => {
+        setMetronome((prev) => {
+          return {
+            ...prev,
+            timeUsed: prev.timeUsed + 1000,
+            currentUsed: prev.currentUsed + 1000,
+            sessionUsed: prev.sessionUsed + 1000,
+            activeTimer: !prev.timerActive
+              ? prev.timerValue
+              : prev.activeTimer > 1000
+              ? prev.activeTimer - 1000
+              : 0,
+            isPlaying: prev.activeTimer > 1000 ? true : false,
+          }
+        })
+      }, 1000)
+    }
     setMetronome({
       ...metronome,
       isPlaying: !metronome.isPlaying,
@@ -245,14 +268,16 @@ const Metronome = ({
   }
 
   const handleTap = (e: MouseEvent<HTMLButtonElement>) => {
-    const currentClickTimeStamp = Date.now()
-    if (
-      tapSequence.length == 0 ||
-      (currentClickTimeStamp - tapSequence.at(-1)!) / 1000 > 2
-    ) {
-      setTapSequence([currentClickTimeStamp])
-    } else {
-      setTapSequence([...tapSequence, currentClickTimeStamp])
+    const now: number = Date.now()
+    setTapTimes([...tapTimes, now])
+
+    if (tapTimes.length >= 2) {
+      const timeDifference: number = now - tapTimes[tapTimes.length - 2]
+      if (timeDifference < 5000) {
+        const newTempo: number = Math.round(60000 / timeDifference) * 2
+        const normalizedTempo = Math.min(Math.max(newTempo, minBpm), maxBpm)
+        setMetronome({ ...metronome, bpm: normalizedTempo })
+      }
     }
   }
 
@@ -292,18 +317,6 @@ const Metronome = ({
       setTimeout(() => {
         setSaveState('')
       }, 2000)
-    }
-  }
-
-  const calculateBpmFromTaps = (): void => {
-    if (tapSequence.length > 1) {
-      const timeWindow =
-        tapSequence.at(-1)! -
-        tapSequence.at(Math.min(tapSequence.length, metronome.beats) * -1)!
-      const taps = Math.min(tapSequence.length, metronome.beats)
-      const newBpm = Math.floor((taps / timeWindow) * 60000)
-      const normalizedBpm = Math.min(Math.max(newBpm, minBpm), maxBpm)
-      setMetronome({ ...metronome, bpm: normalizedBpm })
     }
   }
 
@@ -388,7 +401,7 @@ const Metronome = ({
       <div id="metronomeTitleArea-1" className="p-2">
         {!isEditTitle ? (
           <div onClick={() => setEditTitle(true)} className="flex items-center">
-            <h1 className="text-xl p-2">
+            <h1 className="text-xl p-2 hover:cursor-text">
               {metronome.name || 'Enter metronome title'}
             </h1>
             <span>
@@ -429,9 +442,6 @@ const Metronome = ({
                 {metronome.isPlaying ? <IconPlayerPause /> : <IconPlayerPlay />}
                 {metronome.isPlaying ? 'Pause' : 'Play'}
               </button>
-              <audio ref={media}>
-                <source src="click_normal.mp3" type="audio/mpeg" />
-              </audio>
               <button
                 onMouseDown={startIncreaseBpm}
                 onMouseUp={stopIncreaseBpm}
@@ -498,23 +508,6 @@ const Metronome = ({
                 </div>
               )}
             </div>
-            {metronome.stressFirst && (
-              <div
-                id="beatVisualizationArea"
-                className="flex justify-center space-x-2 mt-3"
-              >
-                {Array.from(Array(metronome.beats)).map((v, i) => (
-                  <span
-                    key={i}
-                    className={`border-2 rounded-full h-4 w-4 ${
-                      metronome.isPlaying && i + 1 == currentBeat
-                        ? 'border-red-600'
-                        : 'border-grey-600'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
           </div>
         </div>
         <div id="metronomeTimeArea-1">
