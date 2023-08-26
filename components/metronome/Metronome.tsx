@@ -419,7 +419,7 @@ const Metronome = ({
           />
         )}
       </div>
-      <div id="metronomeBodyArea-1" className="px-4 pb-4">
+      <div id="metronomeBodyArea-1" className="px-2 sm:px-4 sm:pb-4">
         <div id="metronomeBpmArea-1" className="flex flex-col items-center">
           <div id="metronomeBpmDisplay-1">
             <span className="text-7xl font-bold ">{metronome.bpm}</span>
@@ -573,7 +573,7 @@ const Metronome = ({
         <div id="metronomeStatsArea-1" className="mt-3">
           <div
             id="metronomeStopwatchArea-1"
-            className="flex justify-between items-center mt-3"
+            className="flex justify-between items-center mt-3 gap-0"
           >
             <div id="metronomeStopWatchControl-1">
               <input
@@ -628,7 +628,7 @@ const Metronome = ({
               })}
           </div>
         </div>
-        <div className="mt-3 flex justify-end items-center">
+        <div className="my-4 py-4 flex justify-end items-center">
           <div id="metronomeButtonArea-1">
             {!metronome.id && user && (
               <button className="btn btn-outline " onClick={createMetronome}>

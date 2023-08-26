@@ -4,6 +4,7 @@ import { get, remove, update } from '../../../db/user'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import * as bcrypt from 'bcrypt'
+import Link from 'next/link'
 
 export default async function Page() {
   const cookieStore = cookies()
@@ -33,27 +34,49 @@ export default async function Page() {
   }
 
   return (
-    <form action={updatePassword}>
-      <h1 className="font-bold text-lg">Delete account</h1>
-      <p>
-        Enter your password and confirm deletion. This will permanently remove
-        your account and all associated metronomes.{' '}
-      </p>
-      <label className="label">
-        <span className="label-text">Password *</span>
-      </label>
-      <div className="join">
-        <input
-          name="password"
-          type="password"
-          className="input input-bordered join-item"
-          placeholder="**********"
-          required
-        />
-        <button type="submit" className="btn btn-error join-item">
-          Delete account
-        </button>
+    <div className="px-2">
+      <div className="text-sm breadcrumbs ">
+        <ul>
+          <li>
+            <Link href="/metronome/recent" prefetch={false}>
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link href="/account" prefetch={false}>
+              Account
+            </Link>
+          </li>
+          <li>
+            <Link href="/account/delete" prefetch={false}>
+              Delete
+            </Link>
+          </li>
+        </ul>
       </div>
-    </form>
+
+      <form action={updatePassword}>
+        <h1 className="font-bold text-lg">Delete account</h1>
+        <p>
+          Enter your password and confirm deletion. This will permanently remove
+          your account and all associated metronomes.{' '}
+        </p>
+        <label className="label">
+          <span className="label-text">Password *</span>
+        </label>
+        <div className="join">
+          <input
+            name="password"
+            type="password"
+            className="input input-bordered join-item"
+            placeholder="**********"
+            required
+          />
+          <button type="submit" className="btn btn-error join-item">
+            Delete account
+          </button>
+        </div>
+      </form>
+    </div>
   )
 }

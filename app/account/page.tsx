@@ -8,7 +8,21 @@ export default async function Page() {
   const userName = await getUserAttrFromToken<string>(token!.value, 'name')
 
   return (
-    <section>
+    <section className="px-2">
+      <div className="text-sm breadcrumbs ">
+        <ul>
+          <li>
+            <Link href="/metronome/recent" prefetch={false}>
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link href="/account" prefetch={false}>
+              Account
+            </Link>
+          </li>
+        </ul>
+      </div>
       <h1 className="font-bold text-lg">Your Account</h1>
       <div>
         <label className="label">

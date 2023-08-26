@@ -1,6 +1,4 @@
 import { StoredMetronome } from '../../components/metronome/Metronome'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons'
 import MetronomeCard from '../../components/metronomeCard/MetronomeCard'
 import * as metronomeDb from '../../db/metronome'
 import Link from 'next/link'
@@ -9,7 +7,7 @@ import { cookies } from 'next/headers'
 import { getUserAttrFromToken } from '../api/util'
 import { IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react'
 
-const pageSize = 3
+const pageSize = 5
 
 function getOffest(page: number) {
   if (page <= 1) return 0

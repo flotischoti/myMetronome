@@ -9,7 +9,7 @@ export default function Footer() {
     <footer className="footer items-center p-4 bg-neutral text-neutral-content">
       <div className="items-center grid-flow-col-dense">
         <IconCone2 />
-        <p>Copyright © 2023 - All right reserved</p>
+        <p>My Metronome © 2023</p>
       </div>
       <div className="grid-flow-col-dense md:place-self-center md:justify-self-end">
         <a

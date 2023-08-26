@@ -4,6 +4,7 @@ import { get, update } from '../../../../db/user'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import * as bcrypt from 'bcrypt'
+import Link from 'next/link'
 
 export default async function Page() {
   const cookieStore = cookies()
@@ -29,43 +30,64 @@ export default async function Page() {
   }
 
   return (
-    <form action={updatePassword}>
-      <h1 className="font-bold text-lg">Change password</h1>
-      <div>
-        <label className="label">
-          <span className="label-text">Old password *</span>
-        </label>
-        <input
-          name="oldPw"
-          type="password"
-          defaultValue=""
-          className="input input-bordered"
-          required
-        />
-        <label className="label">
-          <span className="label-text">New password *</span>
-        </label>
-        <input
-          name="newPw"
-          type="password"
-          defaultValue=""
-          className="input input-bordered"
-          required
-        />
-        <label className="label">
-          <span className="label-text">New password confirm *</span>
-        </label>
-        <input
-          name="newPwConfirm"
-          type="password"
-          defaultValue=""
-          className="input input-bordered"
-          required
-        />
+    <div className="px-2">
+      <div className="text-sm breadcrumbs ">
+        <ul>
+          <li>
+            <Link href="/metronome/recent" prefetch={false}>
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link href="/account" prefetch={false}>
+              Account
+            </Link>
+          </li>
+          <li>
+            <Link href="/account/delete" prefetch={false}>
+              Edit Password
+            </Link>
+          </li>
+        </ul>
       </div>
-      <button type="submit" className="btn btn-square mt-4">
-        Save
-      </button>
-    </form>
+      <form action={updatePassword}>
+        <h1 className="font-bold text-lg">Change password</h1>
+        <div>
+          <label className="label">
+            <span className="label-text">Old password *</span>
+          </label>
+          <input
+            name="oldPw"
+            type="password"
+            defaultValue=""
+            className="input input-bordered"
+            required
+          />
+          <label className="label">
+            <span className="label-text">New password *</span>
+          </label>
+          <input
+            name="newPw"
+            type="password"
+            defaultValue=""
+            className="input input-bordered"
+            required
+          />
+          <label className="label">
+            <span className="label-text">New password confirm *</span>
+          </label>
+          <input
+            name="newPwConfirm"
+            type="password"
+            defaultValue=""
+            className="input input-bordered"
+            required
+          />
+        </div>
+        <button type="submit" className="btn btn-square mt-4">
+          Save
+        </button>
+      </form>
+    </div>
   )
 }

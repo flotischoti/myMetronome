@@ -3,6 +3,7 @@ import { getJwt, getUserAttrFromToken } from '../../../api/util'
 import { get, update } from '../../../../db/user'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import Link from 'next/link'
 
 export default async function Page() {
   const cookieStore = cookies()
@@ -33,25 +34,46 @@ export default async function Page() {
   }
 
   return (
-    <form action={updateUsername}>
-      <h1 className="font-bold text-lg">Change username</h1>
-      <div>
-        <label className="label">
-          <span className="label-text">Username *</span>
-        </label>
-        <div className="input-group">
-          <input
-            name="username"
-            type="text"
-            defaultValue={userName!}
-            className="input input-bordered"
-            required
-          />
-          <button type="submit" className="btn btn-square">
-            Save
-          </button>
-        </div>
+    <div className="px-2">
+      <div className="text-sm breadcrumbs ">
+        <ul>
+          <li>
+            <Link href="/metronome/recent" prefetch={false}>
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link href="/account" prefetch={false}>
+              Account
+            </Link>
+          </li>
+          <li>
+            <Link href="/account/delete" prefetch={false}>
+              Edit Username
+            </Link>
+          </li>
+        </ul>
       </div>
-    </form>
+      <form action={updateUsername}>
+        <h1 className="font-bold text-lg">Change username</h1>
+        <div>
+          <label className="label">
+            <span className="label-text">Username *</span>
+          </label>
+          <div className="input-group">
+            <input
+              name="username"
+              type="text"
+              defaultValue={userName!}
+              className="input input-bordered"
+              required
+            />
+            <button type="submit" className="btn btn-square">
+              Save
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   )
 }

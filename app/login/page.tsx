@@ -68,13 +68,13 @@ export default function Page() {
   }
 
   return (
-    <section className="flex justify-center items-center">
-      <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-        <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-          <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+    <section className="flex flex-col items-center h-full justify-between">
+      <div className="max-w-sm bg-white rounded-lg shadow">
+        <div className="p-6 space-y-4 sm:space-y-6">
+          <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
             Login
           </h1>
-          <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="label">
                 <span className="label-text">Username *</span>
@@ -118,6 +118,11 @@ export default function Page() {
           </form>
         </div>
       </div>
+
+      <p>
+        By logging in you agree to a single cookie being set to handle the
+        session
+      </p>
     </section>
   )
 }

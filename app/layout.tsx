@@ -25,10 +25,10 @@ export default async function RootLayout({
       <head />
       <body className="drawer drawer-end">
         <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col h-screen justify-between">
-          <div>
+        <div className="drawer-content flex flex-col h-screen justify-between gap-0">
+          <div className="h-full flex flex-col">
             <Navbar isLoggedIn={isLoggedIn} />
-            <main className="container mx-auto py-2">
+            <main className="container mx-auto h-full py-2">
               <Suspense fallback={<Loading />}>{children}</Suspense>
             </main>
           </div>
