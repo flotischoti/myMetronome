@@ -19,7 +19,10 @@ export default async function Page() {
     const updatedUser = await update(user!)
 
     if (updatedUser && updatedUser.name == newUsername) {
-      const newToken = await getJwt(updatedUser.id!, updatedUser.name)
+      const newToken = await getJwt({
+        userId: updatedUser.id!,
+        name: updatedUser.name,
+      })
       revalidatePath('/account')
       cookies().set({
         name: 'token',
@@ -34,7 +37,7 @@ export default async function Page() {
   }
 
   return (
-    <div className="px-2">
+    <div>
       <div className="text-sm breadcrumbs ">
         <ul>
           <li>

@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { getJwt, getUserAttrFromToken } from '../../../api/util'
+import { getUserAttrFromToken } from '../../../api/util'
 import { get, update } from '../../../../db/user'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -30,7 +30,7 @@ export default async function Page() {
   }
 
   return (
-    <div className="px-2">
+    <div>
       <div className="text-sm breadcrumbs ">
         <ul>
           <li>

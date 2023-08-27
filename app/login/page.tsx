@@ -119,9 +119,9 @@ export default function Page() {
         </div>
       </div>
 
-      <p>
+      <p className="text-sm text-center bg-info p-1">
         By logging in you agree to a single cookie being set to handle the
-        session
+        session. It will be deleted after logout or 48 hours of inactivity.
       </p>
     </section>
   )

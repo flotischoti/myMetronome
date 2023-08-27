@@ -29,11 +29,17 @@ export function isEmailValid(email) {
   return true
 }
 
-export async function getJwt(id: number, name: string): Promise<string> {
+export async function getJwt({
+  userId,
+  name,
+}: {
+  userId: number
+  name: string
+}): Promise<string> {
   const secret = new TextEncoder().encode(process.env.TOKEN_KEY!)
   const alg = 'HS256'
 
-  const jwt = await new jose.SignJWT({ userId: id, name })
+  const jwt = await new jose.SignJWT({ userId, name })
     .setProtectedHeader({ alg })
     .setIssuedAt()
     .setExpirationTime('2h')

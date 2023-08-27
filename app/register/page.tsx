@@ -49,7 +49,7 @@ export default function Page() {
   }
 
   return (
-    <section className="flex justify-center items-center">
+    <section className="flex flex-col h-full justify-between items-center">
       <div className="max-w-sm bg-white rounded-lg shadow xl:p-0">
         <div className="p-6 space-y-4 sm:space-y-6">
           <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
@@ -99,6 +99,10 @@ export default function Page() {
           </form>
         </div>
       </div>
+      <p className="text-sm text-center bg-emerald-100 p-1">
+        By signing up you agree to a single cookie being set to handle the
+        session. It will be deleted after logout or 48 hours of inactivity.
+      </p>
     </section>
   )
 }

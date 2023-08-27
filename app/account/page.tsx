@@ -8,7 +8,7 @@ export default async function Page() {
   const userName = await getUserAttrFromToken<string>(token!.value, 'name')
 
   return (
-    <section className="px-2">
+    <section>
       <div className="text-sm breadcrumbs ">
         <ul>
           <li>

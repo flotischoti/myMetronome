@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const user = await userDb.get(name)
 
   if (user && (await bcrypt.compare(password, user.password))) {
-    user.token = await utils.getJwt(user.id!, name)
+    user.token = await utils.getJwt({ userId: user.id!, name })
     return NextResponse.json(user, {
       status: 200,
       headers: {

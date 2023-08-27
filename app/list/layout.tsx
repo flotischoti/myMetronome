@@ -5,5 +5,5 @@ export default function ListLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <section className="px-2">{children}</section>
+  return <section>{children}</section>
 }
