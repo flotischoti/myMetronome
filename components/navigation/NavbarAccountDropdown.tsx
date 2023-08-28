@@ -13,16 +13,20 @@ export default function NavbarAccountDropdown() {
   return (
     <ul
       tabIndex={0}
-      className="menu menu-sm dropdown-content mt-1 z-[1] p-2 shadow bg-base-100 rounded-box w-26"
+      className="menu menu-sm dropdown-content mt-1 z-[1] p-2 shadow bg-base-100 rounded-box w-fit"
       onClick={handleClick}
     >
       <li>
-        <Link prefetch={false} href="/login">
+        <Link prefetch={false} href="/login" className="justify-end">
           Login
         </Link>
       </li>
       <li>
-        <Link prefetch={false} href="/register">
+        <Link
+          prefetch={false}
+          href="/register"
+          className="justify-end whitespace-nowrap"
+        >
           Sign up
         </Link>
       </li>

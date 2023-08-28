@@ -6,8 +6,15 @@ import * as bcrypt from 'bcrypt'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const { name, password }: { name: string; password: string } =
-    await request.json()
+  const {
+    name,
+    password,
+    email,
+  }: {
+    name: string
+    password: string
+    email: string | undefined
+  } = await request.json()
 
   if (!name || !password) {
     return NextResponse.json(
@@ -35,7 +42,16 @@ export async function POST(request: Request) {
   const user: userDb.User = await userDb.create({
     name,
     password: encryptedPw,
+    email,
   })
+
+  // if (email) {
+  //   const verificationToken = await utils.getJwt(
+  //     { userId: user.id!, name },
+  //     '10m'
+  //   )
+  //   utils.sendVerificationMail(user, verificationToken)
+  // }
 
   user.token = await utils.getJwt({ userId: user.id!, name })
 

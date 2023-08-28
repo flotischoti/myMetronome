@@ -1,4 +1,6 @@
 import * as jose from 'jose'
+import { User } from '../../db/user'
+import { createTransport } from 'nodemailer'
 
 export function getErrorResponse(text: string) {
   return { text }
@@ -29,20 +31,23 @@ export function isEmailValid(email) {
   return true
 }
 
-export async function getJwt({
-  userId,
-  name,
-}: {
-  userId: number
-  name: string
-}): Promise<string> {
+export async function getJwt(
+  {
+    userId,
+    name,
+  }: {
+    userId: number
+    name: string
+  },
+  expiresIn = '2h'
+): Promise<string> {
   const secret = new TextEncoder().encode(process.env.TOKEN_KEY!)
   const alg = 'HS256'
 
   const jwt = await new jose.SignJWT({ userId, name })
     .setProtectedHeader({ alg })
     .setIssuedAt()
-    .setExpirationTime('2h')
+    .setExpirationTime(expiresIn)
     .setIssuer('flotischoti')
     .sign(secret)
 
@@ -83,3 +88,39 @@ export async function getUserAttrFromToken<T = number>(
 
   return decodedToken ? (decodedToken[attr] as T) : null
 }
+
+// export async function sendVerificationMail(
+//   { name, email }: User,
+//   token: string
+// ) {
+//   const transporter = createTransport({
+//     service: 'gmail',
+//     auth: {
+//       user: '',
+//       pass: '',
+//     },
+//   })
+
+//   const mailConfigurations = {
+//     // It should be a string of sender/server email
+//     from: '',
+
+//     to: email,
+
+//     // Subject of Email
+//     subject: 'My Metronome | Email Verification',
+
+//     // This would be the text of email body
+//     text: `Hi ${name}!, You have recently visited
+//            our website and entered your email.
+//            Please follow the given link to verify your email
+//            http://localhost:3000/auth/verify/${token}
+//            Thanks`,
+//   }
+
+//   transporter.sendMail(mailConfigurations, function (error, info) {
+//     if (error) throw Error(error)
+//     console.log('Email Sent Successfully')
+//     console.log(info)
+//   })
+// }

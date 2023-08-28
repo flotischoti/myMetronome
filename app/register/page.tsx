@@ -70,6 +70,23 @@ export default function Page() {
               />
             </div>
             <div>
+              <label htmlFor="email" className="label">
+                <span className="label-text">Recovery Email</span>
+              </label>
+              <input
+                type="text"
+                name="email"
+                id="email"
+                className="input input-bordered w-full"
+                placeholder="Your Email"
+              />
+              <label className="label">
+                <span className="label-text-alt">
+                  Optional. Only needed to recover password.
+                </span>
+              </label>
+            </div>
+            <div>
               <label htmlFor="password" className="label">
                 <span className="label-text">Password *</span>
               </label>
@@ -101,7 +118,7 @@ export default function Page() {
       </div>
       <p className="text-sm text-center bg-emerald-100 p-1">
         By signing up you agree to a single cookie being set to handle the
-        session. It will be deleted after logout or 48 hours of inactivity.
+        session. It will expire after logout or 48 hours of inactivity.
       </p>
     </section>
   )

@@ -75,7 +75,7 @@ const Metronome = ({
     ...defaultLocalMetronome,
   })
   const [tapTimes, setTapTimes] = useState<number[]>([])
-  const [currentBeatInBar, setCurrentBeatInBar] = useState<number>(-1)
+  const currentBeatInBar = useRef<number>(-1)
   const [saveState, setSaveState] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isCreating, setIsCreating] = useState(false)
@@ -102,13 +102,13 @@ const Metronome = ({
     }
   }, [])
 
-  useEffect(() => {
-    if (metronome.isPlaying) {
-      if (schedulerIntervalId.current)
-        clearInterval(schedulerIntervalId.current)
-      schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
-    }
-  }, [nextNoteTime.current])
+  // useEffect(() => {
+  //   if (metronome.isPlaying) {
+  //     if (schedulerIntervalId.current)
+  //       clearInterval(schedulerIntervalId.current)
+  //     schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
+  //   }
+  // }, [nextNoteTime.current])
 
   useEffect(() => {
     if (metronome.isPlaying) {
@@ -137,7 +137,7 @@ const Metronome = ({
     const osc = audioContext.current.createOscillator()
     const envelope = audioContext.current.createGain()
     osc.frequency.value =
-      currentBeatInBar == 0 && metronome.stressFirst ? 1000 : 800
+      currentBeatInBar.current == 0 && metronome.stressFirst ? 1000 : 800
     envelope.gain.value = 1
     envelope.gain.exponentialRampToValueAtTime(1, time + 0.001)
     envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02)
@@ -156,9 +156,10 @@ const Metronome = ({
       nextNoteTime.current <
       audioContext.current.currentTime + scheduleAheadTime
     ) {
-      nextNoteTime.current += secondsPerBeat
       scheduleNote()
-      setCurrentBeatInBar((currentBeatInBar + 1) % metronome.beats)
+      nextNoteTime.current += secondsPerBeat
+      currentBeatInBar.current =
+        (currentBeatInBar.current + 1) % metronome.beats
     }
   }
 
@@ -166,7 +167,7 @@ const Metronome = ({
     if (!audioContext.current) {
       return
     }
-    setCurrentBeatInBar(0)
+    currentBeatInBar.current = 0
     nextNoteTime.current = audioContext.current.currentTime
     schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
   }
@@ -238,7 +239,7 @@ const Metronome = ({
     if (metronome.isPlaying) {
       pause()
       clearInterval(timeInterval.current)
-      setCurrentBeatInBar(0)
+      currentBeatInBar.current = 0
       autosave()
     } else {
       play()
@@ -419,7 +420,7 @@ const Metronome = ({
           />
         )}
       </div>
-      <div id="metronomeBodyArea-1" className="px-2 sm:px-4 sm:pb-4">
+      <div id="metronomeBodyArea-1" className="px-2 sm:px-4">
         <div id="metronomeBpmArea-1" className="flex flex-col items-center">
           <div id="metronomeBpmDisplay-1">
             <span className="text-7xl font-bold ">{metronome.bpm}</span>
