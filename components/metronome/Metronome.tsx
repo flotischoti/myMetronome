@@ -1,6 +1,14 @@
 'use client'
-
-import { ChangeEvent, MouseEvent, useEffect, useState, useRef } from 'react'
+import { experimental_useFormStatus as useFormStatus } from 'react-dom'
+import { cookies } from 'next/headers'
+import {
+  ChangeEvent,
+  MouseEvent,
+  useEffect,
+  useState,
+  useRef,
+  useTransition,
+} from 'react'
 import styles from './metronome.module.scss'
 import { useRouter } from 'next/navigation'
 import {
@@ -12,6 +20,8 @@ import {
   IconPlus,
   IconTrash,
 } from '@tabler/icons-react'
+
+import { createMetronomeAction, deleteMetronomeAction } from '../../app/actions'
 
 export interface StoredMetronome {
   id?: number
@@ -64,9 +74,11 @@ const defaultLocalMetronome: LocalMetronomeSettings = {
 const Metronome = ({
   dbMetronome,
   user,
+  command,
 }: {
   dbMetronome: StoredMetronome | null
   user: number | null
+  command: string | undefined
 }) => {
   const m = dbMetronome ? dbMetronome : defaultStoredMetronome
   const [isEditTitle, setEditTitle] = useState(false)
@@ -77,8 +89,8 @@ const Metronome = ({
   const [tapTimes, setTapTimes] = useState<number[]>([])
   const currentBeatInBar = useRef<number>(-1)
   const [saveState, setSaveState] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
-  const [isCreating, setIsCreating] = useState(false)
+  const [tostMessage, setToastMessage] = useState('')
+  const [isDoingSomething, setIsDoingSomething] = useState(false)
   const bpmIncreaseState = useRef(null as unknown as NodeJS.Timer)
   const bpmDecreaseState = useRef(null as unknown as NodeJS.Timer)
   const autoSaveTimer = useRef(null as unknown as NodeJS.Timer)
@@ -86,12 +98,24 @@ const Metronome = ({
   const audioContext = useRef<AudioContext | null>(null)
   const nextNoteTime = useRef<number>(0)
   const schedulerIntervalId = useRef<ReturnType<typeof setTimeout> | null>(null)
+  let [pendingSave, startTransitionSave] = useTransition()
+  let [pendingDelete, startTransitionDelete] = useTransition()
 
   const router = useRouter()
 
   useEffect(() => {
     const AudioContext = window.AudioContext || window.webkitAudioContext
     audioContext.current = new AudioContext()
+
+    switch (command) {
+      case 'created':
+        setSuccessState(`Metronome created`, 'success')
+        break
+      case 'deleted':
+        setSuccessState(`Metronome deleted`, 'success')
+        break
+    }
+
     return () => {
       if (audioContext.current) {
         audioContext.current.close()
@@ -109,6 +133,26 @@ const Metronome = ({
   //     schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
   //   }
   // }, [nextNoteTime.current])
+
+  useEffect(() => {
+    if (pendingSave) {
+      setIsDoingSomething(true)
+      setSuccessState('Saving', 'info')
+    } else {
+      if (isDoingSomething) setSuccessState('Something went wrong', 'error')
+      setIsDoingSomething(false)
+    }
+  }, [pendingSave])
+
+  useEffect(() => {
+    if (pendingDelete) {
+      setIsDoingSomething(true)
+      setSuccessState('Deleting', 'info')
+    } else {
+      if (isDoingSomething) setSuccessState('Deletion failed', 'error')
+      setIsDoingSomething(false)
+    }
+  }, [pendingDelete])
 
   useEffect(() => {
     if (metronome.isPlaying) {
@@ -291,8 +335,7 @@ const Metronome = ({
   }
 
   const updateMetronome = async () => {
-    if (user) {
-      console.log(`saving`)
+    if (user && !isDoingSomething) {
       const res = await fetch(`/api/metronomes/${metronome.id}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -300,24 +343,19 @@ const Metronome = ({
         method: 'PUT',
         body: JSON.stringify(metronome),
       })
-        .then((res) => {
-          setSaveState('success')
-          return res.json()
+
+      if (res.status == 201) {
+        setSuccessState('Autosaved', 'success')
+        setMetronome({
+          ...(await res.json()),
+          currentUsed: metronome.currentUsed,
+          sessionUsed: metronome.sessionUsed,
+          isPlaying: metronome.isPlaying,
+          activeTimer: metronome.activeTimer,
         })
-        .catch(() => {
-          setSaveState('error')
-          setErrorMessage('Autosave failed')
-        })
-      setMetronome({
-        ...res,
-        currentUsed: metronome.currentUsed,
-        sessionUsed: metronome.sessionUsed,
-        isPlaying: metronome.isPlaying,
-        activeTimer: metronome.activeTimer,
-      })
-      setTimeout(() => {
-        setSaveState('')
-      }, 2000)
+      } else {
+        setSuccessState('Autosave failed', 'error')
+      }
     }
   }
 
@@ -359,9 +397,9 @@ const Metronome = ({
     }
   }
 
-  const setError = (message: string) => {
-    setErrorMessage(message)
-    setSaveState('error')
+  const setSuccessState = (message: string, type: string) => {
+    setToastMessage(message)
+    setSaveState(type)
     setTimeout(() => {
       setSaveState('')
     }, 2000)
@@ -369,36 +407,32 @@ const Metronome = ({
 
   const createMetronome = async () => {
     if (!metronome.name || metronome.name.trim() == '') {
-      setError('Provide a name')
+      setSuccessState('Provide a name', 'error')
     } else {
-      if (user) {
-        setIsCreating(true)
-        const res = await fetch(`/api/metronomes`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-          body: JSON.stringify(metronome),
-        })
-          .then((res) => res.json())
-          .finally(() => setIsCreating(false))
-        router.push(`/metronome/${res.id}`)
-      }
+      startTransitionSave(() => {
+        createMetronomeAction(metronome)
+      })
     }
   }
 
   const deleteMetronome = async () => {
     if (user) {
-      await fetch(`/api/metronomes/${metronome.id}`, {
-        method: 'DELETE',
+      startTransitionDelete(() => {
+        deleteMetronomeAction(metronome.id!)
       })
-        .then(() => router.push('/'))
-        .catch(async (res) => console.log(await res.json()))
+      // const res = await fetch(`/api/metronomes/${metronome.id}`, {
+      //   method: 'DELETE',
+      // })
+      // if (res.status == 200) {
+      //   router.push('/metronome/new')
+      // } else {
+
+      // }
     }
   }
 
   return (
-    <section className="max-w-sm mx-auto select-none shadow">
+    <form className="max-w-sm mx-auto select-none shadow">
       <div id="metronomeTitleArea-1" className="p-2">
         {!isEditTitle ? (
           <div onClick={() => setEditTitle(true)} className="flex items-center">
@@ -632,8 +666,13 @@ const Metronome = ({
         <div className="my-4 py-4 flex justify-end items-center">
           <div id="metronomeButtonArea-1">
             {!metronome.id && user && (
-              <button className="btn btn-outline " onClick={createMetronome}>
-                {isCreating ? (
+              <button
+                className={`btn btn-outline ${
+                  isDoingSomething ? 'btn-disabled' : 'btn-active'
+                }`}
+                formAction={createMetronome}
+              >
+                {isDoingSomething ? (
                   <span className="loading loading-spinner loading-xs"></span>
                 ) : (
                   <IconDeviceFloppy size="16" />
@@ -643,29 +682,38 @@ const Metronome = ({
             )}
             {metronome.id && (
               <button
-                className="btn btn-outline btn-error"
-                onClick={deleteMetronome}
+                className={`btn btn-outline btn-error ${
+                  isDoingSomething ? 'btn-disabled' : 'btn-active'
+                }`}
+                formAction={deleteMetronome}
               >
-                <IconTrash size="16" />
+                {isDoingSomething ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <IconTrash size="16" />
+                )}
                 Delete
               </button>
             )}
           </div>
         </div>
       </div>
-      <div className="toast toast-end">
-        {saveState == 'error' && (
-          <div className="alert alert-error">
-            <span>{errorMessage}</span>
+      {saveState != '' && (
+        <div className="toast toast-end">
+          <div
+            className={`alert ${
+              saveState == 'success'
+                ? 'alert-success'
+                : saveState == 'error'
+                ? 'alert-error'
+                : 'alert-info'
+            } `}
+          >
+            <span>{tostMessage}</span>
           </div>
-        )}
-        {saveState == 'success' && (
-          <div className="alert alert-success">
-            <span>Autosaved</span>
-          </div>
-        )}
-      </div>
-    </section>
+        </div>
+      )}
+    </form>
   )
 }
 

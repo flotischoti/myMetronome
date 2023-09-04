@@ -21,14 +21,18 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const cookieStore = cookies()
   const token = cookieStore.get('token')
+  const command = cookieStore.get('command')
   const userId = await getUserAttrFromToken(token!.value)
-
   const lastMetronome: StoredMetronome[] = await getLastMetronome(userId!)
   if (!lastMetronome || lastMetronome.length != 1) redirect(`/metronome/new`)
 
   return (
     <div>
-      <Metronome dbMetronome={lastMetronome[0]} user={userId} />
+      <Metronome
+        dbMetronome={lastMetronome[0]}
+        user={userId}
+        command={command?.value}
+      />
     </div>
   )
 }

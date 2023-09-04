@@ -1,4 +1,5 @@
 import * as metronomeDb from '../../../../db/metronome'
+import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   isValidNumber,
@@ -121,9 +122,17 @@ export async function DELETE(
   }
 
   let success = await metronomeDb.deleteMetronome(Number(metronomeId))
+  if (success) {
+    cookies().set({
+      name: 'command',
+      value: 'deleted',
+      expires: Date.now() + 5000,
+    })
+  }
   const status = success ? 200 : 500
   const message = success
     ? {}
     : { message: `Error deleting metronome with Id: ${params.metronomeId}` }
+
   return NextResponse.json(message, { status })
 }

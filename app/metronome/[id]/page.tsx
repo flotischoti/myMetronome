@@ -5,7 +5,10 @@ import { cookies } from 'next/headers'
 import { getUserAttrFromToken, isValidNumber } from '../../api/util'
 import * as metronomeDb from '../../../db/metronome'
 
-async function getMetronome(metronomeId: string, userId: number) {
+async function getMetronome(
+  metronomeId: string,
+  userId: number
+): Promise<StoredMetronome> {
   console.log(
     `Page. Loading Metronome. Metronome Id: ${metronomeId} for user ${userId}`
   )
@@ -31,13 +34,18 @@ async function getMetronome(metronomeId: string, userId: number) {
 export default async function Page({ params }: { params: { id: string } }) {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
+  const command = cookieStore.get('command')
   const userId = await getUserAttrFromToken(token!.value)
 
   let metronome: StoredMetronome = await getMetronome(params.id, userId!)
 
   return (
     <div>
-      <Metronome dbMetronome={metronome} user={userId} />
+      <Metronome
+        dbMetronome={metronome}
+        user={userId}
+        command={command?.value}
+      />
     </div>
   )
 }
