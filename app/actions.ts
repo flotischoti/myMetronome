@@ -2,47 +2,106 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
+import * as bcrypt from 'bcrypt'
 import { getErrorResponse, getUserAttrFromToken } from './api/util'
 import * as metronomeDb from '../db/metronome'
 import { StoredMetronome } from '../components/metronome/Metronome'
 import { NextResponse } from 'next/server'
+import * as userDb from '../db/user'
+import * as utils from './api/util'
+
+export async function signupServerAction(formData: FormData) {
+  const { name, password, email, target } = {
+    name: formData.get('name')?.toString(),
+    password: formData.get('password')?.toString(),
+    email: formData.get('email')?.toString(),
+    target: formData.get('target')?.toString(),
+  }
+
+  if (!name || !password) {
+    return { text: 'Password or name missing' }
+  }
+
+  // if (!utils.isEmailValid(email)) {
+  //   return NextResponse.json(utils.getErrorResponse(`Invalid email`), {
+  //     status: 400,
+  //   })
+  // }
+
+  const oldUser = await userDb.get(name)
+
+  if (oldUser) {
+    return { text: 'User already exists' }
+  }
+
+  const encryptedPw = await bcrypt.hash(password, 10)
+
+  const user: userDb.User = await userDb.create({
+    name,
+    password: encryptedPw,
+    email: undefined,
+  })
+
+  // if (email) {
+  //   const verificationToken = await utils.getJwt(
+  //     { userId: user.id!, name },
+  //     '10m'
+  //   )
+  //   utils.sendVerificationMail(user, verificationToken)
+  // }
+
+  user.token = await utils.getJwt({ userId: user.id!, name })
+
+  cookies().set({
+    name: 'token',
+    value: user.token!,
+    path: '/',
+    secure: true,
+    httpOnly: true,
+    sameSite: 'lax',
+  })
+  revalidatePath('/')
+  redirect(target ? target : `/metronome/new`)
+}
 
 export async function loginServerAction(formData: FormData) {
   console.log(`Executing loginServerAction`)
-  const data = {
-    email: formData.get('email'),
-    password: formData.get('password'),
+  const { name, password, target } = {
+    name: formData.get('name')?.toString(),
+    password: formData.get('password')?.toString(),
+    target: formData.get('redirect')?.toString(),
   }
 
-  const response = await fetch(`http://localhost:3000/api/auth/login/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
+  if (!name || !password) {
+    return { text: `Password or name missing`, status: 400 }
+  }
+
+  const user = await userDb.get(name)
+
+  if (!user) {
+    return { text: `User not found` }
+  }
+
+  if (!(await bcrypt.compare(password, user.password))) {
+    return { text: `Credentials wrong` }
+  }
+
+  user.token = await utils.getJwt({ userId: user.id!, name })
+  cookies().set({
+    name: 'token',
+    value: user.token!,
+    path: '/',
+    secure: true,
+    httpOnly: true,
+    sameSite: 'lax',
   })
-
-  const result = await response.json()
-
-  if (response.status == 200) {
-    // revalidatePath('/')
-
-    cookies().set({
-      name: 'token',
-      value: result.token,
-      path: '/',
-      secure: true,
-      httpOnly: true,
-      sameSite: 'lax',
-    })
-  }
-
-  return { status: response.status, text: result.text }
+  revalidatePath('/')
+  redirect(target ? target : `/metronome/recent`)
+  return { status: 500, text: 'An error occured during login' }
 }
 
 export async function logoutServerAction() {
-  // revalidatePath('/')
-
+  console.log('LOGUT SERVER ACTION')
   cookies().set({
     name: 'token',
     value: 'abc',
@@ -52,8 +111,8 @@ export async function logoutServerAction() {
     sameSite: 'lax',
     expires: 0,
   })
-
-  return { status: 204, text: '' }
+  revalidatePath('/')
+  redirect('/')
 }
 
 export async function createMetronomeAction(metronome: StoredMetronome) {

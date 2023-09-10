@@ -1,70 +1,24 @@
 'use client'
 
 import Link from 'next/link'
-import { FormEvent, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useTransition } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { loginServerAction } from '../actions'
-
-interface FormElements extends HTMLFormControlsCollection {
-  name: HTMLInputElement
-  password: HTMLInputElement
-}
-interface LoginFormElement extends HTMLFormElement {
-  readonly elements: FormElements
-}
+import { IconLogin } from '@tabler/icons-react'
 
 export default function Page() {
   const [error, setError] = useState('')
-  const router = useRouter()
   const searchParams = useSearchParams()
   const targetUrl = searchParams.get('target')
-
-  async function handleSubmit(e: FormEvent<LoginFormElement>) {
-    e.preventDefault()
-
-    const data = {
-      name: e.currentTarget.elements.name.value,
-      password: e.currentTarget.elements.password.value,
-    }
-
-    const response = await fetch(`/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-
-    const result = await response.json()
-
-    if (response.status != 200) {
-      setError(result.text)
-      return
-    }
-
-    // await fetch(`/api/revalidate`, {
-    //   cache: 'no-store',
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ path: '/' }),
-    // })
-
-    router.refresh()
-
-    router.push(targetUrl ? targetUrl : `/metronome/recent`)
-  }
+  let [pendingLogin, startTransitionLogin] = useTransition()
 
   async function callLoginServerAction(formData: FormData) {
     console.log(`Calling loginServerAction from Client Component`)
-    const { status, text } = await loginServerAction(formData)
-    if (status == 200) {
-      const targetUrl = searchParams.get('target')
-      router.push(targetUrl ? targetUrl : `/metronome/recent`)
-    }
-    setError(text)
+    startTransitionLogin(() => {
+      loginServerAction(formData).then((res) => {
+        if (res) setError(res.text!)
+      })
+    })
   }
 
   return (
@@ -74,7 +28,15 @@ export default function Page() {
           <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
             Login
           </h1>
-          <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
+          <form
+            className="space-y-4 sm:space-y-6"
+            action={callLoginServerAction}
+          >
+            <input
+              type="hidden"
+              name="target"
+              value={searchParams.get('target') || ''}
+            />
             <div>
               <label htmlFor="name" className="label">
                 <span className="label-text">Username *</span>
@@ -101,7 +63,17 @@ export default function Page() {
                 required={true}
               />
             </div>
-            <button type="submit" className="btn btn-primary w-full">
+            <button
+              type="submit"
+              className={`btn ${
+                pendingLogin ? 'btn-disabled' : 'btn-primary'
+              } w-full`}
+            >
+              {pendingLogin ? (
+                <span className="loading loading-spinner loading-xs" />
+              ) : (
+                <IconLogin />
+              )}
               Login
             </button>
             {error && <span className="mt-4 text-red-600">{error}</span>}

@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
+import { signupServerAction } from '../actions'
+import { IconUserPlus } from '@tabler/icons-react'
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement
@@ -19,6 +21,7 @@ export default function Page() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const targetUrl = searchParams.get('target')
+  let [pendingSignup, startTransitionSignup] = useTransition()
 
   async function handleSubmit(e: FormEvent<LoginFormElement>) {
     e.preventDefault()
@@ -48,6 +51,15 @@ export default function Page() {
     router.push(targetUrl ? targetUrl : `/metronome/new`)
   }
 
+  async function callSignupServerAction(formData: FormData) {
+    console.log(`Calling signupServerAction from Client Component`)
+    startTransitionSignup(() => {
+      signupServerAction(formData).then((res) => {
+        if (res) setError(res.text!)
+      })
+    })
+  }
+
   return (
     <section className="flex flex-col h-full justify-between items-center">
       <div className="max-w-sm bg-white rounded-lg shadow xl:p-0">
@@ -55,7 +67,12 @@ export default function Page() {
           <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
             Create an account
           </h1>
-          <form className="space-y-4" onSubmit={handleSubmit}>
+          <form className="space-y-4" action={callSignupServerAction}>
+            <input
+              type="hidden"
+              name="target"
+              value={searchParams.get('target') || ''}
+            />
             <div>
               <label htmlFor="name" className="label">
                 <span className="label-text">Username *</span>
@@ -99,7 +116,17 @@ export default function Page() {
                 required={true}
               />
             </div>
-            <button type="submit" className="btn btn-primary w-full">
+            <button
+              type="submit"
+              className={`btn ${
+                pendingSignup ? 'btn-disabled' : 'btn-primary'
+              } w-full`}
+            >
+              {pendingSignup ? (
+                <span className="loading loading-spinner loading-xs" />
+              ) : (
+                <IconUserPlus />
+              )}
               Create an account
             </button>
             {error && <span className="mt-4 text-red-600">{error}</span>}

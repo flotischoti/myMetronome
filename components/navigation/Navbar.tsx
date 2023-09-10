@@ -42,12 +42,12 @@ export default function Navbar({ isLoggedIn }) {
               <NavbarAccountDropdown />
             </div>
             <div className="hidden sm:flex">
-              <Link prefetch={false} href="/login" className="link link-hover">
+              <Link prefetch={true} href="/login" className="link link-hover">
                 Login
               </Link>
               <div className="divider divider-horizontal mx-1"></div>
               <Link
-                prefetch={false}
+                prefetch={true}
                 href="/register"
                 className="link link-hover"
               >
