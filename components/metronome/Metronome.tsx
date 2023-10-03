@@ -418,16 +418,8 @@ const Metronome = ({
   const deleteMetronome = async () => {
     if (user) {
       startTransitionDelete(() => {
-        deleteMetronomeAction(metronome.id!)
+        deleteMetronomeAction(metronome.id!, '/metronome/new')
       })
-      // const res = await fetch(`/api/metronomes/${metronome.id}`, {
-      //   method: 'DELETE',
-      // })
-      // if (res.status == 200) {
-      //   router.push('/metronome/new')
-      // } else {
-
-      // }
     }
   }
 

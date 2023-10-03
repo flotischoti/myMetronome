@@ -11,7 +11,7 @@ export default async function Page() {
   const token = cookieStore.get('token')
   const userName = await getUserAttrFromToken<string>(token!.value, 'name')
 
-  async function updatePassword(data: FormData) {
+  async function deleteUser(data: FormData) {
     'use server'
     const oldPw = data.get('password')!.toString()
     const user = await get(userName!)
@@ -55,7 +55,7 @@ export default async function Page() {
         </ul>
       </div>
 
-      <form action={updatePassword}>
+      <form action={deleteUser}>
         <h1 className="font-bold text-lg">Delete account</h1>
         <p>
           Enter your password and confirm deletion. This will permanently remove

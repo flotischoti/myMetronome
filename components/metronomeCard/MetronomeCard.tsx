@@ -2,28 +2,58 @@
 
 import { StoredMetronome } from '../metronome/Metronome'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { MouseEvent, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { IconTrash } from '@tabler/icons-react'
+import { experimental_useFormState as useFormState } from 'react-dom'
+import { experimental_useFormStatus as useFormStatus } from 'react-dom'
+import { deleteMetronomeAction } from '../../app/actions'
 
-const MetronomeCard = ({ metronome }: { metronome: StoredMetronome }) => {
-  const router = useRouter()
+const initialState = {
+  message: null,
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button type="submit" className="hover:drop-shadow-xl mr-2">
+      {pending ? (
+        <span className="loading loading-spinner loading-md" />
+      ) : (
+        <IconTrash className="hover:cursor-pointer" />
+      )}
+    </button>
+  )
+}
+
+const MetronomeCard = ({
+  metronome,
+  command,
+}: {
+  metronome: StoredMetronome
+  command: string | undefined
+}) => {
   const [showToast, setShowToast] = useState(false)
+  const [tostMessage, setToastMessage] = useState('')
+  const deleteMetronomeFromCard = deleteMetronomeAction.bind(
+    null,
+    metronome.id,
+    usePathname()
+  )
+  const [state, formAction] = useFormState(
+    deleteMetronomeFromCard,
+    initialState
+  )
 
-  async function handleDelete(e: MouseEvent<HTMLElement>) {
-    e.stopPropagation()
-    await fetch(`/api/metronomes/${metronome.id}`, {
-      method: 'DELETE',
-    })
-      .then(() => router.refresh())
-      .then(() => {
-        setShowToast(true)
-        setTimeout(() => {
-          setShowToast(false)
-        }, 3000)
-      })
-      .catch(async (res) => console.log(await res.json()))
-  }
+  useEffect(() => {
+    if (command == 'deleted') {
+      setShowToast(true)
+      setToastMessage('Metronome deleted')
+      setTimeout(() => {
+        setShowToast(false)
+      }, 2000)
+    }
+  }, [])
 
   return (
     <>
@@ -46,18 +76,27 @@ const MetronomeCard = ({ metronome }: { metronome: StoredMetronome }) => {
               <p className="font-normal text-gray-700">{metronome.bpm} bpm</p>
             </Link>
             <div className="divider divider-horizontal mx-0"></div>
-            <div id="controls" className="flex items-center p-4">
-              <div className="hover:drop-shadow-xl mr-2" onClick={handleDelete}>
-                <IconTrash className="hover:cursor-pointer" />
-              </div>
-            </div>
+            <form
+              id="controls"
+              action={formAction}
+              className="flex items-center p-4"
+            >
+              <SubmitButton />
+            </form>
           </div>
         </div>
       </div>
       {showToast && (
         <div className="toast">
           <div className="alert alert-success">
-            <span>Metronome deleted</span>
+            <span>{tostMessage}</span>
+          </div>
+        </div>
+      )}
+      {state?.message && (
+        <div className="toast">
+          <div className="alert alert-error">
+            <span>{state.message}</span>
           </div>
         </div>
       )}

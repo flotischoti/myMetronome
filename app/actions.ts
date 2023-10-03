@@ -133,7 +133,10 @@ export async function createMetronomeAction(metronome: StoredMetronome) {
   }
 }
 
-export async function deleteMetronomeAction(metronomeId: number) {
+export async function deleteMetronomeAction(
+  metronomeId: number,
+  targetPath: string
+) {
   const token = cookies().get('token')?.value
   const userId = await getUserAttrFromToken(token!)
 
@@ -162,10 +165,9 @@ export async function deleteMetronomeAction(metronomeId: number) {
       expires: Date.now() + 3000,
     })
     revalidatePath('/')
-    redirect(`/metronome/new`)
+    redirect(targetPath)
   }
   return {
-    status: 500,
-    message: `Error deleting metronome with Id: ${metronomeId}`,
+    message: `Error deleting metronome`,
   }
 }

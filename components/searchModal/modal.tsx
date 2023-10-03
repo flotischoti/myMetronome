@@ -2,7 +2,7 @@ import ModalSearch from './modalSearch'
 
 export default function Modal() {
   return (
-    <dialog id="my_modal_2" className="modal modal-top">
+    <dialog id="my_modal_2" className="modal modal-top max-w-lg mx-auto">
       <form method="dialog" className="modal-box">
         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
           ✕

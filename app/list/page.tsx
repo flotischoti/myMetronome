@@ -27,6 +27,7 @@ async function getMetronomes(
 export default async function Page({ searchParams }) {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
+  const command = cookieStore.get('command')
   const userId = await getUserAttrFromToken(token!.value)
   let { page = 1, s = '' } = searchParams
   const [count, metronomes] = await getMetronomes(userId!, page, s)
@@ -48,7 +49,7 @@ export default async function Page({ searchParams }) {
       </div>
 
       {metronomes.map((m, i) => (
-        <MetronomeCard key={i} metronome={m} />
+        <MetronomeCard key={i} metronome={m} command={command?.value} />
       ))}
       {page <= maxPage && (
         <div className="realtive flex justify-center items-center mt-8">
