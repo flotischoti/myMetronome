@@ -50,6 +50,7 @@ export default function Page() {
                   className="input input-bordered w-full"
                   placeholder="Your Username"
                   required={true}
+                  autoFocus
                 />
               </div>
               <div>
