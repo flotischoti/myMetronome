@@ -18,7 +18,6 @@ import {
 } from '@tabler/icons-react'
 
 import { createMetronomeAction, deleteMetronomeAction } from '../../app/actions'
-import Link from 'next/link'
 
 export interface StoredMetronome {
   id?: number
@@ -41,7 +40,6 @@ interface LocalMetronomeSettings {
   activeTimer: number
 }
 
-const ts: number[] = []
 const maxBpm = 300
 const minBpm = 20
 const timerChangeInterval = 30000
@@ -90,11 +88,17 @@ const Metronome = ({
   const [isDoingSomething, setIsDoingSomething] = useState(false)
   const doChangeBpm = useRef(true)
   const changeBpmClickVerifier = useRef(0)
-  const autoSaveTimer = useRef(null as unknown as NodeJS.Timer)
-  const timeInterval = useRef(null as unknown as NodeJS.Timer)
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  )
+  const timeInterval = useRef<ReturnType<typeof setInterval> | undefined>(
+    undefined
+  )
   const audioContext = useRef<AudioContext | null>(null)
   const nextNoteTime = useRef<number>(0)
-  const schedulerIntervalId = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const schedulerIntervalId = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  )
   let [pendingSave, startTransitionSave] = useTransition()
   let [pendingDelete, startTransitionDelete] = useTransition()
 
@@ -259,7 +263,7 @@ const Metronome = ({
     clearInterval(timeInterval.current)
     currentBeatInBar.current = 0
     nextNoteTime.current = 0
-    if (schedulerIntervalId.current) clearInterval(schedulerIntervalId.current)
+    clearInterval(schedulerIntervalId.current)
   }
 
   const autosave = () => {

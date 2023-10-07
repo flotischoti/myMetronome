@@ -5,5 +5,5 @@ export default function ListLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <section>{children}</section>
+  return <section className="max-w-xl mx-auto">{children}</section>
 }

@@ -68,12 +68,31 @@ const MetronomeCard = ({
               className="w-full py-4 px-6"
               prefetch={false}
             >
-              <div id="info" className="card-title">
+              <div id="cardTitle" className="card-title">
                 <h5 className="text-1xl font-bold tracking-tight text-gray-900">
                   {metronome.name}
                 </h5>
               </div>
-              <p className="font-normal text-gray-700">{metronome.bpm} bpm</p>
+              <div id="classBody" className="mt-4">
+                <div className="badge badge-outline mr-2">
+                  {metronome.bpm} bpm
+                </div>
+                <div className="badge badge-outline mr-2">{`Playtime: ${
+                  Math.floor(metronome.timeUsed / 360000) % 24
+                }h:${Math.floor(
+                  (metronome.timeUsed / 60000) % 60
+                )}m:${Math.floor((metronome.timeUsed / 1000) % 60)}s`}</div>
+                <div className="badge badge-outline">
+                  {`Last Opened: ${metronome.lastOpened?.toLocaleString(
+                    'de-de',
+                    {
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                      hour12: false,
+                    }
+                  )}`}
+                </div>
+              </div>
             </Link>
             <div className="divider divider-horizontal mx-0"></div>
             <form
