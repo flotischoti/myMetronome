@@ -40,7 +40,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   let metronome: StoredMetronome = await getMetronome(params.id, userId!)
 
   return (
-    <div>
+    <div className="max-w-sm mx-auto">
       <Metronome
         dbMetronome={metronome}
         user={userId}

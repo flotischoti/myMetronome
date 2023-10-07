@@ -34,17 +34,17 @@ export default async function Page() {
       <div className="text-sm breadcrumbs ">
         <ul>
           <li>
-            <Link href="/metronome/recent" prefetch={false}>
+            <Link href="/metronome/recent" prefetch={true}>
               Home
             </Link>
           </li>
           <li>
-            <Link href="/account" prefetch={false}>
+            <Link href="/account" prefetch={true}>
               Account
             </Link>
           </li>
           <li>
-            <Link href="/account/delete" prefetch={false}>
+            <Link href="/account/delete" prefetch={true}>
               Edit Password
             </Link>
           </li>
@@ -84,7 +84,7 @@ export default async function Page() {
             required
           />
         </div>
-        <button type="submit" className="btn btn-square mt-4">
+        <button type="submit" className="btn btn-square btn-primary mt-4">
           Save
         </button>
       </form>
