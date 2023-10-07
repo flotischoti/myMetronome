@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react'
 import './globals.scss'
 import './styles.module.scss'
-import '../fontAwesomeConfig'
 import Navbar from '../components/navigation/Navbar'
 import Loading from './loading'
 import { cookies } from 'next/headers'
