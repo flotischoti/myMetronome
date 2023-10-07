@@ -42,38 +42,43 @@ export default async function Page({ searchParams }) {
   }
 
   return (
-    <div>
-      <ListSearch oldSearch={s} />
-      <div className="divider text-xs">
-        {count} metronome{count > 1 || count == 0 ? 's' : ''} found
-      </div>
-
-      {metronomes.map((m, i) => (
-        <MetronomeCard key={i} metronome={m} command={command?.value} />
-      ))}
-      {page <= maxPage && (
-        <div className="realtive flex justify-center items-center mt-8">
-          <div className="join">
-            <Link
-              href={`/list?${getPagingUrlParams(false)}`}
-              prefetch={false}
-              className={`join-item btn ${page <= 1 ? 'btn-disabled' : ''}`}
-            >
-              <IconChevronsLeft />
-            </Link>
-            <button className="join-item btn no-animation">Page {page}</button>
-            <Link
-              href={`/list?${getPagingUrlParams(true)}`}
-              prefetch={false}
-              className={`join-item btn ${
-                page >= maxPage ? 'btn-disabled' : ''
-              }`}
-            >
-              <IconChevronsRight />
-            </Link>
-          </div>
+    <>
+      <title>MyMetronome - List</title>
+      <div>
+        <ListSearch oldSearch={s} />
+        <div className="divider text-xs">
+          {count} metronome{count > 1 || count == 0 ? 's' : ''} found
         </div>
-      )}
-    </div>
+
+        {metronomes.map((m, i) => (
+          <MetronomeCard key={i} metronome={m} command={command?.value} />
+        ))}
+        {page <= maxPage && (
+          <div className="realtive flex justify-center items-center mt-8">
+            <div className="join">
+              <Link
+                href={`/list?${getPagingUrlParams(false)}`}
+                prefetch={false}
+                className={`join-item btn ${page <= 1 ? 'btn-disabled' : ''}`}
+              >
+                <IconChevronsLeft />
+              </Link>
+              <button className="join-item btn no-animation">
+                Page {page}
+              </button>
+              <Link
+                href={`/list?${getPagingUrlParams(true)}`}
+                prefetch={false}
+                className={`join-item btn ${
+                  page >= maxPage ? 'btn-disabled' : ''
+                }`}
+              >
+                <IconChevronsRight />
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   )
 }

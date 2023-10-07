@@ -27,12 +27,15 @@ export default async function Page({ params }: { params: { id: string } }) {
   if (!lastMetronome || lastMetronome.length != 1) redirect(`/metronome/new`)
 
   return (
-    <div className="max-w-sm mx-auto">
-      <Metronome
-        dbMetronome={lastMetronome[0]}
-        user={userId}
-        command={command?.value}
-      />
-    </div>
+    <>
+      <title>MyMetronome - Recent</title>
+      <div className="max-w-sm mx-auto">
+        <Metronome
+          dbMetronome={lastMetronome[0]}
+          user={userId}
+          command={command?.value}
+        />
+      </div>
+    </>
   )
 }

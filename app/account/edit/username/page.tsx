@@ -37,46 +37,49 @@ export default async function Page() {
   }
 
   return (
-    <div>
-      <div className="text-sm breadcrumbs ">
-        <ul>
-          <li>
-            <Link href="/metronome/recent" prefetch={true}>
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link href="/account" prefetch={true}>
-              Account
-            </Link>
-          </li>
-          <li>
-            <Link href="/account/delete" prefetch={true}>
-              Edit Username
-            </Link>
-          </li>
-        </ul>
-      </div>
-      <form action={updateUsername}>
-        <h1 className="font-bold text-lg">Change username</h1>
-        <div>
-          <label className="label">
-            <span className="label-text">Username *</span>
-          </label>
-          <div className="input-group">
-            <input
-              name="username"
-              type="text"
-              defaultValue={userName!}
-              className="input input-bordered"
-              required
-            />
-            <button type="submit" className="btn btn-square btn-primary">
-              Save
-            </button>
-          </div>
+    <>
+      <title>MyMetronome - Edit name</title>
+      <div>
+        <div className="text-sm breadcrumbs ">
+          <ul>
+            <li>
+              <Link href="/metronome/recent" prefetch={true}>
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/account" prefetch={true}>
+                Account
+              </Link>
+            </li>
+            <li>
+              <Link href="/account/delete" prefetch={true}>
+                Edit Username
+              </Link>
+            </li>
+          </ul>
         </div>
-      </form>
-    </div>
+        <form action={updateUsername}>
+          <h1 className="font-bold text-lg">Change username</h1>
+          <div>
+            <label className="label">
+              <span className="label-text">Username *</span>
+            </label>
+            <div className="input-group">
+              <input
+                name="username"
+                type="text"
+                defaultValue={userName!}
+                className="input input-bordered"
+                required
+              />
+              <button type="submit" className="btn btn-square btn-primary">
+                Save
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </>
   )
 }

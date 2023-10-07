@@ -34,49 +34,52 @@ export default async function Page() {
   }
 
   return (
-    <div>
-      <div className="text-sm breadcrumbs ">
-        <ul>
-          <li>
-            <Link href="/metronome/recent" prefetch={true}>
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link href="/account" prefetch={true}>
-              Account
-            </Link>
-          </li>
-          <li>
-            <Link href="/account/delete" prefetch={true}>
-              Delete
-            </Link>
-          </li>
-        </ul>
-      </div>
-
-      <form action={deleteUser}>
-        <h1 className="font-bold text-lg">Delete account</h1>
-        <p>
-          Enter your password and confirm deletion. This will permanently remove
-          your account and all associated metronomes.{' '}
-        </p>
-        <label className="label">
-          <span className="label-text">Password *</span>
-        </label>
-        <div className="join">
-          <input
-            name="password"
-            type="password"
-            className="input input-bordered join-item"
-            placeholder="**********"
-            required
-          />
-          <button type="submit" className="btn btn-error join-item">
-            Delete account
-          </button>
+    <>
+      <title>MyMetronome - Delete Account</title>
+      <div>
+        <div className="text-sm breadcrumbs ">
+          <ul>
+            <li>
+              <Link href="/metronome/recent" prefetch={true}>
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/account" prefetch={true}>
+                Account
+              </Link>
+            </li>
+            <li>
+              <Link href="/account/delete" prefetch={true}>
+                Delete
+              </Link>
+            </li>
+          </ul>
         </div>
-      </form>
-    </div>
+
+        <form action={deleteUser}>
+          <h1 className="font-bold text-lg">Delete account</h1>
+          <p>
+            Enter your password and confirm deletion. This will permanently
+            remove your account and all associated metronomes.{' '}
+          </p>
+          <label className="label">
+            <span className="label-text">Password *</span>
+          </label>
+          <div className="join">
+            <input
+              name="password"
+              type="password"
+              className="input input-bordered join-item"
+              placeholder="**********"
+              required
+            />
+            <button type="submit" className="btn btn-error join-item">
+              Delete account
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
   )
 }

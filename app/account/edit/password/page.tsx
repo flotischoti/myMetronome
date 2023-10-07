@@ -30,64 +30,67 @@ export default async function Page() {
   }
 
   return (
-    <div>
-      <div className="text-sm breadcrumbs ">
-        <ul>
-          <li>
-            <Link href="/metronome/recent" prefetch={true}>
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link href="/account" prefetch={true}>
-              Account
-            </Link>
-          </li>
-          <li>
-            <Link href="/account/delete" prefetch={true}>
-              Edit Password
-            </Link>
-          </li>
-        </ul>
-      </div>
-      <form action={updatePassword}>
-        <h1 className="font-bold text-lg">Change password</h1>
-        <div>
-          <label className="label">
-            <span className="label-text">Old password *</span>
-          </label>
-          <input
-            name="oldPw"
-            type="password"
-            defaultValue=""
-            className="input input-bordered"
-            required
-          />
-          <label className="label">
-            <span className="label-text">New password *</span>
-          </label>
-          <input
-            name="newPw"
-            type="password"
-            defaultValue=""
-            className="input input-bordered"
-            required
-          />
-          <label className="label">
-            <span className="label-text">New password confirm *</span>
-          </label>
-          <input
-            name="newPwConfirm"
-            type="password"
-            defaultValue=""
-            className="input input-bordered"
-            required
-          />
+    <>
+      <title>MyMetronome - Edit password</title>
+      <div>
+        <div className="text-sm breadcrumbs ">
+          <ul>
+            <li>
+              <Link href="/metronome/recent" prefetch={true}>
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/account" prefetch={true}>
+                Account
+              </Link>
+            </li>
+            <li>
+              <Link href="/account/delete" prefetch={true}>
+                Edit Password
+              </Link>
+            </li>
+          </ul>
         </div>
-        <button type="submit" className="btn btn-square btn-primary mt-4">
-          Save
-        </button>
-      </form>
-    </div>
+        <form action={updatePassword}>
+          <h1 className="font-bold text-lg">Change password</h1>
+          <div>
+            <label className="label">
+              <span className="label-text">Old password *</span>
+            </label>
+            <input
+              name="oldPw"
+              type="password"
+              defaultValue=""
+              className="input input-bordered"
+              required
+            />
+            <label className="label">
+              <span className="label-text">New password *</span>
+            </label>
+            <input
+              name="newPw"
+              type="password"
+              defaultValue=""
+              className="input input-bordered"
+              required
+            />
+            <label className="label">
+              <span className="label-text">New password confirm *</span>
+            </label>
+            <input
+              name="newPwConfirm"
+              type="password"
+              defaultValue=""
+              className="input input-bordered"
+              required
+            />
+          </div>
+          <button type="submit" className="btn btn-square btn-primary mt-4">
+            Save
+          </button>
+        </form>
+      </div>
+    </>
   )
 }

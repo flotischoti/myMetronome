@@ -8,68 +8,75 @@ export default async function Page() {
   const userName = await getUserAttrFromToken<string>(token!.value, 'name')
 
   return (
-    <section>
-      <div className="text-sm breadcrumbs ">
-        <ul>
-          <li>
-            <Link href="/metronome/recent" prefetch={true}>
-              Home
+    <>
+      <title>MyMetronome - Account</title>
+      <section>
+        <div className="text-sm breadcrumbs ">
+          <ul>
+            <li>
+              <Link href="/metronome/recent" prefetch={true}>
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/account" prefetch={true}>
+                Account
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <h1 className="font-bold text-lg">Your Account</h1>
+        <div>
+          <label className="label">
+            <span className="label-text">Username</span>
+          </label>
+          <div className="input-group">
+            <input
+              type="text"
+              value={userName!}
+              className="input input-bordered"
+              readOnly
+            />
+            <Link
+              href="/account/edit/username"
+              className="btn btn-square"
+              prefetch={true}
+            >
+              EDIT
             </Link>
-          </li>
-          <li>
-            <Link href="/account" prefetch={true}>
-              Account
+          </div>
+        </div>
+        <div>
+          <label className="label">
+            <span className="label-text">Password</span>
+          </label>
+          <div className="input-group">
+            <input
+              type="text"
+              placeholder="**********"
+              className="input input-bordered"
+              readOnly
+            />
+            <Link
+              href="/account/edit/password"
+              className="btn btn-square"
+              prefetch={true}
+            >
+              EDIT
             </Link>
-          </li>
-        </ul>
-      </div>
-      <h1 className="font-bold text-lg">Your Account</h1>
-      <div>
-        <label className="label">
-          <span className="label-text">Username</span>
-        </label>
-        <div className="input-group">
-          <input
-            type="text"
-            value={userName!}
-            className="input input-bordered"
-            readOnly
-          />
+          </div>
+        </div>
+        <div className="divider"></div>
+        <div>
           <Link
-            href="/account/edit/username"
-            className="btn btn-square"
+            href="/account/delete"
+            className="btn btn-error"
             prefetch={true}
           >
-            EDIT
+            Delete Account
           </Link>
         </div>
-      </div>
-      <div>
-        <label className="label">
-          <span className="label-text">Password</span>
-        </label>
-        <div className="input-group">
-          <input
-            type="text"
-            placeholder="**********"
-            className="input input-bordered"
-            readOnly
-          />
-          <Link
-            href="/account/edit/password"
-            className="btn btn-square"
-            prefetch={true}
-          >
-            EDIT
-          </Link>
-        </div>
-      </div>
-      <div className="divider"></div>
-      <div>
-        <Link href="/account/delete" className="btn btn-error" prefetch={true}>
-          Delete Account
-        </Link>
-      </div>
-    </section>
+      </section>
+    </>
   )
 }
