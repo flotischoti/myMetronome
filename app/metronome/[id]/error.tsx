@@ -12,8 +12,8 @@ export default function Error({
 }) {
   const router = useRouter()
   useEffect(() => {
-    setTimeout(() => router.push('/metronome/recent'), 2000)
-  }, [error])
+    setTimeout(() => router.push('/'), 2000)
+  })
 
   return (
     <div>

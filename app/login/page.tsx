@@ -81,7 +81,7 @@ export default function Page() {
               </button>
               {error && <span className="mt-4 text-red-600">{error}</span>}
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Don't have an account yet?{' '}
+                Don&apos;t have an account yet?{' '}
                 <Link
                   href={
                     targetUrl ? `/register?target=${targetUrl}` : '/register'

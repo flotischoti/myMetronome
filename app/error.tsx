@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 
-export default ({ error, reset }: { error: Error; reset: () => void }) => {
+const Error = ({ error, reset }: { error: Error; reset: () => void }) => {
   useEffect(() => {
     // Log the error to an error reporting service
     console.error(error)
@@ -24,3 +24,5 @@ export default ({ error, reset }: { error: Error; reset: () => void }) => {
     </div>
   )
 }
+
+export default Error
