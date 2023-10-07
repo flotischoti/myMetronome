@@ -64,7 +64,7 @@ export async function signupServerAction(formData: FormData) {
   redirect(target ? target : `/metronome/new`)
 }
 
-export async function loginServerAction(formData: FormData) {
+export async function loginServerAction(fprevState: any, formData: FormData) {
   console.log(`Executing loginServerAction`)
   const { name, password, target } = {
     name: formData.get('name')?.toString(),
@@ -73,17 +73,17 @@ export async function loginServerAction(formData: FormData) {
   }
 
   if (!name || !password) {
-    return { text: `Password or name missing`, status: 400 }
+    return { message: `Password or name missing`, status: 400 }
   }
 
   const user = await userDb.get(name)
 
   if (!user) {
-    return { text: `User not found` }
+    return { message: `User not found` }
   }
 
   if (!(await bcrypt.compare(password, user.password))) {
-    return { text: `Credentials wrong` }
+    return { message: `Credentials wrong` }
   }
 
   user.token = await utils.getJwt({ userId: user.id!, name })
@@ -97,7 +97,6 @@ export async function loginServerAction(formData: FormData) {
   })
   revalidatePath('/')
   redirect(target ? target : `/metronome/recent`)
-  return { status: 500, text: 'An error occured during login' }
 }
 
 export async function logoutServerAction() {
