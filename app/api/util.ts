@@ -1,6 +1,4 @@
 import * as jose from 'jose'
-import { User } from '../../db/user'
-import { createTransport } from 'nodemailer'
 
 export function getErrorResponse(text: string) {
   return { text }

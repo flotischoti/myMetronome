@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server'
 import * as userDb from '../db/user'
 import * as utils from './api/util'
 
-export async function signupServerAction(formData: FormData) {
+export async function signupServerAction(prevState: any, formData: FormData) {
   const { name, password, email, target } = {
     name: formData.get('name')?.toString(),
     password: formData.get('password')?.toString(),
@@ -19,7 +19,7 @@ export async function signupServerAction(formData: FormData) {
   }
 
   if (!name || !password) {
-    return { text: 'Password or name missing' }
+    return { message: 'Password or name missing' }
   }
 
   // if (!utils.isEmailValid(email)) {
@@ -31,7 +31,7 @@ export async function signupServerAction(formData: FormData) {
   const oldUser = await userDb.get(name)
 
   if (oldUser) {
-    return { text: 'User already exists' }
+    return { message: 'User already exists' }
   }
 
   const encryptedPw = await bcrypt.hash(password, 10)

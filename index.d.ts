@@ -20,5 +20,6 @@ declare module 'react' {
 declare global {
   interface Window {
     webkitAudioContext: typeof AudioContext
+    my_modal_2: HTMLDialogElement
   }
 }

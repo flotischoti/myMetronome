@@ -1,64 +1,39 @@
 'use client'
 
 import Link from 'next/link'
-import { FormEvent, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import { signupServerAction } from '../actions'
 import { IconUserPlus } from '@tabler/icons-react'
+import { experimental_useFormStatus as useFormStatus } from 'react-dom'
+import { experimental_useFormState as useFormState } from 'react-dom'
 
-interface FormElements extends HTMLFormControlsCollection {
-  email: HTMLInputElement
-  name: HTMLInputElement
-  password: HTMLInputElement
+const SubmitButton = function () {
+  const { pending } = useFormStatus()
+
+  return (
+    <button
+      type="submit"
+      className={`btn ${pending ? 'btn-disabled' : 'btn-primary'} w-full`}
+    >
+      {pending ? (
+        <span className="loading loading-spinner loading-xs" />
+      ) : (
+        <IconUserPlus />
+      )}
+      Create an account
+    </button>
+  )
 }
-interface LoginFormElement extends HTMLFormElement {
-  readonly elements: FormElements
+
+const initialState = {
+  message: null,
 }
 
 export default function Page() {
-  const [error, setError] = useState('')
-  const router = useRouter()
   const searchParams = useSearchParams()
   const targetUrl = searchParams.get('target')
-  let [pendingSignup, startTransitionSignup] = useTransition()
-
-  async function handleSubmit(e: FormEvent<LoginFormElement>) {
-    e.preventDefault()
-
-    const data = {
-      email: e.currentTarget.elements.email?.value,
-      name: e.currentTarget.elements.name.value,
-      password: e.currentTarget.elements.password.value,
-    }
-
-    const response = await fetch(`/api/auth/register/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-
-    const result = await response.json()
-
-    if (response.status != 200) {
-      setError(result.text)
-      return
-    }
-
-    router.refresh()
-    router.push(targetUrl ? targetUrl : `/metronome/new`)
-  }
-
-  async function callSignupServerAction(formData: FormData) {
-    console.log(`Calling signupServerAction from Client Component`)
-    startTransitionSignup(() => {
-      signupServerAction(formData).then((res) => {
-        if (res) setError(res.text!)
-      })
-    })
-  }
+  const [state, formAction] = useFormState(signupServerAction, initialState)
 
   return (
     <>
@@ -69,7 +44,7 @@ export default function Page() {
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
               Create an account
             </h1>
-            <form className="space-y-4" action={callSignupServerAction}>
+            <form className="space-y-4" action={formAction}>
               <input
                 type="hidden"
                 name="target"
@@ -89,12 +64,12 @@ export default function Page() {
                   autoFocus
                 />
               </div>
-              <div>
+              <div className="hidden">
                 <label htmlFor="email" className="label">
                   <span className="label-text">Recovery Email</span>
                 </label>
                 <input
-                  type="text"
+                  type="hidden"
                   name="email"
                   id="email"
                   className="input input-bordered w-full"
@@ -119,20 +94,10 @@ export default function Page() {
                   required={true}
                 />
               </div>
-              <button
-                type="submit"
-                className={`btn ${
-                  pendingSignup ? 'btn-disabled' : 'btn-primary'
-                } w-full`}
-              >
-                {pendingSignup ? (
-                  <span className="loading loading-spinner loading-xs" />
-                ) : (
-                  <IconUserPlus />
-                )}
-                Create an account
-              </button>
-              {error && <span className="mt-4 text-red-600">{error}</span>}
+              <SubmitButton />
+              {state?.message && (
+                <span className="mt-4 text-red-600">{state?.message}</span>
+              )}
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                 Already have an account?{' '}
                 <Link
