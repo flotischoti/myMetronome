@@ -52,8 +52,7 @@ export default async function Page() {
             </li>
           </ul>
         </div>
-        {/* action={updatePassword} */}
-        <form>
+        <form action={updatePassword}>
           <h1 className="font-bold text-lg">Change password</h1>
           <div>
             <label className="label">

@@ -13,7 +13,7 @@ declare module 'react' {
     action?: number | string | undefined
   }
   export interface CSSProperties {
-    '--value': string
+    '--value'?: string
   }
 }
 

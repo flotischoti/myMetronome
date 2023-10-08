@@ -683,8 +683,8 @@ const Metronome = ({
         <div className="mt-4 py-4 flex justify-end items-center">
           <div id="metronomeButtonArea-1">
             {!metronome.id && (
-              // formAction={createMetronome}
               <button
+                formAction={createMetronome}
                 className={`btn btn-outline ${
                   isDoingSomething || !user ? 'btn-disabled' : 'btn-active'
                 }`}
@@ -698,8 +698,8 @@ const Metronome = ({
               </button>
             )}
             {metronome.id && (
-              // formAction={deleteMetronome}
               <button
+                formAction={deleteMetronome}
                 className={`btn btn-outline btn-error ${
                   isDoingSomething ? 'btn-disabled' : 'btn-active'
                 }`}

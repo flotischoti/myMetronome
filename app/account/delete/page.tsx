@@ -56,8 +56,7 @@ export default async function Page() {
             </li>
           </ul>
         </div>
-        {/* action={deleteUser} */}
-        <form>
+        <form action={deleteUser}>
           <h1 className="font-bold text-lg">Delete account</h1>
           <p>
             Enter your password and confirm deletion. This will permanently

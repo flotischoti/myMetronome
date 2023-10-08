@@ -59,8 +59,7 @@ export default async function Page() {
             </li>
           </ul>
         </div>
-        {/* action={updateUsername} */}
-        <form>
+        <form action={updateUsername}>
           <h1 className="font-bold text-lg">Change username</h1>
           <div>
             <label className="label">
