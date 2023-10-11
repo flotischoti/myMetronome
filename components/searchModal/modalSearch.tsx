@@ -5,12 +5,21 @@ import { useRouter } from 'next/navigation'
 import { useState, ChangeEvent, MouseEvent, useRef } from 'react'
 import { StoredMetronome } from '../metronome/Metronome'
 
-const ModalSearch = () => {
-  const [resultList, setResultList] = useState<StoredMetronome[]>([])
+const ModalSearch = ({
+  recentCount,
+  recentMetronomes,
+}: {
+  recentCount: number
+  recentMetronomes: StoredMetronome[]
+}) => {
+  const [resultList, setResultList] =
+    useState<StoredMetronome[]>(recentMetronomes)
   const [searchValue, setSearchValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [count, setCount] = useState(0)
-  const searchTimer = useRef(null as unknown as NodeJS.Timer)
+  const [count, setCount] = useState(recentCount)
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  )
   const router = useRouter()
 
   async function search(searchString: string) {
@@ -42,14 +51,17 @@ const ModalSearch = () => {
         search(searchString)
       }, 300)
     } else {
+      if (searchString.length == 0) {
+        setResultList(recentMetronomes)
+      }
       setIsLoading(false)
     }
   }
 
   function handleMetronomeSelection(e: MouseEvent<HTMLLIElement>) {
     setSearchValue('')
-    setResultList([])
-    setCount(0)
+    setResultList(recentMetronomes)
+    setCount(recentCount)
     window.my_modal_2.close()
   }
 
@@ -75,45 +87,70 @@ const ModalSearch = () => {
         </Link>
       </div>
       <div id="resultBox">
-        {isLoading && (
-          <span className="loading loading-dots loading-lg mt-8"></span>
-        )}
-        {resultList.length == 0 && searchValue.length > 2 && !isLoading && (
+        {recentMetronomes.length == 0 ? (
           <div className="mt-4">
-            <span>No metronomes found. Change search or </span>
-            <Link href="/metronome/new" prefetch={false} className="link">
-              create one?
+            <span>You don&apos;t have any metronomes yet. </span>
+            <Link
+              href="/metronome/new"
+              prefetch={true}
+              className="link"
+              onClick={() => window.my_modal_2.close()}
+            >
+              Create one?
             </Link>
           </div>
-        )}
-        {searchValue.length > 2 && (
-          <ul className="w-full">
-            {resultList.map((r) => (
-              <li
-                id={'' + r.id}
-                key={r.id}
-                onClick={handleMetronomeSelection}
-                className="bg-slate-50 hover:bg-slate-100 rounded-lg w-full p-2 pl-4"
-              >
-                <div>
-                  <Link
-                    href={`/metronome/${r.id}`}
-                    prefetch={false}
-                    className="flex flex-col"
-                  >
-                    <span className="font-bold underline ">{r.name}</span>
-                    <span>BPM: {r.bpm}</span>
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-        {searchValue.length > 2 && count > 5 && (
-          <span className="text-xs mt-2">
-            Showing first 5 out of {count} matches. Try narrowing down the
-            search.
-          </span>
+        ) : (
+          <>
+            {isLoading && (
+              <span className="loading loading-dots loading-lg mt-8"></span>
+            )}
+            {resultList.length == 0 && searchValue.length > 2 && !isLoading && (
+              <div className="mt-4">
+                <span>No metronomes found. Change search or </span>
+                <Link
+                  href="/metronome/new"
+                  prefetch={true}
+                  className="link"
+                  onClick={() => window.my_modal_2.close()}
+                >
+                  create one?
+                </Link>
+              </div>
+            )}
+            <ul className="w-full">
+              {resultList.map((r) => (
+                <li
+                  id={'' + r.id}
+                  key={r.id}
+                  onClick={handleMetronomeSelection}
+                  className="bg-slate-50 hover:bg-slate-100 rounded-lg w-full p-2 pl-4"
+                >
+                  <div>
+                    <Link
+                      href={`/metronome/${r.id}`}
+                      prefetch={true}
+                      className="flex flex-col"
+                    >
+                      <span className="font-bold underline ">{r.name}</span>
+                      <span>BPM: {r.bpm}</span>
+                    </Link>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {searchValue.length > 2 && count > 5 && (
+              <span className="text-xs mt-2">
+                Showing first 5 out of {count} matches. Try narrowing down the
+                search.
+              </span>
+            )}
+            {searchValue.length == 0 && count > 0 && (
+              <span className="text-xs mt-2">
+                Showing {count} last recently used metronomes.
+              </span>
+            )}
+          </>
         )}
       </div>
     </div>

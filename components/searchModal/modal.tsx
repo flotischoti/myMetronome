@@ -1,6 +1,13 @@
+import { StoredMetronome } from '../metronome/Metronome'
 import ModalSearch from './modalSearch'
 
-export default function Modal() {
+export default function Modal({
+  recentCount,
+  recentMetronomes,
+}: {
+  recentCount: number
+  recentMetronomes: StoredMetronome[]
+}) {
   return (
     <dialog id="my_modal_2" className="modal modal-top ">
       <form method="dialog" className="modal-box max-w-lg mx-auto">
@@ -8,7 +15,10 @@ export default function Modal() {
           ✕
         </button>
         <h3 className="font-bold text-lg mb-2">Search your metronomes</h3>
-        <ModalSearch />
+        <ModalSearch
+          recentCount={recentCount}
+          recentMetronomes={recentMetronomes}
+        />
       </form>
       <form method="dialog" className="modal-backdrop">
         <button>close</button>

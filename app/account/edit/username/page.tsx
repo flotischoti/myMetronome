@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 
-export default async function Page() {
+const Page = async () => {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
   const userName = await getUserAttrFromToken<string>(token!.value, 'name')
@@ -83,3 +83,5 @@ export default async function Page() {
     </>
   )
 }
+
+export default Page
