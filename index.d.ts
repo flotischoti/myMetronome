@@ -9,9 +9,6 @@ declare module 'jose' {
 }
 
 declare module 'react' {
-  export interface FormHTMLAttributes {
-    action?: number | string | undefined
-  }
   export interface CSSProperties {
     '--value'?: string
   }
