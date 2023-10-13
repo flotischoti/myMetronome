@@ -147,7 +147,7 @@ const ModalSearch = ({
             )}
             {searchValue.length == 0 && count > 0 && (
               <span className="text-xs mt-2">
-                Showing {count} last recently used metronomes.
+                Showing {Math.min(5, count)} last recently used metronomes.
               </span>
             )}
           </>

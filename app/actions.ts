@@ -170,3 +170,29 @@ export async function deleteMetronomeAction(
     message: `Error deleting metronome`,
   }
 }
+
+export async function updateServerAction(newMetronome: StoredMetronome) {
+  const token = cookies().get('token')?.value
+  const userId = await getUserAttrFromToken(token!)
+
+  // TODO replace all this shit by using where clause with metronome + user ID
+  const metronome = await metronomeDb.get(newMetronome.id!)
+
+  if (!metronome) {
+    return {
+      messagen: `PUT metronome failed. The metronome ${metronomeDb} to be updated was not found`,
+      status: 404,
+    }
+  }
+
+  if (metronome.owner != userId) {
+    return {
+      message: `PUT metronome failed. User ${userId} not allowed to write metronome ${metronomeDb}`,
+      status: 401,
+    }
+  }
+
+  await metronomeDb.updateMetronome(newMetronome)
+  revalidatePath('/', 'layout')
+  return { message: 'Metronome updated' }
+}

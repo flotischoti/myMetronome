@@ -17,7 +17,11 @@ import {
   IconTrash,
 } from '@tabler/icons-react'
 
-import { createMetronomeAction, deleteMetronomeAction } from '../../app/actions'
+import {
+  createMetronomeAction,
+  deleteMetronomeAction,
+  updateServerAction,
+} from '../../app/actions'
 
 export interface StoredMetronome {
   id?: number
@@ -101,6 +105,7 @@ const Metronome = ({
   )
   let [pendingSave, startTransitionSave] = useTransition()
   let [pendingDelete, startTransitionDelete] = useTransition()
+  let [pendingUpdate, startTransitionUpdate] = useTransition()
 
   useEffect(() => {
     const AudioContext = window.AudioContext || window.webkitAudioContext
@@ -135,21 +140,16 @@ const Metronome = ({
     if (pendingSave) {
       setIsDoingSomething(true)
       setSuccessState('Saving', 'info')
+    } else if (pendingUpdate) {
+      setSuccessState('Autosaving', 'info')
+    } else if (pendingDelete) {
+      setIsDoingSomething(true)
+      setSuccessState('Deleting', 'info')
     } else {
       if (isDoingSomething) setSuccessState('Something went wrong', 'error')
       setIsDoingSomething(false)
     }
-  }, [pendingSave])
-
-  useEffect(() => {
-    if (pendingDelete) {
-      setIsDoingSomething(true)
-      setSuccessState('Deleting', 'info')
-    } else {
-      if (isDoingSomething) setSuccessState('Deletion failed', 'error')
-      setIsDoingSomething(false)
-    }
-  }, [pendingDelete])
+  }, [pendingUpdate, pendingSave, pendingDelete])
 
   useEffect(() => {
     if (metronome.isPlaying) {
@@ -354,19 +354,9 @@ const Metronome = ({
 
   const updateMetronome = async () => {
     if (user && metronome.id && !isDoingSomething) {
-      const res = await fetch(`/api/metronomes/${metronome.id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'PUT',
-        body: JSON.stringify(metronome),
+      startTransitionUpdate(async () => {
+        updateServerAction(metronome)
       })
-
-      if (res.status == 201) {
-        setSuccessState('Autosaved', 'success')
-      } else {
-        setSuccessState('Autosave failed', 'error')
-      }
     }
   }
 
