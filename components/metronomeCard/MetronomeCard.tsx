@@ -16,11 +16,14 @@ const initialState = {
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <button type="submit" className="hover:drop-shadow-xl mr-2">
+    <button
+      type="submit"
+      className="hover:drop-shadow-xl mr-2 btn btn-circle btn-outline border-red-500"
+    >
       {pending ? (
         <span className="loading loading-spinner loading-md" />
       ) : (
-        <IconTrash className="hover:cursor-pointer" />
+        <IconTrash color="red" className="hover:cursor-pointer" />
       )}
     </button>
   )
@@ -69,28 +72,31 @@ const MetronomeCard = ({
               prefetch={false}
             >
               <div id="cardTitle" className="card-title">
-                <h5 className="text-1xl font-bold tracking-tight text-gray-900">
-                  {metronome.name}
-                </h5>
-              </div>
-              <div id="classBody" className="mt-4">
-                <div className="badge badge-outline mr-2">
-                  {metronome.bpm} bpm
+                <div className="flex-column sm:flex flex-wrap items-center gap-4">
+                  <h5 className="text-1xl font-bold tracking-tight text-gray-900">
+                    {metronome.name}
+                  </h5>
+                  <div className="badge badge-neutral mr-2">
+                    {metronome.bpm} bpm
+                  </div>
                 </div>
-                <div className="badge badge-outline mr-2">{`Playtime: ${
-                  Math.floor(metronome.timeUsed / 360000) % 24
-                }h:${Math.floor(
+              </div>
+              <div id="classBody" className="mt-1">
+                <span>Playtime: </span>
+                {`${Math.floor(metronome.timeUsed / 360000) % 24}h:${Math.floor(
                   (metronome.timeUsed / 60000) % 60
-                )}m:${Math.floor((metronome.timeUsed / 1000) % 60)}s`}</div>
-                <div className="badge badge-outline">
-                  {`Last Opened: ${metronome.lastOpened?.toLocaleString(
-                    'de-de',
-                    {
-                      dateStyle: 'short',
-                      timeStyle: 'short',
-                      hour12: false,
-                    }
-                  )}`}
+                )}m:${Math.floor((metronome.timeUsed / 1000) % 60)}s`}
+                <div className="text-xs mt-2 flex justify-end">
+                  <span>
+                    {`Last Opened: ${metronome.lastOpened?.toLocaleString(
+                      'de-de',
+                      {
+                        dateStyle: 'short',
+                        timeStyle: 'short',
+                        hour12: false,
+                      }
+                    )}`}
+                  </span>
                 </div>
               </div>
             </Link>
