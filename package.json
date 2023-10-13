@@ -27,7 +27,6 @@
     "@prisma/client": "^4.8.0",
     "@tabler/icons-react": "^2.22.0",
     "@types/bcrypt": "^5.0.0",
-    "@types/jsonwebtoken": "^9.0.2",
     "bcrypt": "^5.1.0",
     "jose": "^4.14.4",
     "next": "^13.5.4",
