@@ -7,9 +7,6 @@ const nextConfig = {
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
   },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
 }
 
 module.exports = nextConfig
