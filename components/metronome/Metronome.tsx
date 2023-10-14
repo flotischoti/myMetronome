@@ -6,6 +6,7 @@ import {
   useState,
   useRef,
   useTransition,
+  FocusEvent,
 } from 'react'
 import {
   IconDeviceFloppy,
@@ -279,7 +280,7 @@ const Metronome = ({
     setMetronome({ ...metronome, bpm: +e.target.value })
   }
 
-  const editTitle = (e) => {
+  const editTitle = (e: FocusEvent<HTMLInputElement>) => {
     const newVal = e.target.value.trim()
     setEditTitle(false)
     if (newVal != '') setMetronome({ ...metronome, name: newVal })
@@ -634,7 +635,10 @@ const Metronome = ({
             </div>
             {metronome.showStats &&
               ['current', 'session', 'time'].map((type, i) => {
-                const timerName = type + 'Used'
+                const timerName = (type + 'Used') as
+                  | 'currentUsed'
+                  | 'sessionUsed'
+                  | 'timeUsed'
                 return (
                   <div
                     id={`${type}TimeArea-1`}

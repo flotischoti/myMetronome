@@ -8,7 +8,7 @@ import { experimental_useFormStatus as useFormStatus } from 'react-dom'
 import { experimental_useFormState as useFormState } from 'react-dom'
 
 const initialState = {
-  message: null,
+  message: '',
 }
 
 const LoginButton = function () {

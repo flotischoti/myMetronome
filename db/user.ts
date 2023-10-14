@@ -11,28 +11,28 @@ export interface User {
 }
 
 export async function get(name: string): Promise<User | null> {
-  return await prisma.user.findUnique({
+  return (await prisma.user.findUnique({
     where: {
       name: name,
     },
-  })
+  })) as User | null
 }
 
 export async function create(user: User): Promise<User> {
-  return await prisma.user.create({
+  return (await prisma.user.create({
     data: user,
-  })
+  })) as User
 }
 
 export async function update(user: User): Promise<User> {
-  return await prisma.user.update({
+  return (await prisma.user.update({
     where: {
       id: user.id,
     },
     data: {
       ...user,
     },
-  })
+  })) as User
 }
 
 export async function remove(user: User) {

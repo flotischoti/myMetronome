@@ -3,7 +3,7 @@ import Link from 'next/link'
 import NavbarAccountDropdown from './NavbarAccountDropdown'
 import NavbarSearch from './NavbarSearch'
 
-export default function Navbar({ isLoggedIn }) {
+export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <div className="navbar bg-base-100 pr-4 shadow">
       <div className="navbar-start">

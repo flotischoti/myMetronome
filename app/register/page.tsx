@@ -27,7 +27,7 @@ const SubmitButton = function () {
 }
 
 const initialState = {
-  message: null,
+  message: '',
 }
 
 export default function Page() {

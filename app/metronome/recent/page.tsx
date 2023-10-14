@@ -13,7 +13,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       0,
       'lastOpened',
       'desc',
-      null
+      undefined
     )
 
     return metronomes

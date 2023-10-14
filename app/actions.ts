@@ -64,16 +64,16 @@ export async function signupServerAction(prevState: any, formData: FormData) {
   redirect(target ? target : `/metronome/new`)
 }
 
-export async function loginServerAction(fprevState: any, formData: FormData) {
+export async function loginServerAction(fprevState: any, payload: FormData) {
   console.log(`Executing loginServerAction`)
   const { name, password, target } = {
-    name: formData.get('name')?.toString(),
-    password: formData.get('password')?.toString(),
-    target: formData.get('redirect')?.toString(),
+    name: payload.get('name')?.toString(),
+    password: payload.get('password')?.toString(),
+    target: payload.get('redirect')?.toString(),
   }
 
   if (!name || !password) {
-    return { message: `Password or name missing`, status: 400 }
+    return { message: `Password or name missing` }
   }
 
   const user = await userDb.get(name)
@@ -128,7 +128,7 @@ export async function createMetronomeAction(metronome: StoredMetronome) {
   if (savedMetronome) {
     return redirect(`/metronome/${savedMetronome.id}`)
   } else {
-    return { status: 500, message: 'Something went wrong' }
+    return { message: 'Something went wrong' }
   }
 }
 
@@ -144,14 +144,12 @@ export async function deleteMetronomeAction(
 
   if (!metronome) {
     return {
-      status: 404,
       message: `DELETE metronome failed. Metronome ${metronomeDb} not found`,
     }
   }
 
   if (metronome.owner != userId) {
     return {
-      status: 401,
       message: `DELETE metronome failed. User ${userId} not allowed to delete metronome ${metronomeDb}`,
     }
   }
@@ -181,14 +179,12 @@ export async function updateServerAction(newMetronome: StoredMetronome) {
   if (!metronome) {
     return {
       messagen: `PUT metronome failed. The metronome ${metronomeDb} to be updated was not found`,
-      status: 404,
     }
   }
 
   if (metronome.owner != userId) {
     return {
       message: `PUT metronome failed. User ${userId} not allowed to write metronome ${metronomeDb}`,
-      status: 401,
     }
   }
 

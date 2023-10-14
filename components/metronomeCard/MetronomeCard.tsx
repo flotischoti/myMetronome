@@ -10,7 +10,7 @@ import { experimental_useFormStatus as useFormStatus } from 'react-dom'
 import { deleteMetronomeAction } from '../../app/actions'
 
 const initialState = {
-  message: null,
+  message: '',
 }
 
 function SubmitButton() {
@@ -40,7 +40,7 @@ const MetronomeCard = ({
   const [tostMessage, setToastMessage] = useState('')
   const deleteMetronomeFromCard = deleteMetronomeAction.bind(
     null,
-    metronome.id,
+    metronome.id!,
     usePathname()
   )
   const [state, formAction] = useFormState(

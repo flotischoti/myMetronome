@@ -24,7 +24,11 @@ async function getMetronomes(
   return await metronomeDb.list(userId, pageSize, offset, 'name', 'asc', search)
 }
 
-export default async function Page({ searchParams }) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { page: number; s: string }
+}) {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')

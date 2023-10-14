@@ -4,8 +4,12 @@ import { getDb } from './db'
 
 const prisma = getDb()
 
+interface Order {
+  [key: string]: string
+}
+
 function getOrderBy(orderBy = 'name', sortOrder = 'asc') {
-  const order = {}
+  const order: Order = {}
   order[orderBy!] = sortOrder
   return order
 }
@@ -16,9 +20,9 @@ export async function list(
   offset = 0,
   sortBy = 'name',
   sortOrder = 'asc',
-  name?
+  name?: string
 ): Promise<[number, StoredMetronome[]]> {
-  return await prisma.$transaction([
+  return (await prisma.$transaction([
     prisma.metronome.count({
       where: {
         owner: user,
@@ -40,7 +44,7 @@ export async function list(
       take: top,
       skip: offset,
     }),
-  ])
+  ])) as [number, StoredMetronome[]]
 }
 
 export async function create(
@@ -63,7 +67,7 @@ export async function create(
       timeUsed: metronome.timeUsed,
     },
   })
-  return createdMetronome
+  return createdMetronome as StoredMetronome
 }
 
 export async function updateMetronome(
@@ -84,7 +88,7 @@ export async function updateMetronome(
       timeUsed: metronome.timeUsed,
     },
   })
-  return updatedMetronome
+  return updatedMetronome as StoredMetronome
 }
 
 export async function deleteMetronome(metronomeId: number): Promise<boolean> {
@@ -102,9 +106,9 @@ export async function deleteMetronome(metronomeId: number): Promise<boolean> {
 export async function get(
   metronomeId: number
 ): Promise<StoredMetronome | null> {
-  return await prisma.metronome.findUnique({
+  return (await prisma.metronome.findUnique({
     where: {
       id: metronomeId,
     },
-  })
+  })) as StoredMetronome | null
 }

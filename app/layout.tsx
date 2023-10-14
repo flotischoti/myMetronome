@@ -19,7 +19,7 @@ export default async function RootLayout({
   async function getRecent(
     userId: number
   ): Promise<[number, StoredMetronome[]]> {
-    return await metronomeDb.list(userId, 5, 0, 'lastOpened', 'desc', null)
+    return await metronomeDb.list(userId, 5, 0, 'lastOpened', 'desc', undefined)
   }
 
   const cookieStore = cookies()
