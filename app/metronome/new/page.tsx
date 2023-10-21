@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         <Metronome dbMetronome={null} user={user} command={command?.value} />
         {!user && (
           <div className="alert alert-info">
-            <span>
+            <span className="select-none">
               <IconInfoCircle className="inline mr-2" />
               <Link href="/login" className="link">
                 Sign up
