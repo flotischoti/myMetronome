@@ -445,6 +445,12 @@ const Metronome = ({
             onBlur={editTitle}
             autoFocus
             className="input w-full "
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.currentTarget.blur()
+                e.stopPropagation()
+              }
+            }}
           />
         )}
       </div>
