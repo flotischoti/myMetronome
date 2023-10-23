@@ -464,50 +464,54 @@ const Metronome = ({
             <span key={i + 1}>{i + 1}</span>
           ))}
           <div id="metronomeBpmControls-1" className="w-full mt-4">
-            <div className="join w-full mt-2 flex">
-              <button
-                type="button"
-                onMouseDown={(e) => handleChangeBpm(e, -1)}
-                onMouseUp={stopChangingBpm}
-                onMouseLeave={stopChangingBpm}
-                className="btn join-item"
-              >
-                <IconMinus />
-              </button>
-              <button
-                type="button"
-                onClick={playPause}
-                className="btn join-item grow no-animation"
-              >
-                {metronome.isPlaying ? <IconPlayerPause /> : <IconPlayerPlay />}
-                {metronome.isPlaying ? 'Pause' : 'Play'}
-              </button>
-              <button
-                type="button"
-                onMouseDown={(e) => handleChangeBpm(e, 1)}
-                onMouseUp={stopChangingBpm}
-                onMouseLeave={stopChangingBpm}
-                className="btn join-item"
-              >
-                <IconPlus />
-              </button>
-            </div>
             <input
               type="range"
               min={minBpm}
               max={maxBpm}
               value={metronome.bpm}
               onChange={changeBpm}
-              className="range range-primary my-2"
+              className="range range-neutral-content my-2"
             />
+            <div className="join w-full mt-2 flex">
+              <button
+                type="button"
+                onMouseDown={(e) => handleChangeBpm(e, -1)}
+                onMouseUp={stopChangingBpm}
+                onMouseLeave={stopChangingBpm}
+                className="btn grow join-item rounded-full btn-outline no-animation"
+              >
+                <IconMinus />
+              </button>
+
+              <button
+                type="button"
+                onMouseDown={(e) => handleChangeBpm(e, 1)}
+                onMouseUp={stopChangingBpm}
+                onMouseLeave={stopChangingBpm}
+                className="btn grow join-item rounded-full btn-outline no-animation"
+              >
+                <IconPlus />
+              </button>
+            </div>
+
             {/* <div className="divider m-0"></div> */}
-            <button
-              type="button"
-              onClick={handleTap}
-              className="btn btn-wide w-full h-24"
-            >
-              Tap
-            </button>
+            <div className="flex mt-4 gap-4">
+              <button
+                type="button"
+                onClick={handleTap}
+                className="btn btn-circle h-24 grow neutral btn-outline"
+              >
+                Tap
+              </button>
+              <button
+                type="button"
+                onClick={playPause}
+                className="btn btn-circle h-24 grow btn-outline"
+              >
+                {metronome.isPlaying ? <IconPlayerPause /> : <IconPlayerPlay />}
+                {metronome.isPlaying ? 'Pause' : 'Play'}
+              </button>
+            </div>
           </div>
         </div>
         <div id="metronomeSettingsArea-1">
