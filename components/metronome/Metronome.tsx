@@ -60,7 +60,7 @@ const defaultStoredMetronome: StoredMetronome = {
   stressFirst: false,
   timeUsed: 0,
   timerActive: false,
-  timerValue: 5000,
+  timerValue: 120000,
   showStats: false,
 }
 
