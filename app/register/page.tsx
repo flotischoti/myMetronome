@@ -14,14 +14,16 @@ const SubmitButton = function () {
   return (
     <button
       type="submit"
-      className={`btn ${pending ? 'btn-disabled' : 'btn-primary'} w-full`}
+      className={`btn ${
+        pending ? 'btn-disabled' : 'btn-primary'
+      } w-full btn-outline`}
     >
       {pending ? (
         <span className="loading loading-spinner loading-xs" />
       ) : (
         <IconUserPlus />
       )}
-      Create an account
+      Sign up
     </button>
   )
 }
@@ -39,12 +41,12 @@ export default function Page() {
     <>
       <title>Metronomes - Sign up</title>
       <section className="flex flex-col h-full justify-between items-center">
-        <div className="max-w-sm bg-white rounded-lg shadow xl:p-0">
-          <div className="p-6 space-y-4 sm:space-y-6">
+        <div className="max-w-sm rounded-lg shadow xl:p-0">
+          <div className="p-6 sm:space-y-6">
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
-              Create an account
+              Create account
             </h1>
-            <form className="space-y-4" action={formAction}>
+            <form className="space-y-4 sm:space-y-6" action={formAction}>
               <input
                 type="hidden"
                 name="target"
@@ -94,7 +96,9 @@ export default function Page() {
                   required={true}
                 />
               </div>
-              <SubmitButton />
+              <div>
+                <SubmitButton />
+              </div>
               {state?.message && (
                 <span className="mt-4 text-red-600">{state?.message}</span>
               )}
@@ -111,10 +115,13 @@ export default function Page() {
             </form>
           </div>
         </div>
-        <p className="text-sm text-center bg-emerald-100 p-1">
-          By signing up you agree to a single cookie being set to handle the
-          session. It will expire after logout or 48 hours of inactivity.
-        </p>
+        <div className="alert alert-info max-w-md text-center">
+          <p className="select-none">
+            By logging in you agree to the usage of cookies to handle sessions
+            and page communications. They expire after logout or 48 hours of
+            inactivity.
+          </p>
+        </div>
       </section>
     </>
   )

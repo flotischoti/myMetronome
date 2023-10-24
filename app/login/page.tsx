@@ -17,7 +17,9 @@ const LoginButton = function () {
   return (
     <button
       type="submit"
-      className={`btn ${pending ? 'btn-disabled' : 'btn-primary'} w-full`}
+      className={`btn ${
+        pending ? 'btn-disabled' : 'btn-primary'
+      } w-full btn-outline`}
     >
       {pending ? (
         <span className="loading loading-spinner loading-xs" />
@@ -38,8 +40,8 @@ export default function Page() {
     <>
       <title>Metronomes - Login</title>
       <section className="flex flex-col items-center h-full justify-between">
-        <div className="max-w-sm bg-white rounded-lg shadow">
-          <div className="p-6 space-y-4 sm:space-y-6">
+        <div className="max-w-sm rounded-lg shadow">
+          <div className="p-6">
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
               Login
             </h1>
@@ -95,11 +97,13 @@ export default function Page() {
             </form>
           </div>
         </div>
-
-        <p className="text-sm text-center bg-info p-1">
-          By logging in you agree to a single cookie being set to handle the
-          session. It will expire after logout or 48 hours of inactivity.
-        </p>
+        <div className="alert alert-info max-w-md text-center">
+          <p className="select-none">
+            By logging in you agree to the usage of cookies to handle sessions
+            and page communications. They expire after logout or 48 hours of
+            inactivity.
+          </p>
+        </div>
       </section>
     </>
   )

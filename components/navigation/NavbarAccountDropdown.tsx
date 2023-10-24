@@ -17,7 +17,7 @@ export default function NavbarAccountDropdown() {
       onClick={handleClick}
     >
       <li>
-        <Link prefetch={false} href="/login" className="justify-end">
+        <Link prefetch={false} href="/login" className="justify-end p-3">
           Login
         </Link>
       </li>
@@ -25,7 +25,7 @@ export default function NavbarAccountDropdown() {
         <Link
           prefetch={false}
           href="/register"
-          className="justify-end whitespace-nowrap"
+          className="justify-end whitespace-nowrap p-3"
         >
           Sign up
         </Link>
