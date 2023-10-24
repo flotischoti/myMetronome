@@ -35,7 +35,7 @@ export default async function Page() {
 
   return (
     <>
-      <title>MyMetronome - Delete Account</title>
+      <title>Metronomes - Delete Account</title>
       <div>
         <div className="text-sm breadcrumbs ">
           <ul>

@@ -38,7 +38,7 @@ const Page = async () => {
 
   return (
     <>
-      <title>MyMetronome - Edit name</title>
+      <title>Metronomes - Edit name</title>
       <div>
         <div className="text-sm breadcrumbs ">
           <ul>

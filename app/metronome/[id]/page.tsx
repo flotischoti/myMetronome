@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <>
-      <title>{`MyMetronome - ${metronome.name}`}</title>
+      <title>{`Metronomes - ${metronome.name}`}</title>
       <div className="max-w-sm mx-auto">
         <Metronome
           dbMetronome={metronome}

@@ -9,7 +9,7 @@ export default async function Page() {
 
   return (
     <>
-      <title>MyMetronome - Account</title>
+      <title>Metronomes - Account</title>
       <section>
         <div className="text-sm breadcrumbs ">
           <ul>

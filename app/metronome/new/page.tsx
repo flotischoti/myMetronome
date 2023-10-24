@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <>
-      <title>MyMetronome - New</title>
+      <title>Metronomes - New</title>
       <div
         id="newMetronomeContainer"
         className="flex flex-col justify-between max-w-sm mx-auto h-full"

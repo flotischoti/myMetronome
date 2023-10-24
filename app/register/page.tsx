@@ -37,7 +37,7 @@ export default function Page() {
 
   return (
     <>
-      <title>MyMetronome - Sign up</title>
+      <title>Metronomes - Sign up</title>
       <section className="flex flex-col h-full justify-between items-center">
         <div className="max-w-sm bg-white rounded-lg shadow xl:p-0">
           <div className="p-6 space-y-4 sm:space-y-6">

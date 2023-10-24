@@ -31,7 +31,7 @@ export default async function Page() {
 
   return (
     <>
-      <title>MyMetronome - Edit password</title>
+      <title>Metronomes - Edit password</title>
       <div>
         <div className="text-sm breadcrumbs ">
           <ul>

@@ -1,5 +1,5 @@
 {
-  "name": "mymetronome",
+  "name": "metronomes",
   "version": "1.0.0",
   "description": "Manage different metronomes to track your practice progress",
   "main": "index.js",

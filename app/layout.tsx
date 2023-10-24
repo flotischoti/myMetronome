@@ -10,6 +10,20 @@ import { getUserAttrFromToken, verifyToken } from './api/util'
 import Modal from '../components/searchModal/modal'
 import { StoredMetronome } from '../components/metronome/Metronome'
 import * as metronomeDb from '../db/metronome'
+import { Inter, Pacifico } from 'next/font/google'
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
+
+const pacifico = Pacifico({
+  weight: '400',
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-pacifico',
+})
 
 export default async function RootLayout({
   children,
@@ -30,7 +44,7 @@ export default async function RootLayout({
   const [count, recentMetronomes] = userId ? await getRecent(userId) : [0, []]
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${pacifico.variable} ${inter.variable} `}>
       <head />
       <body className="drawer drawer-end">
         <input id="my-drawer" type="checkbox" className="drawer-toggle" />

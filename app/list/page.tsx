@@ -47,7 +47,7 @@ export default async function Page({
 
   return (
     <>
-      <title>MyMetronome - List</title>
+      <title>Metronomes - List</title>
       <div>
         <ListSearch oldSearch={s} />
         <div className="divider text-xs">

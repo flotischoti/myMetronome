@@ -13,7 +13,7 @@ export default function Page() {
 
   return (
     <>
-      <title>MyMetronome - Logout</title>
+      <title>Metronomes - Logout</title>
       <div>
         {error ? <span>Logging out...</span> : <span>Error logging out</span>}
       </div>
