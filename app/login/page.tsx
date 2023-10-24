@@ -42,7 +42,7 @@ export default function Page() {
       <section className="flex flex-col items-center h-full justify-between">
         <div className="max-w-sm rounded-lg shadow">
           <div className="p-6">
-            <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
+            <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl">
               Login
             </h1>
             <form className="space-y-4 sm:space-y-6" action={formAction}>
