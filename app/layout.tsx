@@ -5,7 +5,6 @@ import Navbar from '../components/navigation/Navbar'
 import Loading from './loading'
 import { cookies } from 'next/headers'
 import Sidebar from '../components/sidebar/Sidebar'
-import Footer from '../components/footer/Footer'
 import { getUserAttrFromToken, verifyToken } from './api/util'
 import Modal from '../components/searchModal/modal'
 import { StoredMetronome } from '../components/metronome/Metronome'
@@ -55,7 +54,6 @@ export default async function RootLayout({
               <Suspense fallback={<Loading />}>{children}</Suspense>
             </main>
           </div>
-          <Footer />
         </div>
         <Sidebar userName={userName} />
         <Modal recentCount={count} recentMetronomes={recentMetronomes} />
