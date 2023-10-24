@@ -11,7 +11,7 @@ import {
 
 export default function Sidebar({ userName }: { userName: string | null }) {
   return (
-    <div className="drawer-side">
+    <div className="drawer-side z-20">
       <label htmlFor="my-drawer" className="drawer-overlay"></label>
       <div className="menu p-4 w-80 h-full bg-base-200 text-base-content">
         <h1 className="font-bold text-lg">Hello {userName}!</h1>
