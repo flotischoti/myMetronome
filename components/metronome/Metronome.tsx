@@ -7,6 +7,7 @@ import {
   useRef,
   useTransition,
   FocusEvent,
+  TouchEvent,
 } from 'react'
 import {
   IconDeviceFloppy,
@@ -286,7 +287,11 @@ const Metronome = ({
     if (newVal != '') setMetronome({ ...metronome, name: newVal })
   }
 
-  const handleChangeBpm = (e: MouseEvent<HTMLButtonElement>, step: number) => {
+  const handleChangeBpm = (
+    e: MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>,
+    step: number
+  ) => {
+    e.preventDefault()
     setMetronome({ ...metronome, bpm: metronome.bpm + step })
     doChangeBpm.current = true
     changeBpmClickVerifier.current++
@@ -476,6 +481,9 @@ const Metronome = ({
               <button
                 type="button"
                 onMouseDown={(e) => handleChangeBpm(e, -1)}
+                onTouchStart={(e) => handleChangeBpm(e, -1)}
+                onTouchEnd={stopChangingBpm}
+                onTouchCancel={stopChangingBpm}
                 onMouseUp={stopChangingBpm}
                 onMouseLeave={stopChangingBpm}
                 className="btn grow join-item rounded-full btn-outline no-animation"
@@ -486,6 +494,9 @@ const Metronome = ({
               <button
                 type="button"
                 onMouseDown={(e) => handleChangeBpm(e, 1)}
+                onTouchStart={(e) => handleChangeBpm(e, 1)}
+                onTouchEnd={stopChangingBpm}
+                onTouchCancel={stopChangingBpm}
                 onMouseUp={stopChangingBpm}
                 onMouseLeave={stopChangingBpm}
                 className="btn grow join-item rounded-full btn-outline no-animation"
