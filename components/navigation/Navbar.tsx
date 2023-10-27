@@ -34,6 +34,7 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
                 htmlFor="my-drawer"
                 tabIndex={0}
                 className="btn btn-ghost btn-circle  avatar drawer-button"
+                onClick={(e) => e.currentTarget.blur()}
               >
                 <IconMenu2 />
               </label>
