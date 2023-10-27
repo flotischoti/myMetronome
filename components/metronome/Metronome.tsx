@@ -486,7 +486,7 @@ const Metronome = ({
                 }}
                 onTouchEnd={(e) => {
                   e.preventDefault()
-                  stopChangingBpm
+                  stopChangingBpm()
                 }}
                 onMouseUp={stopChangingBpm}
                 onMouseLeave={stopChangingBpm}
@@ -504,7 +504,7 @@ const Metronome = ({
                 }}
                 onTouchEnd={(e) => {
                   e.preventDefault()
-                  stopChangingBpm
+                  stopChangingBpm()
                 }}
                 onMouseUp={stopChangingBpm}
                 onMouseLeave={stopChangingBpm}
