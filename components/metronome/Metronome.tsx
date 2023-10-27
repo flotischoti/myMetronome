@@ -488,6 +488,10 @@ const Metronome = ({
                   e.preventDefault()
                   stopChangingBpm()
                 }}
+                onTouchCancel={(e) => {
+                  e.preventDefault()
+                  stopChangingBpm()
+                }}
                 onMouseUp={stopChangingBpm}
                 onMouseLeave={stopChangingBpm}
                 className="btn grow join-item rounded-full btn-outline no-animation"
@@ -503,6 +507,10 @@ const Metronome = ({
                   handleChangeBpm(e, 1)
                 }}
                 onTouchEnd={(e) => {
+                  e.preventDefault()
+                  stopChangingBpm()
+                }}
+                onTouchCancel={(e) => {
                   e.preventDefault()
                   stopChangingBpm()
                 }}
