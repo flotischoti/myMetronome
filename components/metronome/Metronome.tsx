@@ -291,14 +291,11 @@ const Metronome = ({
     e: MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>,
     step: number
   ) => {
-    console.log(e.type)
-    if (!doChangeBpm.current) {
-      doChangeBpm.current = true
-      setMetronome({ ...metronome, bpm: metronome.bpm + step })
-      changeBpmClickVerifier.current++
-      const verifier = changeBpmClickVerifier.current
-      holdDownBpmChange(step, verifier)
-    }
+    doChangeBpm.current = true
+    setMetronome({ ...metronome, bpm: metronome.bpm + step })
+    changeBpmClickVerifier.current++
+    const verifier = changeBpmClickVerifier.current
+    holdDownBpmChange(step, verifier)
   }
 
   const holdDownBpmChange = async (changeStep: number, verifier: number) => {
@@ -485,16 +482,16 @@ const Metronome = ({
             <div className="join w-full mt-2 flex">
               <button
                 type="button"
-                onMouseDown={(e) => handleChangeBpm(e, -1)}
+                // onMouseDown={(e) => handleChangeBpm(e, -1)}
                 onTouchStart={(e) => {
                   handleChangeBpm(e, -1)
                 }}
                 onTouchEnd={(e) => {
-                  e.preventDefault()
+                  // e.preventDefault()
                   stopChangingBpm(e)
                 }}
-                onMouseUp={stopChangingBpm}
-                onMouseLeave={stopChangingBpm}
+                // onMouseUp={stopChangingBpm}
+                // onMouseLeave={stopChangingBpm}
                 className="btn grow join-item rounded-full btn-outline no-animation"
               >
                 <IconMinus />
@@ -502,16 +499,16 @@ const Metronome = ({
 
               <button
                 type="button"
-                onMouseDown={(e) => handleChangeBpm(e, 1)}
+                // onMouseDown={(e) => handleChangeBpm(e, 1)}
                 onTouchStart={(e) => {
                   handleChangeBpm(e, 1)
                 }}
                 onTouchEnd={(e) => {
-                  e.preventDefault()
+                  // e.preventDefault()
                   stopChangingBpm(e)
                 }}
-                onMouseUp={stopChangingBpm}
-                onMouseLeave={stopChangingBpm}
+                // onMouseUp={stopChangingBpm}
+                // onMouseLeave={stopChangingBpm}
                 className="btn grow join-item rounded-full btn-outline no-animation"
               >
                 <IconPlus />
