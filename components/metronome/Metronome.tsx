@@ -291,6 +291,7 @@ const Metronome = ({
     e: MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>,
     step: number
   ) => {
+    console.log(e.type)
     if (!doChangeBpm.current) {
       doChangeBpm.current = true
       setMetronome({ ...metronome, bpm: metronome.bpm + step })
@@ -316,7 +317,10 @@ const Metronome = ({
     }
   }
 
-  const stopChangingBpm = () => {
+  const stopChangingBpm = (
+    e: MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>
+  ) => {
+    console.log(e.type)
     doChangeBpm.current = false
   }
 
@@ -486,10 +490,8 @@ const Metronome = ({
                   handleChangeBpm(e, -1)
                 }}
                 onTouchEnd={(e) => {
-                  stopChangingBpm()
-                }}
-                onTouchCancel={(e) => {
-                  stopChangingBpm()
+                  e.preventDefault()
+                  stopChangingBpm(e)
                 }}
                 onMouseUp={stopChangingBpm}
                 onMouseLeave={stopChangingBpm}
@@ -505,10 +507,8 @@ const Metronome = ({
                   handleChangeBpm(e, 1)
                 }}
                 onTouchEnd={(e) => {
-                  stopChangingBpm()
-                }}
-                onTouchCancel={(e) => {
-                  stopChangingBpm()
+                  e.preventDefault()
+                  stopChangingBpm(e)
                 }}
                 onMouseUp={stopChangingBpm}
                 onMouseLeave={stopChangingBpm}
