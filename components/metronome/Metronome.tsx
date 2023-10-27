@@ -482,15 +482,15 @@ const Metronome = ({
             <div className="join w-full mt-2 flex">
               <button
                 type="button"
-                // onMouseDown={(e) => handleChangeBpm(e, -1)}
+                onMouseDown={(e) => handleChangeBpm(e, -1)}
                 onTouchStart={(e) => {
                   handleChangeBpm(e, -1)
                 }}
                 onTouchEnd={(e) => {
-                  // e.preventDefault()
                   stopChangingBpm(e)
+                  e.preventDefault()
                 }}
-                // onMouseUp={stopChangingBpm}
+                onMouseUp={stopChangingBpm}
                 // onMouseLeave={stopChangingBpm}
                 className="btn grow join-item rounded-full btn-outline no-animation"
               >
@@ -499,15 +499,15 @@ const Metronome = ({
 
               <button
                 type="button"
-                // onMouseDown={(e) => handleChangeBpm(e, 1)}
+                onMouseDown={(e) => handleChangeBpm(e, 1)}
                 onTouchStart={(e) => {
                   handleChangeBpm(e, 1)
                 }}
                 onTouchEnd={(e) => {
-                  // e.preventDefault()
                   stopChangingBpm(e)
+                  e.preventDefault()
                 }}
-                // onMouseUp={stopChangingBpm}
+                onMouseUp={stopChangingBpm}
                 // onMouseLeave={stopChangingBpm}
                 className="btn grow join-item rounded-full btn-outline no-animation"
               >
