@@ -1,5 +1,6 @@
 'use client'
 
+import { TouchEvent, useRef, useState } from 'react'
 import Link from 'next/link'
 import {
   IconBrandGithub,
@@ -11,32 +12,51 @@ import {
 } from '@tabler/icons-react'
 
 export default function Sidebar({ userName }: { userName: string | null }) {
+  const touchStart = useRef<number | null>(null)
+  const touchEnd = useRef<number | null>(null)
+
+  // the required distance between touchStart and touchEnd to be detected as a swipe
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e: TouchEvent) => {
+    touchEnd.current = null
+    touchStart.current = e.targetTouches[0].clientX
+  }
+
+  const onTouchMove = (e: TouchEvent) =>
+    (touchEnd.current = e.targetTouches[0].clientX)
+
+  const onTouchEnd = () => {
+    if (!touchStart.current || !touchEnd.current) return
+    const distance = touchStart.current - touchEnd.current
+    const isRightSwipe = distance < -minSwipeDistance
+    if (isRightSwipe) closeDrawer()
+  }
+
+  const closeDrawer = () => {
+    ;(document.getElementById('my-drawer') as HTMLInputElement)!.checked = false
+  }
+
   return (
     <div className="drawer-side z-20">
       <label htmlFor="my-drawer" className="drawer-overlay"></label>
-      <div className="menu w-80 p-0 h-full bg-base-200 text-base-content flex-col justify-between">
+      <div
+        className="menu w-80 p-0 h-full bg-base-200 text-base-content flex-col justify-between"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <div className="p-4">
           <div className="flex justify-between align-center">
             <h1 className="font-bold text-lg">Hello {userName}!</h1>
             <button
               className="btn btn-xs btn-circle no-animation btn-ghost"
-              onClick={() =>
-                ((document.getElementById(
-                  'my-drawer'
-                ) as HTMLInputElement)!.checked = false)
-              }
+              onClick={closeDrawer}
             >
               <IconX />
             </button>
           </div>
-          <ul
-            className="mt-2"
-            onClick={() =>
-              ((document.getElementById(
-                'my-drawer'
-              ) as HTMLInputElement)!.checked = false)
-            }
-          >
+          <ul className="mt-2" onClick={closeDrawer}>
             <li>
               <Link href="/list" className="link" prefetch={false}>
                 <IconList />
