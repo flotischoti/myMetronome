@@ -13,7 +13,7 @@ export default function NavbarLoggedIn() {
           htmlFor="my-drawer"
           tabIndex={0}
           className="btn btn-ghost btn-circle  avatar drawer-button"
-          onClick={(e) => e.currentTarget.blur()}
+          onMouseUp={(e) => e.currentTarget.blur()}
         >
           <IconMenu2 />
         </label>
