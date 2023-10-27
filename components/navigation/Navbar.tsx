@@ -6,7 +6,7 @@ import {
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import NavbarAccountDropdown from './NavbarAccountDropdown'
-import NavbarSearch from './NavbarSearch'
+import NavbarLoggedIn from './NavbarLoggedIn'
 
 export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
@@ -27,19 +27,7 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
       </div>
       <div className="navbar-end">
         {isLoggedIn ? (
-          <>
-            <NavbarSearch />
-            <div>
-              <label
-                htmlFor="my-drawer"
-                tabIndex={0}
-                className="btn btn-ghost btn-circle  avatar drawer-button"
-                onClick={(e) => e.currentTarget.blur()}
-              >
-                <IconMenu2 />
-              </label>
-            </div>
-          </>
+          <NavbarLoggedIn />
         ) : (
           <>
             <div className="dropdown dropdown-end">
