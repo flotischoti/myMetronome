@@ -30,16 +30,16 @@ export default async function Page() {
           <label className="label">
             <span className="label-text">Username</span>
           </label>
-          <div className="input-group">
+          <div className="join">
             <input
               type="text"
               value={userName!}
-              className="input input-bordered"
+              className="join-item input input-bordered input-disabled"
               readOnly
             />
             <Link
               href="/account/edit/username"
-              className="btn btn-square"
+              className="join-item btn btn-square btn-neutral"
               prefetch={true}
             >
               EDIT
@@ -50,16 +50,16 @@ export default async function Page() {
           <label className="label">
             <span className="label-text">Password</span>
           </label>
-          <div className="input-group">
+          <div className="join">
             <input
               type="text"
               placeholder="**********"
-              className="input input-bordered"
+              className="join-item input input-bordered input-disabled"
               readOnly
             />
             <Link
               href="/account/edit/password"
-              className="btn btn-square"
+              className="join-item btn btn-square btn-neutral"
               prefetch={true}
             >
               EDIT

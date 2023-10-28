@@ -52,6 +52,7 @@ const ModalSearch = ({
       }, 300)
     } else {
       if (searchString.length == 0) {
+        setCount(recentCount)
         setResultList(recentMetronomes)
       }
       setIsLoading(false)
@@ -67,12 +68,12 @@ const ModalSearch = ({
 
   return (
     <div id="searchContainer" className="p-1">
-      <div id="searchBox" className="join join-horizontal w-full">
+      <div id="searchBox" className="join w-full">
         <input
           type="text"
           placeholder="Start typing..."
           onChange={handleChange}
-          className="input input-bordered join-item w-full"
+          className="input input-bordered join-item w-full rounded-none rounded-tl-lg"
           value={searchValue}
           onKeyDown={(e) => {
             if (e.key === 'Enter') router.push(`/list?s=${searchValue}`)
@@ -80,7 +81,7 @@ const ModalSearch = ({
         />
         <Link
           href={`/list?s=${searchValue}`}
-          className="btn join-item"
+          className="join-item btn btn-neutral rounded-none rounded-tr-lg"
           onClick={() => window.my_modal_2.close()}
         >
           Search
@@ -117,13 +118,13 @@ const ModalSearch = ({
                 </Link>
               </div>
             )}
-            <ul className="w-full">
+            <ul className="w-full shadow rounded-bl-lg rounded-br-lg">
               {resultList.map((r) => (
                 <li
                   id={'' + r.id}
                   key={r.id}
                   onClick={handleMetronomeSelection}
-                  className="bg-slate-50 hover:bg-slate-100 rounded-lg w-full p-2 pl-4"
+                  className="bg-base-100 hover:bg-base-200 shadow-sm rounded w-full p-2 pl-4"
                 >
                   <div>
                     <Link
@@ -131,7 +132,7 @@ const ModalSearch = ({
                       prefetch={true}
                       className="flex flex-col"
                     >
-                      <span className="font-bold underline ">{r.name}</span>
+                      <span className="font-bold underline">{r.name}</span>
                       <span>BPM: {r.bpm}</span>
                     </Link>
                   </div>
@@ -147,7 +148,8 @@ const ModalSearch = ({
             )}
             {searchValue.length == 0 && count > 0 && (
               <span className="text-xs mt-2">
-                Showing {Math.min(5, count)} last recently used metronomes.
+                Showing {Math.min(5, count)} last recently used metronome
+                {count == 1 ? '' : 's'}.
               </span>
             )}
           </>

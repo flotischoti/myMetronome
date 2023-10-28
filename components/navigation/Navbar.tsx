@@ -10,8 +10,8 @@ import NavbarLoggedIn from './NavbarLoggedIn'
 
 export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
-    <div className="navbar bg-base-100 pr-4 shadow sticky top-0 z-10">
-      <div className="navbar-start flex gap-4">
+    <div className="navbar bg-base-100 shadow sticky top-0 z-10">
+      <div className="flex-1">
         <Link
           href="/"
           prefetch={true}
@@ -20,12 +20,12 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
           <IconCone2 />
           <h1 className="font-cursive">Metronomes</h1>
         </Link>
-        <Link className="btn btn-accent" href="/metronome/new">
+        <Link className="btn btn-accent mx-1" href="/metronome/new">
           <IconPlus />
           <span>New</span>
         </Link>
       </div>
-      <div className="navbar-end">
+      <div className="flex-none">
         {isLoggedIn ? (
           <NavbarLoggedIn />
         ) : (
@@ -36,7 +36,7 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
               </label>
               <NavbarAccountDropdown />
             </div>
-            <div className="hidden sm:flex">
+            <div className="hidden sm:flex pr-2">
               <Link prefetch={true} href="/login" className="link link-hover">
                 Login
               </Link>

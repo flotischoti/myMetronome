@@ -86,7 +86,10 @@ export default async function Page() {
               required
             />
           </div>
-          <button type="submit" className="btn btn-square btn-primary mt-4">
+          <button
+            type="submit"
+            className="btn btn-square btn-neutral btn-wide mt-4"
+          >
             Save
           </button>
         </form>

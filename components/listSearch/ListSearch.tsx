@@ -30,7 +30,7 @@ const ListSearch = ({ oldSearch }: { oldSearch: string }) => {
       <Link
         href={`/list?s=${searchValue}`}
         prefetch={false}
-        className="btn join-item"
+        className="btn join-item btn-neutral"
         onClick={() => {
           if (searchValue != oldSearch) setIsSearching(true)
         }}

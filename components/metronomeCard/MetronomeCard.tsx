@@ -62,7 +62,7 @@ const MetronomeCard = ({
     <>
       <div
         id="card"
-        className="card w-full bg-base-100 shadow-xl my-2 hover:bg-slate-50"
+        className="card w-full rounded-md hover:rounded-md bg-base-100 my-1 hover:bg-base-200"
       >
         <div className="card-body p-0">
           <div className="flex justify-end">
@@ -73,7 +73,7 @@ const MetronomeCard = ({
             >
               <div id="cardTitle" className="card-title">
                 <div className="flex-column sm:flex flex-wrap items-center gap-4">
-                  <h5 className="text-1xl font-bold tracking-tight text-gray-900">
+                  <h5 className="text-1xl font-bold tracking-tight">
                     {metronome.name}
                   </h5>
                   <div className="badge badge-neutral mr-2">

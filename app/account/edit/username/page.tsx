@@ -65,15 +65,18 @@ const Page = async () => {
             <label className="label">
               <span className="label-text">Username *</span>
             </label>
-            <div className="input-group">
+            <div className="join">
               <input
                 name="username"
                 type="text"
                 defaultValue={userName!}
-                className="input input-bordered"
+                className="join-item input input-bordered"
                 required
               />
-              <button type="submit" className="btn btn-square btn-primary">
+              <button
+                type="submit"
+                className="btn join-item btn-square btn-neutral"
+              >
                 Save
               </button>
             </div>

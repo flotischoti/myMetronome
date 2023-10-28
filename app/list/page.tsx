@@ -53,10 +53,11 @@ export default async function Page({
         <div className="divider text-xs">
           {count} metronome{count > 1 || count == 0 ? 's' : ''} found
         </div>
-
-        {metronomes.map((m, i) => (
-          <MetronomeCard key={i} metronome={m} command={command?.value} />
-        ))}
+        <div className="shadow rounded-md">
+          {metronomes.map((m, i) => (
+            <MetronomeCard key={i} metronome={m} command={command?.value} />
+          ))}
+        </div>
         {page <= maxPage && (
           <div className="realtive flex justify-center items-center mt-8">
             <div className="join">
@@ -67,7 +68,7 @@ export default async function Page({
               >
                 <IconChevronsLeft />
               </Link>
-              <button className="join-item btn no-animation">
+              <button className="join-item btn no-animation btn-disabled btn-neutral border-none">
                 Page {page}
               </button>
               <Link

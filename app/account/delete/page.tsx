@@ -56,27 +56,22 @@ export default async function Page() {
             </li>
           </ul>
         </div>
-        <form action={deleteUser}>
+        <form action={deleteUser} className="max-w-sm flex flex-col gap-4">
           <h1 className="font-bold text-lg">Delete account</h1>
           <p>
             Enter your password and confirm deletion. This will permanently
             remove your account and all associated metronomes.{' '}
           </p>
-          <label className="label">
-            <span className="label-text">Password *</span>
-          </label>
-          <div className="join">
-            <input
-              name="password"
-              type="password"
-              className="input input-bordered join-item"
-              placeholder="**********"
-              required
-            />
-            <button type="submit" className="btn btn-error join-item">
-              Delete account
-            </button>
-          </div>
+          <input
+            name="password"
+            type="password"
+            className="input input-bordered"
+            placeholder="**********"
+            required
+          />
+          <button type="submit" className="btn btn-error">
+            Delete account
+          </button>
         </form>
       </div>
     </>

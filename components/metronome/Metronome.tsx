@@ -433,11 +433,11 @@ const Metronome = ({
   }
 
   return (
-    <form className="select-none shadow">
+    <form className="select-none shadow bg-base-100">
       <div id="metronomeTitleArea-1" className="p-2">
         {!isEditTitle ? (
           <div onClick={() => setEditTitle(true)} className="flex items-center">
-            <h1 className="text-xl p-2 hover:cursor-text">
+            <h1 className="text-2xl p-2 hover:cursor-text">
               {metronome.name || 'Enter metronome title'}
             </h1>
             <span>
@@ -550,28 +550,31 @@ const Metronome = ({
                   htmlFor="stressCheckbox-1"
                   className="ml-2 text-sm cursor-pointer"
                 >
-                  <span className="text-gray-600">
+                  <span className="">
                     Stress 1<sup>st</sup> beat
                   </span>
                 </label>
               </div>
               {metronome.stressFirst && (
-                <div id="beatCountArea-1" className="join flex items-center">
+                <div
+                  id="beatCountArea-1"
+                  className="flex items-center justify-between  w-32"
+                >
                   <button
                     type="button"
-                    className="btn btn-xs join-item"
+                    className="btn btn-xs btn-outline btn-neutral"
                     disabled={metronome.beats <= minBeats}
                     onClick={decreaseBeats}
                   >
                     <IconMinus size="8" />
                   </button>
-                  <span className="text-base mx-1 join-item">
+                  <span className="text-base">
                     {metronome.beats} Beat
                     {metronome.beats > 1 && <span>s</span>}
                   </span>
                   <button
                     type="button"
-                    className="btn btn-xs join-item"
+                    className="btn btn-xs btn-outline btn-neutral"
                     disabled={metronome.beats >= maxBeats}
                     onClick={increaseBeats}
                   >
@@ -587,7 +590,10 @@ const Metronome = ({
             id="metronomeCountdownArea-1"
             className="flex justify-between mt-4"
           >
-            <div id="countdownCheckboxPane-1" className="flex items-center ">
+            <div
+              id="countdownCheckboxPane-1"
+              className="flex items-center justify-around"
+            >
               <input
                 id="timerCheckbox-1"
                 type="checkbox"
@@ -599,23 +605,23 @@ const Metronome = ({
                 htmlFor="timerCheckbox-1"
                 className="ml-2 text-sm cursor-pointer"
               >
-                <span className="text-gray-600">Use timer</span>
+                <span className="">Use timer</span>
               </label>
             </div>
             {metronome.timerActive && (
               <div
                 id="countdownSettingsArea-1"
-                className="join flex items-center"
+                className="flex items-center justify-between w-32"
               >
                 <button
                   type="button"
-                  className="btn btn-xs join-item"
+                  className="btn btn-xs btn-outline btn-neutral"
                   disabled={metronome.timerValue <= timerChangeInterval}
                   onClick={decreaseTimer}
                 >
                   <IconMinus size="8" />
                 </button>
-                <span className="countdown font-mono text-lg join-item mx-1">
+                <span className="countdown font-mono text-base font-sans">
                   <span
                     style={{
                       '--value': (
@@ -634,7 +640,7 @@ const Metronome = ({
                 </span>
                 <button
                   type="button"
-                  className="btn btn-xs join-item"
+                  className="btn btn-xs btn-outline btn-neutral"
                   disabled={metronome.timerValue >= timerChangeInterval * 119}
                   onClick={increaseTimer}
                 >
@@ -661,7 +667,7 @@ const Metronome = ({
                 htmlFor="stopWatchCheckbox-1"
                 className="ml-2 text-sm cursor-pointer"
               >
-                <span className="text-gray-600">Show usage</span>
+                <span className="">Show usage</span>
               </label>
             </div>
             {metronome.showStats &&
@@ -676,12 +682,14 @@ const Metronome = ({
                     className="flex flex-col items-center"
                     key={i}
                   >
-                    <span className="text-gray-600 text-sm">
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    <span className="text-sm">
+                      {type === 'time'
+                        ? 'Total'
+                        : type.charAt(0).toUpperCase() + type.slice(1)}
                     </span>
                     <span
                       id={`${type}TimeNumbers-1`}
-                      className="countdown font-mono text-lg"
+                      className="countdown font-mono text-sm font-sans"
                     >
                       <span
                         style={{
@@ -726,7 +734,7 @@ const Metronome = ({
               <button
                 formAction={deleteMetronome}
                 className={`btn btn-outline btn-error ${
-                  isDoingSomething ? 'btn-disabled' : 'btn-active'
+                  isDoingSomething ? 'btn-disabled' : ''
                 }`}
               >
                 {isDoingSomething ? (
