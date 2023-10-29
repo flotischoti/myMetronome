@@ -11,7 +11,7 @@ import NavbarLoggedIn from './NavbarLoggedIn'
 export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <div className="navbar bg-base-100 shadow sticky top-0 z-10">
-      <div className="flex-1">
+      <div className="flex-1 gap-2">
         <Link
           href="/"
           prefetch={true}
