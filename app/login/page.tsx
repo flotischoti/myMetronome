@@ -18,7 +18,7 @@ const LoginButton = function () {
     <button
       type="submit"
       className={`btn ${
-        pending ? 'btn-disabled' : 'btn-primary'
+        pending ? 'btn-disabled' : 'btn-netral'
       } w-full btn-outline`}
     >
       {pending ? (
@@ -40,8 +40,8 @@ export default function Page() {
     <>
       <title>Metronomes - Login</title>
       <section className="flex flex-col items-center h-full justify-between">
-        <div className="max-w-sm rounded-lg shadow">
-          <div className="p-6">
+        <div className="w-full max-w-sm rounded-lg shadow">
+          <div className="p-4">
             <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl">
               Login
             </h1>
@@ -82,14 +82,14 @@ export default function Page() {
               {state?.message && (
                 <span className="mt-4 text-red-600">{state?.message}</span>
               )}
-              <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+              <p className="text-sm font-light">
                 Don&apos;t have an account yet?{' '}
                 <Link
                   href={
                     targetUrl ? `/register?target=${targetUrl}` : '/register'
                   }
                   prefetch={false}
-                  className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                  className="font-medium hover:underline"
                 >
                   Sign up here
                 </Link>
@@ -98,10 +98,10 @@ export default function Page() {
           </div>
         </div>
         <div className="alert alert-info max-w-md text-center">
-          <p className="select-none">
-            By logging in you agree to the usage of cookies to handle sessions
-            and page communications. They expire after logout or 48 hours of
-            inactivity.
+          <p className="select-none text-xs">
+            By logging in you agree to the usage of essential cookies to handle
+            sessions and page communications. They expire after logout or max 48
+            hours of inactivity.
           </p>
         </div>
       </section>

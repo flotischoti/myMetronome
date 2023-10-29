@@ -434,13 +434,13 @@ const Metronome = ({
 
   return (
     <form className="select-none shadow bg-base-100">
-      <div id="metronomeTitleArea-1" className="p-2">
+      <div id="metronomeTitleArea-1" className="p-3 sm:p-4">
         {!isEditTitle ? (
           <div onClick={() => setEditTitle(true)} className="flex items-center">
-            <h1 className="text-2xl p-2 hover:cursor-text">
+            <h1 className="text-xl hover:cursor-text break-all">
               {metronome.name || 'Enter metronome title'}
             </h1>
-            <span>
+            <span className="pl-2">
               <IconEdit size="16" className="hover:cursor-pointer" />
             </span>
           </div>
@@ -451,7 +451,7 @@ const Metronome = ({
             placeholder="Enter metronome title"
             onBlur={editTitle}
             autoFocus
-            className="input w-full "
+            className="input w-full input-ghost"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.currentTarget.blur()
@@ -461,7 +461,7 @@ const Metronome = ({
           />
         )}
       </div>
-      <div id="metronomeBodyArea-1" className="px-2 sm:px-4">
+      <div id="metronomeBodyArea-1" className="px-3 sm:px-4">
         <div id="metronomeBpmArea-1" className="flex flex-col items-center">
           <div id="metronomeBpmDisplay-1">
             <span className="text-7xl font-bold ">{metronome.bpm}</span>
