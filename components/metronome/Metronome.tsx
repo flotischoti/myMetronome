@@ -52,7 +52,7 @@ const minBpm = 20
 const timerChangeInterval = 30000
 const maxBeats = 12
 const minBeats = 2
-const scheduleAheadTime = 0.15
+const scheduleAheadTime = 0.2
 const lookahead = 25
 
 const defaultStoredMetronome: StoredMetronome = {
@@ -253,7 +253,7 @@ const Metronome = ({
     }, 1000)
     currentBeatInBar.current = 0
     if (nextNoteTime.current == 0)
-      nextNoteTime.current = audioContext.current.currentTime + 0.1
+      nextNoteTime.current = audioContext.current.currentTime + 0.15
     schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
   }
 
