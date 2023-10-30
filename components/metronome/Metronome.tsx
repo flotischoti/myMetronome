@@ -52,7 +52,7 @@ const minBpm = 20
 const timerChangeInterval = 30000
 const maxBeats = 12
 const minBeats = 2
-const scheduleAheadTime = 0.1
+const scheduleAheadTime = 0.15
 const lookahead = 25
 
 const defaultStoredMetronome: StoredMetronome = {
