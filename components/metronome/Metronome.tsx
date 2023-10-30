@@ -253,7 +253,7 @@ const Metronome = ({
     }, 1000)
     currentBeatInBar.current = 0
     if (nextNoteTime.current == 0)
-      nextNoteTime.current = audioContext.current.currentTime + 0.25
+      nextNoteTime.current = audioContext.current.currentTime + 0.2
     schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
   }
 
