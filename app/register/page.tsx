@@ -60,6 +60,7 @@ export default function Page() {
                   type="text"
                   name="name"
                   id="name"
+                  maxLength={20}
                   className="input input-bordered w-full"
                   placeholder="Your Username"
                   required={true}
@@ -91,6 +92,7 @@ export default function Page() {
                   type="password"
                   name="password"
                   id="password"
+                  minLength={8}
                   placeholder="••••••••"
                   className="input input-bordered w-full"
                   required={true}

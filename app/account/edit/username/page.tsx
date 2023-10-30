@@ -69,6 +69,7 @@ const Page = async () => {
               <input
                 name="username"
                 type="text"
+                maxLength={20}
                 defaultValue={userName!}
                 className="join-item input input-bordered"
                 required

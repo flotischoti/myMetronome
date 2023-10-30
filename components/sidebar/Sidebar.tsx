@@ -48,7 +48,7 @@ export default function Sidebar({ userName }: { userName: string | null }) {
       >
         <div className="p-4">
           <div className="flex justify-between align-center">
-            <h1 className="font-bold text-lg">Hello {userName}!</h1>
+            <h1 className="font-bold text-lg break-all">Hello {userName}!</h1>
             <button
               className="btn btn-xs btn-circle no-animation btn-ghost"
               onClick={closeDrawer}

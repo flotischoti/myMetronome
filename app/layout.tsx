@@ -11,6 +11,7 @@ import { StoredMetronome } from '../components/metronome/Metronome'
 import * as metronomeDb from '../db/metronome'
 import { Inter, Pacifico } from 'next/font/google'
 
+export const revalidate = 0
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',

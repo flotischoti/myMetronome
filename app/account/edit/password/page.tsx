@@ -72,6 +72,7 @@ export default async function Page() {
               name="newPw"
               type="password"
               defaultValue=""
+              minLength={8}
               className="input input-bordered"
               required
             />
@@ -81,6 +82,7 @@ export default async function Page() {
             <input
               name="newPwConfirm"
               type="password"
+              minLength={8}
               defaultValue=""
               className="input input-bordered"
               required

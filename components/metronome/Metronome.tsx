@@ -17,6 +17,7 @@ import {
   IconPlayerPlay,
   IconPlus,
   IconTrash,
+  IconX,
 } from '@tabler/icons-react'
 
 import {
@@ -51,7 +52,7 @@ const minBpm = 20
 const timerChangeInterval = 30000
 const maxBeats = 12
 const minBeats = 2
-const scheduleAheadTime = 0.1
+const scheduleAheadTime = 0.2
 const lookahead = 25
 
 const defaultStoredMetronome: StoredMetronome = {
@@ -87,6 +88,7 @@ const Metronome = ({
     ...m,
     ...defaultLocalMetronome,
   })
+  const [deletionInProgress, setDeletionInProgress] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
   const currentBeatInBar = useRef<number>(-1)
   const [saveState, setSaveState] = useState('')
@@ -251,7 +253,7 @@ const Metronome = ({
     }, 1000)
     currentBeatInBar.current = 0
     if (nextNoteTime.current == 0)
-      nextNoteTime.current = audioContext.current.currentTime + 0.05
+      nextNoteTime.current = audioContext.current.currentTime + 0.25
     schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
   }
 
@@ -461,7 +463,7 @@ const Metronome = ({
           />
         )}
       </div>
-      <div id="metronomeBodyArea-1" className="px-3 sm:px-4">
+      <div id="metronomeBodyArea-1" className="px-3 pb-3 sm:px-4">
         <div id="metronomeBpmArea-1" className="flex flex-col items-center">
           <div id="metronomeBpmDisplay-1">
             <span className="text-7xl font-bold ">{metronome.bpm}</span>
@@ -713,39 +715,61 @@ const Metronome = ({
               })}
           </div>
         </div>
-        <div className="mt-4 py-4 flex justify-end items-center">
-          <div id="metronomeButtonArea-1">
-            {!metronome.id && (
-              <button
-                formAction={createMetronome}
-                className={`btn btn-outline ${
-                  isDoingSomething || !user ? 'btn-disabled' : 'btn-active'
-                }`}
-              >
-                {isDoingSomething ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  <IconDeviceFloppy size="16" />
-                )}
-                Save
-              </button>
-            )}
-            {metronome.id && (
-              <button
-                formAction={deleteMetronome}
-                className={`btn btn-outline btn-error ${
-                  isDoingSomething ? 'btn-disabled' : ''
-                }`}
-              >
-                {isDoingSomething ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  <IconTrash size="16" />
-                )}
-                Delete
-              </button>
-            )}
-          </div>
+        <div
+          id="metronomeButtonArea-1"
+          className={`mt-4 flex items-center w-full ${
+            deletionInProgress ? 'justify-between' : 'justify-end'
+          }`}
+        >
+          {!metronome.id && (
+            <button
+              formAction={createMetronome}
+              className={`btn btn-outline ${
+                isDoingSomething || !user ? 'btn-disabled' : 'btn-active'
+              }`}
+            >
+              {isDoingSomething ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <IconDeviceFloppy size="16" />
+              )}
+              Save
+            </button>
+          )}
+          {metronome.id && !deletionInProgress && (
+            <button
+              type="button"
+              className="btn btn-outline btn-error btn-circle"
+              onClick={(e) => setDeletionInProgress(true)}
+            >
+              <IconTrash size="16" />
+            </button>
+          )}
+          {metronome.id && deletionInProgress && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={(e) => setDeletionInProgress(false)}
+            >
+              <IconX />
+              Cancel
+            </button>
+          )}
+          {metronome.id && deletionInProgress && (
+            <button
+              formAction={deleteMetronome}
+              className={`btn btn-outline btn-error btn-md ${
+                isDoingSomething ? 'btn-disabled' : ''
+              }`}
+            >
+              {isDoingSomething ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <IconTrash size="16" />
+              )}
+              Confirm
+            </button>
+          )}
         </div>
       </div>
       {saveState != '' && (
