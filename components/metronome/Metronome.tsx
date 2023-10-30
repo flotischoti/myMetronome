@@ -294,7 +294,10 @@ const Metronome = ({
     step: number
   ) => {
     doChangeBpm.current = true
-    setMetronome({ ...metronome, bpm: metronome.bpm + step })
+    setMetronome({
+      ...metronome,
+      bpm: Math.min(Math.max(metronome.bpm + step, minBpm), maxBpm),
+    })
     changeBpmClickVerifier.current++
     const verifier = changeBpmClickVerifier.current
     holdDownBpmChange(step, verifier)
