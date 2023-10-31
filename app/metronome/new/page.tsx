@@ -14,7 +14,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   return (
     <>
       <title>Metronomes - New</title>
-      <div id="newMetronomeContainer" className="max-w-sm mx-auto relative">
+      <div id="newMetronomeContainer" className="max-w-sm mx-auto">
         <Metronome dbMetronome={null} user={user} command={command?.value} />
         {!user && <LoginAlert />}
       </div>

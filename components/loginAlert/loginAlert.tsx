@@ -10,7 +10,7 @@ const LoginAlert = () => {
   return (
     <>
       {showAlert && (
-        <div className="alert alert-info absolute bottom-2 w-11/12 text-sm left-0 right-0 m-auto flex items-center px-3 opacity-95 justify-between">
+        <div className="alert alert-info absolute bottom-2 w-11/12 max-w-sm text-sm left-0 right-0 m-auto flex items-center px-3 opacity-95 justify-between">
           <span className="select-none">
             <IconInfoCircle className="inline mr-1" />
             <Link href="/register" className="link">
