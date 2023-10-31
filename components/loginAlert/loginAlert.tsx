@@ -10,8 +10,8 @@ const LoginAlert = () => {
   return (
     <>
       {showAlert && (
-        <div className="alert alert-info absolute bottom-2 w-11/12 max-w-sm text-sm left-0 right-0 m-auto flex items-center px-3 opacity-95 justify-between">
-          <span className="select-none">
+        <div className="alert alert-info bottom-2 py-0.5 rounded-none w-full text-sm flex items-center px-2 justify-between">
+          <span className="select-none flex items-center">
             <IconInfoCircle className="inline mr-1" />
             <Link href="/register" className="link">
               Sign up
@@ -22,7 +22,7 @@ const LoginAlert = () => {
             </Link>
             <span>&nbsp;to save metronomes</span>
           </span>
-          <div>
+          <div className="flex items-center">
             <button
               className="btn btn-circle btn-xs btn-ghost"
               onClick={(e) => setShowAlert(false)}
