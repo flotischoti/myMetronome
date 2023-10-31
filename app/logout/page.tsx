@@ -14,7 +14,7 @@ export default function Page() {
   return (
     <>
       <title>Metronomes - Logout</title>
-      <div>
+      <div className="p-2">
         {error ? <span>Logging out...</span> : <span>Error logging out</span>}
       </div>
     </>

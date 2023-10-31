@@ -97,7 +97,7 @@ export default function Page() {
             </form>
           </div>
         </div>
-        <div className="alert alert-info max-w-md text-center">
+        <div className="alert alert-info max-w-md text-center rounded-none">
           <p className="select-none text-xs">
             By logging in you agree to the usage of essential cookies to handle
             sessions and page communications. They expire after logout or max 48
