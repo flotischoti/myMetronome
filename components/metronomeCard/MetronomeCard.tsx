@@ -18,7 +18,7 @@ function SubmitButton() {
   return (
     <button type="submit" className="hover:drop-shadow-xl mr-2 btn btn-error">
       {pending ? (
-        <span className="loading loading-spinner loading-md" />
+        <span className="loading loading-spinner loading-sm" />
       ) : (
         <IconTrash className="hover:cursor-pointer" />
       )}
@@ -30,9 +30,13 @@ function SubmitButton() {
 const MetronomeCard = ({
   metronome,
   command,
+  setForDeletion,
+  idForDeletion,
 }: {
   metronome: StoredMetronome
   command: string | undefined
+  setForDeletion: (id: number | undefined) => void
+  idForDeletion: number | undefined
 }) => {
   const [showToast, setShowToast] = useState(false)
   const [tostMessage, setToastMessage] = useState('')
@@ -45,8 +49,6 @@ const MetronomeCard = ({
     deleteMetronomeFromCard,
     initialState
   )
-  const [deleteInProgress, setDeleteInProgress] = useState(false)
-
   useEffect(() => {
     if (command == 'deleted') {
       setShowToast(true)
@@ -105,22 +107,22 @@ const MetronomeCard = ({
             <div className="flex items-center p-4">
               <button
                 type="submit"
-                className="hover:drop-shadow-xl mr-2 btn btn-circle btn-outline btn-error"
-                onClick={(e) => setDeleteInProgress(true)}
+                className="hover:drop-shadow-xl mr-2 btn btn-square btn-sm btn-outline btn-error"
+                onClick={(e) => setForDeletion(metronome.id!)}
               >
                 <IconTrash className="hover:cursor-pointer text-error" />
               </button>
             </div>
           </div>
-          {deleteInProgress && (
+          {idForDeletion == metronome.id && (
             <form
               id="controls"
               action={formAction}
-              className="flex w-full h-full items-center justify-between p-7 absolute bg-base-100 bg-opacity-90"
+              className="flex w-full h-full items-center justify-between p-8 absolute bg-base-100 bg-opacity-90"
             >
               <button
                 className="btn btn-neutral"
-                onClick={(e) => setDeleteInProgress(false)}
+                onClick={(e) => setForDeletion(undefined)}
               >
                 <IconX />
                 Cancel

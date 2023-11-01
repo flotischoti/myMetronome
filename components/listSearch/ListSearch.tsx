@@ -15,7 +15,7 @@ const ListSearch = ({ oldSearch }: { oldSearch: string }) => {
   }, [oldSearch])
 
   return (
-    <div id="searchContainer" className="join w-full">
+    <div id="searchContainer" className="join w-full px-0.5">
       <input
         type="search"
         id="default-search"

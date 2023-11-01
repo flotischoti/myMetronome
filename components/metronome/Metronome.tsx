@@ -742,10 +742,10 @@ const Metronome = ({
           {metronome.id && !deletionInProgress && (
             <button
               type="button"
-              className="btn btn-outline btn-error btn-circle"
+              className="btn btn-outline btn-error btn-square btn-md"
               onClick={(e) => setDeletionInProgress(true)}
             >
-              <IconTrash size="16" />
+              <IconTrash size="24" />
             </button>
           )}
           {metronome.id && deletionInProgress && (

@@ -6,6 +6,7 @@ import ListSearch from '../../components/listSearch/ListSearch'
 import { cookies } from 'next/headers'
 import { getUserAttrFromToken } from '../api/util'
 import { IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react'
+import MetronomeCardContainer from '@/components/metronomeCard/MetronomeCardContainer'
 
 const pageSize = 5
 
@@ -53,11 +54,10 @@ export default async function Page({
         <div className="divider text-xs">
           {count} metronome{count > 1 || count == 0 ? 's' : ''} found
         </div>
-        <div className="shadow rounded-md">
-          {metronomes.map((m, i) => (
-            <MetronomeCard key={i} metronome={m} command={command?.value} />
-          ))}
-        </div>
+        <MetronomeCardContainer
+          metronomes={metronomes}
+          command={command?.value}
+        />
         {page <= maxPage && (
           <div className="realtive flex justify-center items-center mt-8">
             <div className="join">
