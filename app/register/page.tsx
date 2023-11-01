@@ -98,6 +98,25 @@ export default function Page() {
                   required={true}
                 />
               </div>
+              <div className="form-control">
+                <label htmlFor="passwordRepeat" className="label">
+                  <span className="label-text">Password Repeat*</span>
+                </label>
+                <input
+                  type="password"
+                  name="passwordRepeat"
+                  id="passwordRepeat"
+                  minLength={8}
+                  placeholder="••••••••"
+                  className="input input-bordered w-full"
+                  required={true}
+                />
+                <label className="label">
+                  <span className="label-text-alt">
+                    Take care. Password reset not yet implemented.
+                  </span>
+                </label>
+              </div>
               <div>
                 <SubmitButton />
               </div>

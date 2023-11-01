@@ -11,16 +11,17 @@ import * as userDb from '../db/user'
 import * as utils from './api/util'
 
 export async function signupServerAction(prevState: any, formData: FormData) {
-  const { name, password, email, target } = {
+  const { name, password, passwordRepeat, email, target } = {
     name: formData.get('name')?.toString(),
     password: formData.get('password')?.toString(),
+    passwordRepeat: formData.get('passwordRepeat')?.toString(),
     email: formData.get('email')?.toString(),
     target: formData.get('target')?.toString(),
   }
 
-  if (!name || !password) {
-    return { message: 'Password or name missing' }
-  }
+  if (!name || !password) return { message: 'Password or name missing' }
+
+  if (password !== passwordRepeat) return { message: `Passwords don't match` }
 
   // if (!utils.isEmailValid(email)) {
   //   return NextResponse.json(utils.getErrorResponse(`Invalid email`), {
