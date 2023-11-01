@@ -93,7 +93,6 @@ const Metronome = ({
   const currentBeatInBar = useRef<number>(-1)
   const [saveState, setSaveState] = useState('')
   const [tostMessage, setToastMessage] = useState('')
-  const [isDoingSomething, setIsDoingSomething] = useState(false)
   const doChangeBpm = useRef(true)
   const changeBpmClickVerifier = useRef(0)
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -107,9 +106,14 @@ const Metronome = ({
   const schedulerIntervalId = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined
   )
+
+  const [updateInProgress, setUpdateInProgress] = useState(false)
   let [pendingSave, startTransitionSave] = useTransition()
   let [pendingDelete, startTransitionDelete] = useTransition()
   let [pendingUpdate, startTransitionUpdate] = useTransition()
+  const pendingUpdatePrev = useRef(false)
+  const pendingSavePrev = useRef(false)
+  const pendingDeletePrev = useRef(false)
 
   useEffect(() => {
     const AudioContext = window.AudioContext || window.webkitAudioContext
@@ -141,19 +145,34 @@ const Metronome = ({
   // }, [nextNoteTime.current])
 
   useEffect(() => {
-    if (pendingSave) {
-      setIsDoingSomething(true)
-      setSuccessState('Saving', 'info')
-    } else if (pendingUpdate) {
-      setSuccessState('Autosaving', 'info')
-    } else if (pendingDelete) {
-      setIsDoingSomething(true)
-      setSuccessState('Deleting', 'info')
-    } else {
-      if (isDoingSomething) setSuccessState('Something went wrong', 'error')
-      setIsDoingSomething(false)
+    if (pendingUpdate) {
+      pendingUpdatePrev.current = true
+    } else if (pendingUpdatePrev.current) {
+      setSuccessState('Autosaved', 'info')
+      setUpdateInProgress(false)
+      pendingUpdatePrev.current = false
     }
-  }, [pendingUpdate, pendingSave, pendingDelete])
+  }, [pendingUpdate])
+
+  useEffect(() => {
+    if (pendingSave) {
+      pendingSavePrev.current = true
+      setSuccessState('Saving', 'info')
+    } else if (pendingSavePrev.current) {
+      setSuccessState('Something went wrong', 'error')
+      pendingSavePrev.current = false
+    }
+  }, [pendingSave])
+
+  useEffect(() => {
+    if (pendingDelete) {
+      pendingDeletePrev.current = true
+      setSuccessState('Deleting', 'info')
+    } else if (pendingDeletePrev.current) {
+      setSuccessState('Something went wrong', 'error')
+      pendingDeletePrev.current = false
+    }
+  }, [pendingDelete])
 
   useEffect(() => {
     if (metronome.isPlaying) {
@@ -182,6 +201,7 @@ const Metronome = ({
 
   // AutoSave
   useEffect(() => {
+    if (!pendingDelete) setDeletionInProgress(false)
     autosave()
   }, [
     metronome.showStats,
@@ -271,11 +291,14 @@ const Metronome = ({
   }
 
   const autosave = () => {
-    if (metronome.id) {
+    if (user && metronome.id && !pendingDelete) {
+      setUpdateInProgress(true)
       clearTimeout(autoSaveTimer.current)
       autoSaveTimer.current = setTimeout(() => {
-        updateMetronome()
-      }, 3000)
+        startTransitionUpdate(async () => {
+          updateServerAction(metronome)
+        })
+      }, 2000)
     }
   }
 
@@ -363,14 +386,6 @@ const Metronome = ({
 
   const handleShowStats = (e: ChangeEvent<HTMLInputElement>) => {
     setMetronome({ ...metronome, showStats: !metronome.showStats })
-  }
-
-  const updateMetronome = async () => {
-    if (user && metronome.id && !isDoingSomething) {
-      startTransitionUpdate(async () => {
-        updateServerAction(metronome)
-      })
-    }
   }
 
   const setTimer = (e: ChangeEvent<HTMLInputElement>) => {
@@ -728,10 +743,10 @@ const Metronome = ({
             <button
               formAction={createMetronome}
               className={`btn btn-outline ${
-                isDoingSomething || !user ? 'btn-disabled' : 'btn-active'
+                pendingSave || !user ? 'btn-disabled' : 'btn-active'
               }`}
             >
-              {isDoingSomething ? (
+              {pendingSave ? (
                 <span className="loading loading-spinner loading-xs"></span>
               ) : (
                 <IconDeviceFloppy size="16" />
@@ -739,7 +754,7 @@ const Metronome = ({
               Save
             </button>
           )}
-          {metronome.id && !deletionInProgress && (
+          {metronome.id && !deletionInProgress && !updateInProgress && (
             <button
               type="button"
               className="btn btn-outline btn-error btn-square btn-md"
@@ -747,6 +762,9 @@ const Metronome = ({
             >
               <IconTrash size="24" />
             </button>
+          )}
+          {metronome.id && !deletionInProgress && updateInProgress && (
+            <span className="loading loading-spinner loading-lg mb-2"></span>
           )}
           {metronome.id && deletionInProgress && (
             <button
@@ -762,10 +780,10 @@ const Metronome = ({
             <button
               formAction={deleteMetronome}
               className={`btn btn-outline btn-error btn-md ${
-                isDoingSomething ? 'btn-disabled' : ''
+                pendingDelete ? 'btn-disabled' : ''
               }`}
             >
-              {isDoingSomething ? (
+              {pendingDelete ? (
                 <span className="loading loading-spinner loading-xs"></span>
               ) : (
                 <IconTrash size="16" />
