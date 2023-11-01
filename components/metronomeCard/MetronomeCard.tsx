@@ -4,7 +4,7 @@ import { StoredMetronome } from '../metronome/Metronome'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { IconTrash } from '@tabler/icons-react'
+import { IconTrash, IconX } from '@tabler/icons-react'
 import { experimental_useFormState as useFormState } from 'react-dom'
 import { experimental_useFormStatus as useFormStatus } from 'react-dom'
 import { deleteMetronomeAction } from '../../app/actions'
@@ -16,15 +16,13 @@ const initialState = {
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <button
-      type="submit"
-      className="hover:drop-shadow-xl mr-2 btn btn-circle btn-outline border-red-500"
-    >
+    <button type="submit" className="hover:drop-shadow-xl mr-2 btn btn-error">
       {pending ? (
         <span className="loading loading-spinner loading-md" />
       ) : (
-        <IconTrash color="red" className="hover:cursor-pointer" />
+        <IconTrash className="hover:cursor-pointer" />
       )}
+      Confirm
     </button>
   )
 }
@@ -47,6 +45,7 @@ const MetronomeCard = ({
     deleteMetronomeFromCard,
     initialState
   )
+  const [deleteInProgress, setDeleteInProgress] = useState(false)
 
   useEffect(() => {
     if (command == 'deleted') {
@@ -64,7 +63,7 @@ const MetronomeCard = ({
         id="card"
         className="card w-full rounded-md hover:rounded-md bg-base-100 my-1 hover:bg-base-200"
       >
-        <div className="card-body p-0">
+        <div className="card-body p-0 relative">
           <div className="flex justify-end">
             <Link
               href={`/metronome/${metronome.id}`}
@@ -101,14 +100,32 @@ const MetronomeCard = ({
               </div>
             </Link>
             <div className="divider divider-horizontal mx-0"></div>
+            <div className="flex items-center p-4">
+              <button
+                type="submit"
+                className="hover:drop-shadow-xl mr-2 btn btn-circle btn-outline btn-error"
+                onClick={(e) => setDeleteInProgress(true)}
+              >
+                <IconTrash className="hover:cursor-pointer text-error" />
+              </button>
+            </div>
+          </div>
+          {deleteInProgress && (
             <form
               id="controls"
               action={formAction}
-              className="flex items-center p-4"
+              className="flex w-full h-full items-center justify-between p-12 gap-2 absolute bg-base-100 bg-opacity-90"
             >
+              <button
+                className="btn btn-neutral"
+                onClick={(e) => setDeleteInProgress(false)}
+              >
+                <IconX />
+                Cancel
+              </button>
               <SubmitButton />
             </form>
-          </div>
+          )}
         </div>
       </div>
       {showToast && (
