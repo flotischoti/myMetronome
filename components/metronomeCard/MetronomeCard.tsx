@@ -82,7 +82,9 @@ const MetronomeCard = ({
               </div>
               <div id="classBody" className="mt-1">
                 <span>Playtime: </span>
-                {`${Math.floor(metronome.timeUsed / 360000) % 24}h:${Math.floor(
+                {`${
+                  Math.floor(metronome.timeUsed / 3600000) % 24
+                }h:${Math.floor(
                   (metronome.timeUsed / 60000) % 60
                 )}m:${Math.floor((metronome.timeUsed / 1000) % 60)}s`}
                 <div className="text-xs mt-2 flex justify-end">
@@ -114,7 +116,7 @@ const MetronomeCard = ({
             <form
               id="controls"
               action={formAction}
-              className="flex w-full h-full items-center justify-between p-12 gap-2 absolute bg-base-100 bg-opacity-90"
+              className="flex w-full h-full items-center justify-between p-7 absolute bg-base-100 bg-opacity-90"
             >
               <button
                 className="btn btn-neutral"
