@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { loginServerAction } from '../actions'
 import { IconLogin } from '@tabler/icons-react'
-import { experimental_useFormStatus as useFormStatus } from 'react-dom'
-import { experimental_useFormState as useFormState } from 'react-dom'
+import { useFormStatus } from 'react-dom'
+import { useFormState } from 'react-dom'
 
 const initialState = {
   message: '',

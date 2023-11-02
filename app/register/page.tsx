@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import { signupServerAction } from '../actions'
 import { IconUserPlus } from '@tabler/icons-react'
-import { experimental_useFormStatus as useFormStatus } from 'react-dom'
-import { experimental_useFormState as useFormState } from 'react-dom'
+import { useFormStatus } from 'react-dom'
+import { useFormState } from 'react-dom'
 
 const SubmitButton = function () {
   const { pending } = useFormStatus()
