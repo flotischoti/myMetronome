@@ -8,7 +8,8 @@ import { getUserAttrFromToken } from '@/app/api/util'
 import { StoredMetronome } from '../metronome/Metronome'
 import * as metronomeDb from '../../db/metronome'
 
-export const revalidate = 0
+// export const revalidate = 0
+// export const dynamic = 'force-dynamic'
 
 async function getRecent(userId: number): Promise<[number, StoredMetronome[]]> {
   return await metronomeDb.list(userId, 5, 0, 'lastOpened', 'desc', undefined)
@@ -34,10 +35,10 @@ export default async function Navbar() {
             <IconCone2 />
             <h1 className="font-cursive">Metronomes</h1>
           </Link>
-          <Link className="btn btn-accent mx-1" href="/metronome/new">
+          <a className="btn btn-accent mx-1" href={`/metronome/new`}>
             <IconPlus />
             <span>New</span>
-          </Link>
+          </a>
         </div>
         <div className="flex-none">
           {userId ? (

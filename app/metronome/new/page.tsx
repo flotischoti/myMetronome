@@ -1,8 +1,6 @@
 import Metronome from '../../../components/metronome/Metronome'
 import { getUserAttrFromToken } from '../../api/util'
 import { cookies } from 'next/headers'
-import Link from 'next/link'
-import { IconInfoCircle, IconX } from '@tabler/icons-react'
 import LoginAlert from '@/components/loginAlert/loginAlert'
 
 export default async function Page({ params }: { params: { id: string } }) {
