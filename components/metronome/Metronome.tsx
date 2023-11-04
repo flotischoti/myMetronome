@@ -183,6 +183,7 @@ const Metronome = ({
     }
   }, [metronome.bpm, metronome.beats, metronome.stressFirst])
 
+  // Pause metronome when activeTimer reached 0
   useEffect(() => {
     if (
       metronome.isPlaying &&
@@ -253,6 +254,7 @@ const Metronome = ({
     setMetronome({
       ...metronome,
       isPlaying: true,
+      activeTimer: metronome.timerValue,
     })
     timeInterval.current = setInterval(() => {
       setMetronome((prev) => {
@@ -282,7 +284,6 @@ const Metronome = ({
       ...metronome,
       isPlaying: false,
       currentUsed: 0,
-      activeTimer: metronome.timerValue,
     })
     clearInterval(timeInterval.current)
     currentBeatInBar.current = 0
@@ -397,6 +398,7 @@ const Metronome = ({
   }
 
   const increaseTimer = (e: MouseEvent<HTMLButtonElement>) => {
+    // Only increase active timer if the metronome is currently playing
     if (metronome.isPlaying && metronome.timerActive) {
       setMetronome({
         ...metronome,
@@ -636,7 +638,11 @@ const Metronome = ({
                 <button
                   type="button"
                   className="btn btn-xs btn-outline btn-neutral"
-                  disabled={metronome.timerValue <= timerChangeInterval}
+                  disabled={
+                    metronome.isPlaying
+                      ? metronome.activeTimer < timerChangeInterval
+                      : metronome.timerValue <= timerChangeInterval
+                  }
                   onClick={decreaseTimer}
                 >
                   <IconMinus size="8" />
@@ -645,7 +651,14 @@ const Metronome = ({
                   <span
                     style={{
                       '--value': (
-                        '0' + Math.floor((metronome.activeTimer / 60000) % 60)
+                        '0' +
+                        Math.floor(
+                          ((metronome.isPlaying
+                            ? metronome.activeTimer
+                            : metronome.timerValue) /
+                            60000) %
+                            60
+                        )
                       ).slice(-2),
                     }}
                   ></span>
@@ -653,7 +666,14 @@ const Metronome = ({
                   <span
                     style={{
                       '--value': (
-                        '0' + Math.floor((metronome.activeTimer / 1000) % 60)
+                        '0' +
+                        Math.floor(
+                          ((metronome.isPlaying
+                            ? metronome.activeTimer
+                            : metronome.timerValue) /
+                            1000) %
+                            60
+                        )
                       ).slice(-2),
                     }}
                   ></span>
@@ -661,7 +681,11 @@ const Metronome = ({
                 <button
                   type="button"
                   className="btn btn-xs btn-outline btn-neutral"
-                  disabled={metronome.timerValue >= timerChangeInterval * 119}
+                  disabled={
+                    metronome.isPlaying
+                      ? metronome.activeTimer >= timerChangeInterval * 119
+                      : metronome.timerValue >= timerChangeInterval * 119
+                  }
                   onClick={increaseTimer}
                 >
                   <IconPlus size="8" />
