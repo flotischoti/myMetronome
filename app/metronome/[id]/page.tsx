@@ -4,6 +4,7 @@ import Metronome, {
 import { cookies } from 'next/headers'
 import { getUserAttrFromToken, isValidNumber } from '../../api/util'
 import * as metronomeDb from '../../../db/metronome'
+import { notFound } from 'next/navigation'
 
 async function getMetronome(
   metronomeId: string,
@@ -18,8 +19,7 @@ async function getMetronome(
 
   const metronome = await metronomeDb.get(Number(metronomeId))
 
-  if (!metronome)
-    throw new Error(`GET metronome failed. Metronome ${metronomeId} not found`)
+  if (!metronome) notFound()
 
   // TODO replace all this shit by using where clause with metronome + user ID
   if (metronome.owner != userId) {

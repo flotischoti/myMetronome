@@ -66,7 +66,6 @@ export async function signupServerAction(prevState: any, formData: FormData) {
 }
 
 export async function loginServerAction(fprevState: any, payload: FormData) {
-  console.log(`Executing loginServerAction`)
   const { name, password, target } = {
     name: payload.get('name')?.toString(),
     password: payload.get('password')?.toString(),
@@ -97,6 +96,7 @@ export async function loginServerAction(fprevState: any, payload: FormData) {
     sameSite: 'lax',
   })
   revalidatePath('/')
+  revalidatePath('/metronome/recent')
   redirect(target ? target : `/metronome/recent`)
 }
 
@@ -192,4 +192,120 @@ export async function updateServerAction(newMetronome: StoredMetronome) {
   await metronomeDb.updateMetronome(newMetronome)
   revalidatePath('/', 'layout')
   return { message: 'Metronome updated' }
+}
+
+import { get, update } from '../db/user'
+
+export async function updatePasswordServerAction(
+  fprevState: any,
+  data: FormData
+) {
+  const token = cookies().get('token')?.value
+  const userName = await getUserAttrFromToken<string>(token, 'name')
+  const oldPw = data.get('oldPw')!.toString()
+  const newPw = data.get('newPw')!.toString()
+  const newPwConfirm = data.get('newPwConfirm')!.toString()
+
+  if (newPw !== newPwConfirm) {
+    return { message: `New passwords don't match` }
+  }
+
+  const user = await get(userName!)
+  if (user) {
+    if (!(await bcrypt.compare(oldPw, user.password))) {
+      return { message: 'Old password not correct' }
+    }
+    const encryptedPw = await bcrypt.hash(newPw, 10)
+    user!.password = encryptedPw
+
+    await update(user!)
+
+    revalidatePath('/account')
+    redirect('/account')
+  }
+
+  return { message: `Changing password failed` }
+}
+
+export async function createTodo(prevState: any, formData: FormData) {
+  try {
+    return { message: 'Created' }
+  } catch (e) {
+    return { message: 'Failed to create' }
+  }
+}
+
+export async function updateUsernameServerAction(
+  fprevState: any,
+  data: FormData
+) {
+  const token = cookies().get('token')?.value
+  const userName = await getUserAttrFromToken<string>(token, 'name')
+  const newUsername = data.get('username')!.toString()
+
+  if (userName === newUsername)
+    return { message: `New username can't be the same as old` }
+
+  if (await get(newUsername)) return { message: `This name is already taken` }
+
+  const user = await get(userName!)
+  user!.name = newUsername
+
+  const updatedUser = await update(user!)
+
+  if (updatedUser && updatedUser.name == newUsername) {
+    const newToken = await utils.getJwt({
+      userId: updatedUser.id!,
+      name: updatedUser.name,
+    })
+    revalidatePath('/account')
+    cookies().set({
+      name: 'token',
+      value: newToken,
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      secure: true,
+    })
+    redirect('/account')
+  }
+
+  return { message: `Changing username failed` }
+}
+
+export async function deleteUserServerAction(fprevState: any, data: FormData) {
+  const token = cookies().get('token')?.value
+  const userName = await getUserAttrFromToken<string>(token, 'name')
+  const oldPw = data.get('password')!.toString()
+  const user = await get(userName!)
+
+  if (!user) return { message: `User not found` }
+
+  if (!(await bcrypt.compare(oldPw, user.password)))
+    return { message: `Password incorrect` }
+
+  try {
+    await userDb.remove(user!)
+  } catch (e) {
+    return { message: `Error deleting user` }
+  }
+
+  cookies().set({
+    name: 'token',
+    value: 'abc',
+    secure: true,
+    httpOnly: true,
+    sameSite: 'lax',
+    expires: new Date('January 01, 1970 00:00:00 GMT'),
+  })
+  cookies().set({
+    name: 'command',
+    value: 'userdeleted',
+    expires: Date.now() + 3000,
+  })
+
+  revalidatePath('/')
+  revalidatePath('/account')
+  revalidatePath('/metronome/new')
+  redirect('/metronome/new')
 }

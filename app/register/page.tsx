@@ -113,7 +113,7 @@ export default function Page() {
                 />
                 <label className="label">
                   <span className="label-text-alt">
-                    Take care. Password reset not yet implemented.
+                    Take care. Password reset not possible.
                   </span>
                 </label>
               </div>
@@ -121,7 +121,7 @@ export default function Page() {
                 <SubmitButton />
               </div>
               {state?.message && (
-                <span className="mt-4 text-red-600">{state?.message}</span>
+                <p className="mt-4 text-red-600">{state?.message}</p>
               )}
               <p className="text-sm font-light">
                 Already have an account?{' '}

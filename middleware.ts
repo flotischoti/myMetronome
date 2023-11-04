@@ -1,4 +1,3 @@
-import { Console } from 'console'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   getErrorResponse,
@@ -36,14 +35,12 @@ export const config = {
 export async function middleware(request: NextRequest) {
   const userToken =
     request.cookies.get('token')?.value || request.headers.get('x-access-token')
-
   if (!userToken || !(await verifyToken(userToken))) {
     if (request.nextUrl.pathname.startsWith('/api')) {
       return NextResponse.json(getErrorResponse('Unauthorized'), {
         status: 401,
       })
     }
-
     if (
       ['/', '/metronome', '/metronome/', '/logout'].includes(
         request.nextUrl.pathname
@@ -54,7 +51,6 @@ export async function middleware(request: NextRequest) {
       )
       return NextResponse.redirect(new URL('/metronome/new', request.url))
     }
-
     console.log(
       `Middleware | No token | ${request.nextUrl.pathname} to /login?target=${request.nextUrl.pathname}`
     )
@@ -65,10 +61,6 @@ export async function middleware(request: NextRequest) {
     const tokenPayload = await decodeToken(userToken)
     const requestHeaders = new Headers(request.headers)
     const newToken = await getJwt(tokenPayload!)
-    requestHeaders.set(
-      'Set-Cookie',
-      `token=${newToken};path=/;secure;httpOnly;sameSite=Lax`
-    )
 
     if (['', '/', '/metronome/'].includes(request.nextUrl.pathname)) {
       console.log(
@@ -82,8 +74,11 @@ export async function middleware(request: NextRequest) {
     console.log(
       `Middleware | Token | ${request.nextUrl.pathname} to ${request.nextUrl.pathname}`
     )
-    return NextResponse.next({
-      headers: requestHeaders,
-    })
+    const response = NextResponse.next({ request: { headers: requestHeaders } })
+    response.headers.set(
+      'Set-Cookie',
+      `token=${newToken};path=/;secure;httpOnly;sameSite=Lax`
+    )
+    return response
   }
 }

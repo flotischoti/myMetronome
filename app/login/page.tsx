@@ -18,7 +18,7 @@ const LoginButton = function () {
     <button
       type="submit"
       className={`btn ${
-        pending ? 'btn-disabled' : 'btn-netral'
+        pending ? 'btn-disabled' : 'btn-neutral'
       } w-full btn-outline`}
     >
       {pending ? (
@@ -80,7 +80,7 @@ export default function Page() {
               </div>
               <LoginButton />
               {state?.message && (
-                <span className="mt-4 text-red-600">{state?.message}</span>
+                <p className="mt-4 text-error">{state?.message}</p>
               )}
               <p className="text-sm font-light">
                 Don&apos;t have an account yet?{' '}

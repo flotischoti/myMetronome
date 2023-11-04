@@ -1,37 +1,32 @@
-import { cookies } from 'next/headers'
-import { getUserAttrFromToken } from '../../api/util'
-import { get, remove, update } from '../../../db/user'
-import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
-import * as bcrypt from 'bcrypt'
+'use client'
+
 import Link from 'next/link'
+import { useFormStatus } from 'react-dom'
+import { useFormState } from 'react-dom'
+import { deleteUserServerAction } from '@/app/actions'
+import { IconTrash } from '@tabler/icons-react'
 
-export default async function Page() {
-  const cookieStore = cookies()
-  const token = cookieStore.get('token')
-  const userName = await getUserAttrFromToken<string>(token!.value, 'name')
+const initialState = {
+  message: '',
+}
 
-  async function deleteUser(data: FormData) {
-    'use server'
-    const oldPw = data.get('password')!.toString()
-    const user = await get(userName!)
+function DeleteButton() {
+  const { pending } = useFormStatus()
 
-    if (user && (await bcrypt.compare(oldPw, user.password))) {
-      await remove(user!)
+  return (
+    <button type="submit" className="btn btn-error" disabled={pending}>
+      {pending ? (
+        <span className="loading loading-spinner loading-xs"></span>
+      ) : (
+        <IconTrash size="16" />
+      )}
+      Delete Account
+    </button>
+  )
+}
 
-      cookies().set({
-        name: 'token',
-        value: 'abc',
-        secure: true,
-        httpOnly: true,
-        sameSite: 'lax',
-        expires: new Date('January 01, 1970 00:00:00 GMT'),
-      })
-      revalidatePath('/account')
-      redirect('/metronome/new')
-    }
-    throw new Error('Deleting user failed')
-  }
+export default function Page() {
+  const [state, formAction] = useFormState(deleteUserServerAction, initialState)
 
   return (
     <>
@@ -56,7 +51,7 @@ export default async function Page() {
             </li>
           </ul>
         </div>
-        <form action={deleteUser} className="max-w-sm flex flex-col gap-4">
+        <form action={formAction} className="max-w-sm flex flex-col gap-4">
           <h1 className="font-bold text-lg">Delete account</h1>
           <p>
             Enter your password and confirm deletion. This will permanently
@@ -69,9 +64,10 @@ export default async function Page() {
             placeholder="**********"
             required
           />
-          <button type="submit" className="btn btn-error">
-            Delete account
-          </button>
+          <DeleteButton />
+          {state?.message && (
+            <p className="mt-4 text-error">{state?.message}</p>
+          )}
         </form>
       </div>
     </>

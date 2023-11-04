@@ -126,6 +126,9 @@ const Metronome = ({
       case 'deleted':
         setSuccessState(`Metronome deleted`, 'success')
         break
+      case 'userdeleted':
+        setSuccessState(`User deleted`, 'success')
+        break
     }
 
     return () => {
