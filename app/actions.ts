@@ -96,7 +96,9 @@ export async function loginServerAction(fprevState: any, payload: FormData) {
     sameSite: 'lax',
   })
   revalidatePath('/')
+  revalidatePath('/metronome/')
   revalidatePath('/metronome/recent')
+  if (target) revalidatePath(target)
   redirect(target ? target : `/metronome/recent`)
 }
 
