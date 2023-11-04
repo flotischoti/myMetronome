@@ -1,8 +1,8 @@
 export default function Head() {
   return (
     <>
-      <title>My Metronome</title>
-      <meta name='viewport' content='width=device-width, initial-scale=1' />
+      <title>Metronomes</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
     </>
-  );
+  )
 }

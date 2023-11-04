@@ -150,7 +150,7 @@ const Metronome = ({
     if (pendingUpdate) {
       pendingUpdatePrev.current = true
     } else if (pendingUpdatePrev.current) {
-      setSuccessState('Autosaved', 'info')
+      setSuccessState('Saved', 'info')
       setUpdateInProgress(false)
       pendingUpdatePrev.current = false
     }

@@ -60,7 +60,7 @@ export default function Sidebar({ userName }: { userName: string | null }) {
             <li>
               <Link href="/list" className="link" prefetch={false}>
                 <IconList />
-                My Metronomes
+                Metronomes
               </Link>
             </li>
             <li>
