@@ -6,6 +6,7 @@ import ListSearch from '../../components/listSearch/ListSearch'
 import { cookies } from 'next/headers'
 import { getUserAttrFromToken } from '../api/util'
 import { IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react'
+import MetronomeCardContainer from '@/components/metronomeCard/MetronomeCardContainer'
 
 const pageSize = 5
 
@@ -24,7 +25,11 @@ async function getMetronomes(
   return await metronomeDb.list(userId, pageSize, offset, 'name', 'asc', search)
 }
 
-export default async function Page({ searchParams }) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { page: number; s: string }
+}) {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
@@ -43,16 +48,16 @@ export default async function Page({ searchParams }) {
 
   return (
     <>
-      <title>MyMetronome - List</title>
+      <title>Metronomes - List</title>
       <div>
         <ListSearch oldSearch={s} />
         <div className="divider text-xs">
           {count} metronome{count > 1 || count == 0 ? 's' : ''} found
         </div>
-
-        {metronomes.map((m, i) => (
-          <MetronomeCard key={i} metronome={m} command={command?.value} />
-        ))}
+        <MetronomeCardContainer
+          metronomes={metronomes}
+          command={command?.value}
+        />
         {page <= maxPage && (
           <div className="realtive flex justify-center items-center mt-8">
             <div className="join">
@@ -63,7 +68,7 @@ export default async function Page({ searchParams }) {
               >
                 <IconChevronsLeft />
               </Link>
-              <button className="join-item btn no-animation">
+              <button className="join-item btn no-animation btn-disabled btn-neutral border-none">
                 Page {page}
               </button>
               <Link

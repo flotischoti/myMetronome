@@ -4,11 +4,11 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { loginServerAction } from '../actions'
 import { IconLogin } from '@tabler/icons-react'
-import { experimental_useFormStatus as useFormStatus } from 'react-dom'
-import { experimental_useFormState as useFormState } from 'react-dom'
+import { useFormStatus } from 'react-dom'
+import { useFormState } from 'react-dom'
 
 const initialState = {
-  message: null,
+  message: '',
 }
 
 const LoginButton = function () {
@@ -17,7 +17,9 @@ const LoginButton = function () {
   return (
     <button
       type="submit"
-      className={`btn ${pending ? 'btn-disabled' : 'btn-primary'} w-full`}
+      className={`btn ${
+        pending ? 'btn-disabled' : 'btn-neutral'
+      } w-full btn-outline`}
     >
       {pending ? (
         <span className="loading loading-spinner loading-xs" />
@@ -36,11 +38,11 @@ export default function Page() {
 
   return (
     <>
-      <title>MyMetronome - Login</title>
+      <title>Metronomes - Login</title>
       <section className="flex flex-col items-center h-full justify-between">
-        <div className="max-w-sm bg-white rounded-lg shadow">
-          <div className="p-6 space-y-4 sm:space-y-6">
-            <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
+        <div className="w-full max-w-sm rounded-lg shadow">
+          <div className="p-4">
+            <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl">
               Login
             </h1>
             <form className="space-y-4 sm:space-y-6" action={formAction}>
@@ -78,16 +80,16 @@ export default function Page() {
               </div>
               <LoginButton />
               {state?.message && (
-                <span className="mt-4 text-red-600">{state?.message}</span>
+                <p className="mt-4 text-error">{state?.message}</p>
               )}
-              <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+              <p className="text-sm font-light">
                 Don&apos;t have an account yet?{' '}
                 <Link
                   href={
                     targetUrl ? `/register?target=${targetUrl}` : '/register'
                   }
                   prefetch={false}
-                  className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                  className="font-medium hover:underline"
                 >
                   Sign up here
                 </Link>
@@ -95,11 +97,13 @@ export default function Page() {
             </form>
           </div>
         </div>
-
-        <p className="text-sm text-center bg-info p-1">
-          By logging in you agree to a single cookie being set to handle the
-          session. It will expire after logout or 48 hours of inactivity.
-        </p>
+        <div className="alert alert-info max-w-md text-center rounded-none">
+          <p className="select-none text-xs">
+            By logging in you agree to the usage of essential cookies to handle
+            sessions and page communications. They expire after logout or max 48
+            hours of inactivity.
+          </p>
+        </div>
       </section>
     </>
   )

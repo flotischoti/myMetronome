@@ -1,37 +1,42 @@
-import { cookies } from 'next/headers'
-import { getUserAttrFromToken } from '../../../api/util'
-import { get, update } from '../../../../db/user'
-import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
-import * as bcrypt from 'bcrypt'
+'use client'
+
+import { updatePasswordServerAction } from '@/app/actions'
+import { IconDeviceFloppy } from '@tabler/icons-react'
 import Link from 'next/link'
+import { useFormStatus } from 'react-dom'
+import { useFormState } from 'react-dom'
 
-export default async function Page() {
-  const cookieStore = cookies()
-  const token = cookieStore.get('token')
-  const userName = await getUserAttrFromToken<string>(token!.value, 'name')
+const initialState = {
+  message: '',
+}
 
-  async function updatePassword(data: FormData) {
-    'use server'
-    const oldPw = data.get('oldPw')!.toString()
-    const newPw = data.get('newPw')!.toString()
-
-    const user = await get(userName!)
-    if (user && (await bcrypt.compare(oldPw, user.password))) {
-      const encryptedPw = await bcrypt.hash(newPw, 10)
-      user!.password = encryptedPw
-
-      await update(user!)
-
-      revalidatePath('/account')
-      redirect('/account')
-    }
-    throw new Error('Changing passwords failed')
-  }
+function SubmitButton() {
+  const { pending } = useFormStatus()
 
   return (
+    <button
+      type="submit"
+      className="btn btn-square btn-neutral btn-wide mt-4"
+      disabled={pending}
+    >
+      {pending ? (
+        <span className="loading loading-spinner loading-xs"></span>
+      ) : (
+        <IconDeviceFloppy size="16" />
+      )}
+      Save
+    </button>
+  )
+}
+
+export default function Page() {
+  const [state, formAction] = useFormState(
+    updatePasswordServerAction,
+    initialState
+  )
+  return (
     <>
-      <title>MyMetronome - Edit password</title>
+      <title>Metronomes - Edit password</title>
       <div>
         <div className="text-sm breadcrumbs ">
           <ul>
@@ -52,7 +57,7 @@ export default async function Page() {
             </li>
           </ul>
         </div>
-        <form action={updatePassword}>
+        <form action={formAction}>
           <h1 className="font-bold text-lg">Change password</h1>
           <div>
             <label className="label">
@@ -72,6 +77,7 @@ export default async function Page() {
               name="newPw"
               type="password"
               defaultValue=""
+              minLength={8}
               className="input input-bordered"
               required
             />
@@ -81,14 +87,16 @@ export default async function Page() {
             <input
               name="newPwConfirm"
               type="password"
+              minLength={8}
               defaultValue=""
               className="input input-bordered"
               required
             />
           </div>
-          <button type="submit" className="btn btn-square btn-primary mt-4">
-            Save
-          </button>
+          <SubmitButton />
+          {state?.message && (
+            <p className="mt-4 text-error">{state?.message}</p>
+          )}
         </form>
       </div>
     </>

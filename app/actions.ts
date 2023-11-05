@@ -11,16 +11,17 @@ import * as userDb from '../db/user'
 import * as utils from './api/util'
 
 export async function signupServerAction(prevState: any, formData: FormData) {
-  const { name, password, email, target } = {
+  const { name, password, passwordRepeat, email, target } = {
     name: formData.get('name')?.toString(),
     password: formData.get('password')?.toString(),
+    passwordRepeat: formData.get('passwordRepeat')?.toString(),
     email: formData.get('email')?.toString(),
     target: formData.get('target')?.toString(),
   }
 
-  if (!name || !password) {
-    return { message: 'Password or name missing' }
-  }
+  if (!name || !password) return { message: 'Password or name missing' }
+
+  if (password !== passwordRepeat) return { message: `Passwords don't match` }
 
   // if (!utils.isEmailValid(email)) {
   //   return NextResponse.json(utils.getErrorResponse(`Invalid email`), {
@@ -64,16 +65,15 @@ export async function signupServerAction(prevState: any, formData: FormData) {
   redirect(target ? target : `/metronome/new`)
 }
 
-export async function loginServerAction(fprevState: any, formData: FormData) {
-  console.log(`Executing loginServerAction`)
+export async function loginServerAction(fprevState: any, payload: FormData) {
   const { name, password, target } = {
-    name: formData.get('name')?.toString(),
-    password: formData.get('password')?.toString(),
-    target: formData.get('redirect')?.toString(),
+    name: payload.get('name')?.toString(),
+    password: payload.get('password')?.toString(),
+    target: payload.get('redirect')?.toString(),
   }
 
   if (!name || !password) {
-    return { message: `Password or name missing`, status: 400 }
+    return { message: `Password or name missing` }
   }
 
   const user = await userDb.get(name)
@@ -96,6 +96,9 @@ export async function loginServerAction(fprevState: any, formData: FormData) {
     sameSite: 'lax',
   })
   revalidatePath('/')
+  revalidatePath('/metronome/')
+  revalidatePath('/metronome/recent')
+  if (target) revalidatePath(target)
   redirect(target ? target : `/metronome/recent`)
 }
 
@@ -128,7 +131,7 @@ export async function createMetronomeAction(metronome: StoredMetronome) {
   if (savedMetronome) {
     return redirect(`/metronome/${savedMetronome.id}`)
   } else {
-    return { status: 500, message: 'Something went wrong' }
+    return { message: 'Something went wrong' }
   }
 }
 
@@ -144,14 +147,12 @@ export async function deleteMetronomeAction(
 
   if (!metronome) {
     return {
-      status: 404,
       message: `DELETE metronome failed. Metronome ${metronomeDb} not found`,
     }
   }
 
   if (metronome.owner != userId) {
     return {
-      status: 401,
       message: `DELETE metronome failed. User ${userId} not allowed to delete metronome ${metronomeDb}`,
     }
   }
@@ -181,18 +182,132 @@ export async function updateServerAction(newMetronome: StoredMetronome) {
   if (!metronome) {
     return {
       messagen: `PUT metronome failed. The metronome ${metronomeDb} to be updated was not found`,
-      status: 404,
     }
   }
 
   if (metronome.owner != userId) {
     return {
       message: `PUT metronome failed. User ${userId} not allowed to write metronome ${metronomeDb}`,
-      status: 401,
     }
   }
 
   await metronomeDb.updateMetronome(newMetronome)
   revalidatePath('/', 'layout')
   return { message: 'Metronome updated' }
+}
+
+import { get, update } from '../db/user'
+
+export async function updatePasswordServerAction(
+  fprevState: any,
+  data: FormData
+) {
+  const token = cookies().get('token')?.value
+  const userName = await getUserAttrFromToken<string>(token, 'name')
+  const oldPw = data.get('oldPw')!.toString()
+  const newPw = data.get('newPw')!.toString()
+  const newPwConfirm = data.get('newPwConfirm')!.toString()
+
+  if (newPw !== newPwConfirm) {
+    return { message: `New passwords don't match` }
+  }
+
+  const user = await get(userName!)
+  if (user) {
+    if (!(await bcrypt.compare(oldPw, user.password))) {
+      return { message: 'Old password not correct' }
+    }
+    const encryptedPw = await bcrypt.hash(newPw, 10)
+    user!.password = encryptedPw
+
+    await update(user!)
+
+    revalidatePath('/account')
+    redirect('/account')
+  }
+
+  return { message: `Changing password failed` }
+}
+
+export async function createTodo(prevState: any, formData: FormData) {
+  try {
+    return { message: 'Created' }
+  } catch (e) {
+    return { message: 'Failed to create' }
+  }
+}
+
+export async function updateUsernameServerAction(
+  fprevState: any,
+  data: FormData
+) {
+  const token = cookies().get('token')?.value
+  const userName = await getUserAttrFromToken<string>(token, 'name')
+  const newUsername = data.get('username')!.toString()
+
+  if (userName === newUsername)
+    return { message: `New username can't be the same as old` }
+
+  if (await get(newUsername)) return { message: `This name is already taken` }
+
+  const user = await get(userName!)
+  user!.name = newUsername
+
+  const updatedUser = await update(user!)
+
+  if (updatedUser && updatedUser.name == newUsername) {
+    const newToken = await utils.getJwt({
+      userId: updatedUser.id!,
+      name: updatedUser.name,
+    })
+    revalidatePath('/account')
+    cookies().set({
+      name: 'token',
+      value: newToken,
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      secure: true,
+    })
+    redirect('/account')
+  }
+
+  return { message: `Changing username failed` }
+}
+
+export async function deleteUserServerAction(fprevState: any, data: FormData) {
+  const token = cookies().get('token')?.value
+  const userName = await getUserAttrFromToken<string>(token, 'name')
+  const oldPw = data.get('password')!.toString()
+  const user = await get(userName!)
+
+  if (!user) return { message: `User not found` }
+
+  if (!(await bcrypt.compare(oldPw, user.password)))
+    return { message: `Password incorrect` }
+
+  try {
+    await userDb.remove(user!)
+  } catch (e) {
+    return { message: `Error deleting user` }
+  }
+
+  cookies().set({
+    name: 'token',
+    value: 'abc',
+    secure: true,
+    httpOnly: true,
+    sameSite: 'lax',
+    expires: new Date('January 01, 1970 00:00:00 GMT'),
+  })
+  cookies().set({
+    name: 'command',
+    value: 'userdeleted',
+    expires: Date.now() + 3000,
+  })
+
+  revalidatePath('/')
+  revalidatePath('/account')
+  revalidatePath('/metronome/new')
+  redirect('/metronome/new')
 }

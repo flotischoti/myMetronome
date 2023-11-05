@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import { signupServerAction } from '../actions'
 import { IconUserPlus } from '@tabler/icons-react'
-import { experimental_useFormStatus as useFormStatus } from 'react-dom'
-import { experimental_useFormState as useFormState } from 'react-dom'
+import { useFormStatus } from 'react-dom'
+import { useFormState } from 'react-dom'
 
 const SubmitButton = function () {
   const { pending } = useFormStatus()
@@ -14,20 +14,22 @@ const SubmitButton = function () {
   return (
     <button
       type="submit"
-      className={`btn ${pending ? 'btn-disabled' : 'btn-primary'} w-full`}
+      className={`btn ${
+        pending ? 'btn-disabled' : 'btn-neutral'
+      } w-full btn-outline`}
     >
       {pending ? (
         <span className="loading loading-spinner loading-xs" />
       ) : (
         <IconUserPlus />
       )}
-      Create an account
+      Sign up
     </button>
   )
 }
 
 const initialState = {
-  message: null,
+  message: '',
 }
 
 export default function Page() {
@@ -37,14 +39,14 @@ export default function Page() {
 
   return (
     <>
-      <title>MyMetronome - Sign up</title>
+      <title>Metronomes - Sign up</title>
       <section className="flex flex-col h-full justify-between items-center">
-        <div className="max-w-sm bg-white rounded-lg shadow xl:p-0">
-          <div className="p-6 space-y-4 sm:space-y-6">
-            <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 sm:text-2xl">
-              Create an account
+        <div className="w-full max-w-sm rounded-lg shadow xl:p-0">
+          <div className="p-4 sm:space-y-6">
+            <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl">
+              Create account
             </h1>
-            <form className="space-y-4" action={formAction}>
+            <form className="space-y-4 sm:space-y-6" action={formAction}>
               <input
                 type="hidden"
                 name="target"
@@ -58,6 +60,7 @@ export default function Page() {
                   type="text"
                   name="name"
                   id="name"
+                  maxLength={20}
                   className="input input-bordered w-full"
                   placeholder="Your Username"
                   required={true}
@@ -89,21 +92,43 @@ export default function Page() {
                   type="password"
                   name="password"
                   id="password"
+                  minLength={8}
                   placeholder="••••••••"
                   className="input input-bordered w-full"
                   required={true}
                 />
               </div>
-              <SubmitButton />
+              <div className="form-control">
+                <label htmlFor="passwordRepeat" className="label">
+                  <span className="label-text">Password Repeat*</span>
+                </label>
+                <input
+                  type="password"
+                  name="passwordRepeat"
+                  id="passwordRepeat"
+                  minLength={8}
+                  placeholder="••••••••"
+                  className="input input-bordered w-full"
+                  required={true}
+                />
+                <label className="label">
+                  <span className="label-text-alt">
+                    Take care. Password reset not possible.
+                  </span>
+                </label>
+              </div>
+              <div>
+                <SubmitButton />
+              </div>
               {state?.message && (
-                <span className="mt-4 text-red-600">{state?.message}</span>
+                <p className="mt-4 text-red-600">{state?.message}</p>
               )}
-              <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+              <p className="text-sm font-light">
                 Already have an account?{' '}
                 <Link
                   href={targetUrl ? `/login?target=${targetUrl}` : '/login'}
                   prefetch={false}
-                  className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                  className="font-medium hover:underline"
                 >
                   Login here
                 </Link>
@@ -111,10 +136,13 @@ export default function Page() {
             </form>
           </div>
         </div>
-        <p className="text-sm text-center bg-emerald-100 p-1">
-          By signing up you agree to a single cookie being set to handle the
-          session. It will expire after logout or 48 hours of inactivity.
-        </p>
+        <div className="alert alert-info max-w-md text-center rounded-none">
+          <p className="select-none text-xs">
+            By signing up you agree to the usage of essential cookies to handle
+            sessions and page communications. They expire after logout or max 48
+            hours of inactivity.
+          </p>
+        </div>
       </section>
     </>
   )
