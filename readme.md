@@ -10,6 +10,12 @@
 
 Run `npm install`
 
+# Setup PRISMA
+1. Generate client: `npx prisma generate` (also executed automatically after `npm install`)
+2. Migrate database:
+2.1: Non-Prod: npx prisma migrate dev
+2.2: Prod: npx prisma migrate deploy
+
 # Run locally
 
 Options to run locally:
