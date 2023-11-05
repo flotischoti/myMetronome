@@ -11,9 +11,12 @@ export interface User {
 }
 
 export async function get(name: string): Promise<User | null> {
-  return (await prisma.user.findUnique({
+  return (await prisma.user.findFirst({
     where: {
-      name: name,
+      name: {
+        equals: name,
+        mode: 'insensitive',
+      },
     },
   })) as User | null
 }
