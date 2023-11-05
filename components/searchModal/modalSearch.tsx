@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, ChangeEvent, MouseEvent, useRef } from 'react'
+import { useState, MouseEvent, useRef, useEffect } from 'react'
 import { StoredMetronome } from '../metronome/Metronome'
 
 const ModalSearch = ({
@@ -22,6 +22,11 @@ const ModalSearch = ({
   )
   const router = useRouter()
 
+  useEffect(() => {
+    handleChange()
+  }, [searchValue])
+
+
   async function search(searchString: string) {
     const {
       metronomes,
@@ -39,19 +44,17 @@ const ModalSearch = ({
     setIsLoading(false)
   }
 
-  async function handleChange(e: ChangeEvent<HTMLInputElement>) {
+  async function handleChange() {
     clearTimeout(searchTimer.current)
-    const searchString = e.target.value
-    setSearchValue(searchString)
     setResultList([])
     setCount(0)
-    if (searchString.length > 2) {
+    if (searchValue.length > 2) {
       setIsLoading(true)
       searchTimer.current = setTimeout(() => {
-        search(searchString)
+        search(searchValue)
       }, 300)
     } else {
-      if (searchString.length == 0) {
+      if (searchValue.length == 0) {
         setCount(recentCount)
         setResultList(recentMetronomes)
       }
@@ -72,7 +75,7 @@ const ModalSearch = ({
         <input
           type="text"
           placeholder="Start typing..."
-          onChange={handleChange}
+          onChange={(e) => setSearchValue(e.currentTarget.value)}
           className="input input-bordered join-item w-full rounded-none rounded-tl-lg"
           value={searchValue}
           onKeyDown={(e) => {
