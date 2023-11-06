@@ -137,7 +137,7 @@ export async function createMetronomeAction(metronome: StoredMetronome) {
 
 export async function deleteMetronomeAction(
   metronomeId: number,
-  targetPath: string
+  targetPath: string,
 ) {
   const token = cookies().get('token')?.value
   const userId = await getUserAttrFromToken(token!)
@@ -200,7 +200,7 @@ import { get, update } from '../db/user'
 
 export async function updatePasswordServerAction(
   fprevState: any,
-  data: FormData
+  data: FormData,
 ) {
   const token = cookies().get('token')?.value
   const userName = await getUserAttrFromToken<string>(token, 'name')
@@ -239,14 +239,14 @@ export async function createTodo(prevState: any, formData: FormData) {
 
 export async function updateUsernameServerAction(
   fprevState: any,
-  data: FormData
+  data: FormData,
 ) {
   const token = cookies().get('token')?.value
   const userName = await getUserAttrFromToken<string>(token, 'name')
   const newUsername = data.get('username')!.toString()
 
   if (userName === newUsername)
-    return { message: `New username can't be the same as old` }
+    return { message: `New username can't be identical to old one` }
 
   if (await get(newUsername)) return { message: `This name is already taken` }
 
