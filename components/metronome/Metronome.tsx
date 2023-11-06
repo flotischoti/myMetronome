@@ -96,15 +96,15 @@ const Metronome = ({
   const doChangeBpm = useRef(true)
   const changeBpmClickVerifier = useRef(0)
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
+    undefined,
   )
   const timeInterval = useRef<ReturnType<typeof setInterval> | undefined>(
-    undefined
+    undefined,
   )
   const audioContext = useRef<AudioContext | null>(null)
   const nextNoteTime = useRef<number>(0)
   const schedulerIntervalId = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
+    undefined,
   )
 
   const [updateInProgress, setUpdateInProgress] = useState(false)
@@ -317,7 +317,7 @@ const Metronome = ({
 
   const handleChangeBpm = (
     e: MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>,
-    step: number
+    step: number,
   ) => {
     doChangeBpm.current = true
     setMetronome({
@@ -346,7 +346,7 @@ const Metronome = ({
   }
 
   const stopChangingBpm = (
-    e: MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>
+    e: MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>,
   ) => {
     console.log(e.type)
     doChangeBpm.current = false
@@ -659,7 +659,7 @@ const Metronome = ({
                             ? metronome.activeTimer
                             : metronome.timerValue) /
                             60000) %
-                            60
+                            60,
                         )
                       ).slice(-2),
                     }}
@@ -674,7 +674,7 @@ const Metronome = ({
                             ? metronome.activeTimer
                             : metronome.timerValue) /
                             1000) %
-                            60
+                            60,
                         )
                       ).slice(-2),
                     }}
@@ -790,7 +790,7 @@ const Metronome = ({
             </button>
           )}
           {metronome.id && !deletionInProgress && updateInProgress && (
-            <span className="loading loading-spinner loading-lg mb-2"></span>
+            <span className="loading loading-spinner loading-xs mt-8"></span>
           )}
           {metronome.id && deletionInProgress && (
             <button
