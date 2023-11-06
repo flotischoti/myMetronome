@@ -5,9 +5,15 @@ import Navbar from '../components/navigation/Navbar'
 import Loading from './loading'
 import { cookies } from 'next/headers'
 import Sidebar from '../components/sidebar/Sidebar'
-import { getUserAttrFromToken, verifyToken } from './api/util'
-
+import { getUserAttrFromToken } from './api/util'
+import type { Metadata } from 'next'
 import { Inter, Pacifico } from 'next/font/google'
+
+export const metadata: Metadata = {
+  title: 'Metronomes',
+  description:
+    'Save, update and delete distinguished metronomes to track progress on different songs and excercises',
+}
 
 const inter = Inter({
   subsets: ['latin'],
