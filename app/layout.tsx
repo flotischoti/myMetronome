@@ -46,7 +46,7 @@ export default async function RootLayout({
         <div className="drawer-content flex flex-col h-screen justify-between gap-0">
           <div className="h-full flex flex-col">
             <Navbar />
-            <main className="h-full">
+            <main className="grow">
               <Suspense fallback={<Loading />}>{children}</Suspense>
             </main>
             <Footer />
