@@ -39,11 +39,11 @@ export default async function RootLayout({
   const userName = await getUserAttrFromToken<string>(token?.value, 'name')
 
   return (
-    <html lang="en" className={`${pacifico.variable} ${inter.variable} `}>
+    <html lang="en" className={`${pacifico.variable} ${inter.variable} h-full`}>
       <head />
-      <body className="drawer drawer-end">
+      <body className="drawer drawer-end h-full">
         <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col h-screen justify-between gap-0">
+        <div className="drawer-content h-full">
           <div className="h-full flex flex-col">
             <Navbar />
             <main className="grow">
