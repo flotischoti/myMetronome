@@ -8,6 +8,7 @@ import Sidebar from '../components/sidebar/Sidebar'
 import { getUserAttrFromToken } from './api/util'
 import type { Metadata } from 'next'
 import { Inter, Pacifico } from 'next/font/google'
+import { Footer } from '@/components/footer/footer'
 
 export const metadata: Metadata = {
   title: 'Metronomes',
@@ -48,6 +49,7 @@ export default async function RootLayout({
             <main className="h-full">
               <Suspense fallback={<Loading />}>{children}</Suspense>
             </main>
+            <Footer />
           </div>
         </div>
         <Sidebar userName={userName} />
