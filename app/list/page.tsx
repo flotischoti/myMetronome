@@ -18,7 +18,7 @@ function getOffest(page: number) {
 async function getMetronomes(
   userId: number,
   page: number,
-  search: string
+  search: string,
 ): Promise<[number, StoredMetronome[]]> {
   const offset = getOffest(page)
 
@@ -59,7 +59,7 @@ export default async function Page({
           command={command?.value}
         />
         {page <= maxPage && (
-          <div className="realtive flex justify-center items-center mt-8">
+          <div className="realtive flex justify-center items-center my-4">
             <div className="join">
               <Link
                 href={`/list?${getPagingUrlParams(false)}`}

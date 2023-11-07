@@ -138,9 +138,14 @@ export default function Page() {
         </div>
         <div className="alert alert-info max-w-md text-center rounded-none">
           <p className="select-none text-xs">
-            By signing up you agree to the usage of essential cookies to handle
-            sessions and page communications. They expire after logout or max 48
-            hours of inactivity.
+            By signing up you agree to the{' '}
+            <Link href="/privacy" className="link">
+              {' '}
+              privacy policy{' '}
+            </Link>{' '}
+            and the usage of essential cookies to handle sessions and page
+            communications. They expire after logout or max 48 hours of
+            inactivity.
           </p>
         </div>
       </section>
