@@ -7,7 +7,7 @@ import Link from 'next/link'
 
 export const Footer = () => {
   return (
-    <footer className="footer shrink z-100 items-center p-3 sm:p-4 text-xs sm:text-sm bg-neutral text-neutral-content">
+    <footer className="footer z-100 items-center p-3 sm:p-4 text-xs sm:text-sm bg-neutral text-neutral-content">
       <nav className="flex items-center w-full justify-between">
         <div className="flex items-center gap-2 wrap">
           <IconCone2 size="24" className="sm:hidden" />
