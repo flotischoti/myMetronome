@@ -7,6 +7,11 @@ import { cookies } from 'next/headers'
 import { getUserAttrFromToken } from '../api/util'
 import { IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react'
 import MetronomeCardContainer from '@/components/metronomeCard/MetronomeCardContainer'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Metronomes - List',
+}
 
 const pageSize = 5
 
@@ -47,43 +52,40 @@ export default async function Page({
   }
 
   return (
-    <>
-      <title>Metronomes - List</title>
-      <div>
-        <ListSearch oldSearch={s} />
-        <div className="divider text-xs">
-          {count} metronome{count > 1 || count == 0 ? 's' : ''} found
-        </div>
-        <MetronomeCardContainer
-          metronomes={metronomes}
-          command={command?.value}
-        />
-        {page <= maxPage && (
-          <div className="realtive flex justify-center items-center my-4">
-            <div className="join">
-              <Link
-                href={`/list?${getPagingUrlParams(false)}`}
-                prefetch={false}
-                className={`join-item btn ${page <= 1 ? 'btn-disabled' : ''}`}
-              >
-                <IconChevronsLeft />
-              </Link>
-              <button className="join-item btn no-animation btn-disabled btn-neutral border-none">
-                Page {page}
-              </button>
-              <Link
-                href={`/list?${getPagingUrlParams(true)}`}
-                prefetch={false}
-                className={`join-item btn ${
-                  page >= maxPage ? 'btn-disabled' : ''
-                }`}
-              >
-                <IconChevronsRight />
-              </Link>
-            </div>
-          </div>
-        )}
+    <div>
+      <ListSearch oldSearch={s} />
+      <div className="divider text-xs">
+        {count} metronome{count > 1 || count == 0 ? 's' : ''} found
       </div>
-    </>
+      <MetronomeCardContainer
+        metronomes={metronomes}
+        command={command?.value}
+      />
+      {page <= maxPage && (
+        <div className="realtive flex justify-center items-center my-4">
+          <div className="join">
+            <Link
+              href={`/list?${getPagingUrlParams(false)}`}
+              prefetch={false}
+              className={`join-item btn ${page <= 1 ? 'btn-disabled' : ''}`}
+            >
+              <IconChevronsLeft />
+            </Link>
+            <button className="join-item btn no-animation btn-disabled btn-neutral border-none">
+              Page {page}
+            </button>
+            <Link
+              href={`/list?${getPagingUrlParams(true)}`}
+              prefetch={false}
+              className={`join-item btn ${
+                page >= maxPage ? 'btn-disabled' : ''
+              }`}
+            >
+              <IconChevronsRight />
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
