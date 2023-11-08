@@ -28,7 +28,7 @@ export const Footer = () => {
           </a>
           <a
             target="_blank"
-            href="https://github.com/flotischoti"
+            href="https://github.com/flotischoti/myMetronome"
             className="link"
           >
             <IconBrandGithub size="32" className="hidden sm:block" />

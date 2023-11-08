@@ -87,7 +87,7 @@ export default function Sidebar({ userName }: { userName: string | null }) {
           </a>
           <a
             target="_blank"
-            href="https://github.com/flotischoti"
+            href="https://github.com/flotischoti/myMetronome"
             className="btn btn-ghost"
           >
             <IconBrandGithub />
