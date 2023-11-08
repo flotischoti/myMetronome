@@ -8,10 +8,10 @@ import { notFound } from 'next/navigation'
 
 async function getMetronome(
   metronomeId: string,
-  userId: number
+  userId: number,
 ): Promise<StoredMetronome> {
   console.log(
-    `Page. Loading Metronome. Metronome Id: ${metronomeId} for user ${userId}`
+    `Page. Loading Metronome. Metronome Id: ${metronomeId} for user ${userId}`,
   )
 
   if (!isValidNumber(metronomeId))
@@ -24,7 +24,7 @@ async function getMetronome(
   // TODO replace all this shit by using where clause with metronome + user ID
   if (metronome.owner != userId) {
     throw new Error(
-      `GET metronome failed. User ${userId} not allowed to read metronome ${metronomeId}`
+      `GET metronome failed. User ${userId} not allowed to read metronome ${metronomeId}`,
     )
   }
 
@@ -42,7 +42,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   return (
     <>
       <title>{`Metronomes - ${metronome.name}`}</title>
-      <div className="max-w-sm mx-auto">
+      <div id="idMetronomeContainer" className="max-w-sm mx-auto p-1">
         <Metronome
           dbMetronome={metronome}
           user={userId}

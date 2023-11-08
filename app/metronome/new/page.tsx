@@ -13,7 +13,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     <>
       <title>Metronomes - New</title>
       <div>{!user && <LoginAlert />}</div>
-      <div id="newMetronomeContainer" className={`max-w-sm mx-auto`}>
+      <div id="newMetronomeContainer" className={`max-w-sm mx-auto p-1`}>
         <Metronome dbMetronome={null} user={user} command={command?.value} />
       </div>
     </>

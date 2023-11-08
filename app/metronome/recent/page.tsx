@@ -13,7 +13,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       0,
       'lastOpened',
       'desc',
-      undefined
+      undefined,
     )
 
     return metronomes
@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   return (
     <>
       <title>Metronomes - Recent</title>
-      <div className="max-w-sm mx-auto">
+      <div id="recentMetronomeContainer" className="max-w-sm mx-auto p-1">
         <Metronome
           dbMetronome={lastMetronome[0]}
           user={userId}
