@@ -101,7 +101,7 @@ export const LoginForm = () => {
             Privacy Policy{' '}
           </Link>{' '}
           and the usage of essential cookies to handle sessions and page
-          communications. They expire after logout or max 48 hours of
+          communications. Cookies expire after logout or max 48 hours of
           inactivity.
         </p>
       </div>

@@ -42,7 +42,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   return (
     <>
       <title>{`Metronomes - ${metronome.name}`}</title>
-      <div id="idMetronomeContainer" className="max-w-sm mx-auto p-1">
+      <div id="idMetronomeContainer" className="max-w-sm mx-auto py-1 px-1 sm:px-0">
         <Metronome
           dbMetronome={metronome}
           user={userId}

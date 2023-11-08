@@ -33,7 +33,10 @@ export default async function Page({ params }: { params: { id: string } }) {
   if (!lastMetronome || lastMetronome.length != 1) redirect(`/metronome/new`)
 
   return (
-    <div id="recentMetronomeContainer" className="max-w-sm mx-auto p-1">
+    <div
+      id="recentMetronomeContainer"
+      className="max-w-sm mx-auto py-1 px-1 sm:px-0"
+    >
       <Metronome
         dbMetronome={lastMetronome[0]}
         user={userId}
