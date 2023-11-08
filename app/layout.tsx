@@ -11,9 +11,8 @@ import { Inter, Pacifico } from 'next/font/google'
 import { Footer } from '@/components/footer/footer'
 
 export const metadata: Metadata = {
-  title: 'Metronomes',
   description:
-    'Save, update and delete distinguished metronomes to track progress on different songs and excercises',
+    'Save, update and delete distinguished metronomes online for free to track progress on different songs and excercises',
 }
 
 const inter = Inter({

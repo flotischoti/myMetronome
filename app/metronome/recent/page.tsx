@@ -5,6 +5,12 @@ import Metronome, {
 import * as metronomeDb from '../../../db/metronome'
 import { getUserAttrFromToken } from '../../api/util'
 import { redirect } from 'next/navigation'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Metronomes - Recent',
+}
+
 export default async function Page({ params }: { params: { id: string } }) {
   async function getLastMetronome(userId: number): Promise<StoredMetronome[]> {
     const [count, metronomes] = await metronomeDb.list(
@@ -13,7 +19,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       0,
       'lastOpened',
       'desc',
-      undefined
+      undefined,
     )
 
     return metronomes
@@ -27,15 +33,12 @@ export default async function Page({ params }: { params: { id: string } }) {
   if (!lastMetronome || lastMetronome.length != 1) redirect(`/metronome/new`)
 
   return (
-    <>
-      <title>Metronomes - Recent</title>
-      <div className="max-w-sm mx-auto">
-        <Metronome
-          dbMetronome={lastMetronome[0]}
-          user={userId}
-          command={command?.value}
-        />
-      </div>
-    </>
+    <div id="recentMetronomeContainer" className="max-w-sm mx-auto p-1">
+      <Metronome
+        dbMetronome={lastMetronome[0]}
+        user={userId}
+        command={command?.value}
+      />
+    </div>
   )
 }

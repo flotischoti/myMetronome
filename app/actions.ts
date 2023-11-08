@@ -69,7 +69,7 @@ export async function loginServerAction(fprevState: any, payload: FormData) {
   const { name, password, target } = {
     name: payload.get('name')?.toString(),
     password: payload.get('password')?.toString(),
-    target: payload.get('redirect')?.toString(),
+    target: payload.get('target')?.toString(),
   }
 
   if (!name || !password) {

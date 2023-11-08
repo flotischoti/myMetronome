@@ -25,7 +25,7 @@ export default async function Navbar() {
       {userId && (
         <Modal recentCount={count} recentMetronomes={recentMetronomes} />
       )}
-      <div className="navbar bg-base-100 shadow sticky top-0 z-10">
+      <div className="navbar bg-base-100 dark:bg-base-200 shadow sticky top-0 z-10">
         <div className="flex-1 gap-2">
           <Link
             href="/"
