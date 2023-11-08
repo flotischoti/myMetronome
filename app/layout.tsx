@@ -13,6 +13,7 @@ import { Footer } from '@/components/footer/footer'
 export const metadata: Metadata = {
   description:
     'Save, update and delete distinguished metronomes online for free to track progress on different songs and excercises',
+  metadataBase: new URL(process.env.BASE_URL!),
 }
 
 const inter = Inter({
