@@ -102,7 +102,7 @@ export default function Page() {
             By logging in you agree to the{' '}
             <Link href="/privacy" className="link">
               {' '}
-              privacy policy{' '}
+              Privacy Policy{' '}
             </Link>{' '}
             and the usage of essential cookies to handle sessions and page
             communications. They expire after logout or max 48 hours of
