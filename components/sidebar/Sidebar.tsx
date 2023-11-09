@@ -7,6 +7,7 @@ import {
   IconBrandInstagram,
   IconList,
   IconLogout,
+  IconMail,
   IconUserCircle,
   IconX,
 } from '@tabler/icons-react'
@@ -78,6 +79,13 @@ export default function Sidebar({ userName }: { userName: string | null }) {
           </ul>
         </div>
         <div className="p-4 bg-neutral text-neutral-content flex justify-center">
+          <a
+            target="_blank"
+            href="mailto:hello@metronomes.xyz"
+            className="btn btn-ghost"
+          >
+            <IconMail />
+          </a>
           <a
             target="_blank"
             href="https://www.instagram.com/flotischoti/"

@@ -37,7 +37,7 @@ export async function getJwt(
     userId: number
     name: string
   },
-  expiresIn = '2h'
+  expiresIn = '2d',
 ): Promise<string> {
   const secret = new TextEncoder().encode(process.env.TOKEN_KEY!)
   const alg = 'HS256'
@@ -53,7 +53,7 @@ export async function getJwt(
 }
 
 export async function decodeToken(
-  token: string
+  token: string,
 ): Promise<jose.JWTPayload | null> {
   const secret = new TextEncoder().encode(process.env.TOKEN_KEY!)
 
@@ -79,7 +79,7 @@ export function isValidNumber(metronomeId: String): boolean {
 
 export async function getUserAttrFromToken<T = number>(
   token: string | undefined,
-  attr: string = 'userId'
+  attr: string = 'userId',
 ): Promise<T | null> {
   if (!token) return null
   const decodedToken = await decodeToken(token)
