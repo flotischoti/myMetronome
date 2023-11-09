@@ -137,8 +137,7 @@ export const SignUpForm = () => {
         <p className="select-none text-xs">
           By signing up you agree to the{' '}
           <Link href="/privacy" className="link">
-            {' '}
-            Privacy Policy{' '}
+            Privacy Policy
           </Link>{' '}
           and the usage of essential cookies to handle sessions and page
           communications. Cookies expire after logout or max 48 hours of
