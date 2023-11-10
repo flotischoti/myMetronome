@@ -103,7 +103,7 @@ const MetronomeCard = ({
             <div className="divider divider-horizontal mx-0"></div>
             <div className="flex items-center p-4">
               <button
-                type="submit"
+                type="button"
                 className="hover:drop-shadow-xl mr-2 btn btn-square btn-sm btn-outline btn-error"
                 onClick={(e) => setForDeletion(metronome.id!)}
               >
@@ -118,6 +118,7 @@ const MetronomeCard = ({
               className="flex w-full h-full items-center justify-between p-8 absolute bg-base-100 bg-opacity-90"
             >
               <button
+                type="button"
                 className="btn btn-neutral"
                 onClick={(e) => setForDeletion(undefined)}
               >
