@@ -3,11 +3,11 @@
 import { StoredMetronome } from '../metronome/Metronome'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import { IconTrash, IconX } from '@tabler/icons-react'
 import { useFormState } from 'react-dom'
 import { useFormStatus } from 'react-dom'
 import { deleteMetronomeAction } from '../../app/actions'
+import { useEffect, useState } from 'react'
 
 const initialState = {
   message: '',
@@ -29,35 +29,32 @@ function SubmitButton() {
 
 const MetronomeCard = ({
   metronome,
-  command,
   setForDeletion,
   idForDeletion,
 }: {
   metronome: StoredMetronome
-  command: string | undefined
   setForDeletion: (id: number | undefined) => void
   idForDeletion: number | undefined
 }) => {
-  const [showToast, setShowToast] = useState(false)
-  const [tostMessage, setToastMessage] = useState('')
   const deleteMetronomeFromCard = deleteMetronomeAction.bind(
     null,
     metronome.id!,
-    usePathname()
+    usePathname(),
   )
   const [state, formAction] = useFormState(
     deleteMetronomeFromCard,
-    initialState
+    initialState,
   )
+  const [showAlert, setShowAlert] = useState(false)
+
   useEffect(() => {
-    if (command == 'deleted') {
-      setShowToast(true)
-      setToastMessage('Metronome deleted')
+    if (state?.message) {
+      setShowAlert(true)
       setTimeout(() => {
-        setShowToast(false)
+        setShowAlert(false)
       }, 2000)
     }
-  }, [])
+  }, [state])
 
   return (
     <>
@@ -87,7 +84,7 @@ const MetronomeCard = ({
                 {`${
                   Math.floor(metronome.timeUsed / 3600000) % 24
                 }h:${Math.floor(
-                  (metronome.timeUsed / 60000) % 60
+                  (metronome.timeUsed / 60000) % 60,
                 )}m:${Math.floor((metronome.timeUsed / 1000) % 60)}s`}
                 <div className="text-xs mt-2 flex justify-end">
                   <span>
@@ -97,7 +94,7 @@ const MetronomeCard = ({
                         dateStyle: 'short',
                         timeStyle: 'short',
                         hour12: false,
-                      }
+                      },
                     )}`}
                   </span>
                 </div>
@@ -132,14 +129,7 @@ const MetronomeCard = ({
           )}
         </div>
       </div>
-      {showToast && (
-        <div className="toast">
-          <div className="alert alert-success">
-            <span>{tostMessage}</span>
-          </div>
-        </div>
-      )}
-      {state?.message && (
+      {showAlert && (
         <div className="toast">
           <div className="alert alert-error">
             <span>{state.message}</span>
