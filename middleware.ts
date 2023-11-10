@@ -43,19 +43,19 @@ export async function middleware(request: NextRequest) {
     }
     if (
       ['/', '/metronome', '/metronome/', '/logout'].includes(
-        request.nextUrl.pathname
+        request.nextUrl.pathname,
       )
     ) {
       console.log(
-        `Middleware | No token | ${request.nextUrl.pathname} to /metronome/new`
+        `Middleware | No token | ${request.nextUrl.pathname} to /metronome/new`,
       )
       return NextResponse.redirect(new URL('/metronome/new', request.url))
     }
     console.log(
-      `Middleware | No token | ${request.nextUrl.pathname} to /login?target=${request.nextUrl.pathname}`
+      `Middleware | No token | ${request.nextUrl.pathname} to /login?target=${request.nextUrl.pathname}`,
     )
     return NextResponse.redirect(
-      new URL(`/login?target=${request.nextUrl.pathname}`, request.url)
+      new URL(`/login?target=${request.nextUrl.pathname}`, request.url),
     )
   } else {
     const tokenPayload = await decodeToken(userToken)
@@ -64,7 +64,7 @@ export async function middleware(request: NextRequest) {
 
     if (['', '/', '/metronome/'].includes(request.nextUrl.pathname)) {
       console.log(
-        `Middleware | Token | ${request.nextUrl.pathname} to /metronome/recent`
+        `Middleware | Token | ${request.nextUrl.pathname} to /metronome/recent`,
       )
       return NextResponse.redirect(new URL('/metronome/recent', request.url), {
         headers: requestHeaders,
@@ -72,12 +72,14 @@ export async function middleware(request: NextRequest) {
     }
 
     console.log(
-      `Middleware | Token | ${request.nextUrl.pathname} to ${request.nextUrl.pathname}`
+      `Middleware | Token | ${request.nextUrl.pathname} to ${request.nextUrl.pathname}`,
     )
     const response = NextResponse.next({ request: { headers: requestHeaders } })
+    const expiry = new Date()
+    expiry.setUTCDate(expiry.getUTCDate() + 2)
     response.headers.set(
       'Set-Cookie',
-      `token=${newToken};path=/;secure;httpOnly;sameSite=Lax`
+      `token=${newToken};path=/;secure;httpOnly;sameSite=Lax;expires=${expiry}`,
     )
     return response
   }
