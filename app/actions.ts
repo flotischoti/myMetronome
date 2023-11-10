@@ -122,10 +122,12 @@ export async function createMetronomeAction(metronome: StoredMetronome) {
   const userId = await getUserAttrFromToken(token!)
   const savedMetronome = await metronomeDb.create(metronome, userId!)
 
+  const expires = new Date()
+  expires.setSeconds(expires.getSeconds() + 3)
   cookies().set({
     name: 'command',
     value: 'created',
-    expires: Date.now() + 3000,
+    expires,
   })
 
   if (savedMetronome) {
@@ -158,13 +160,15 @@ export async function deleteMetronomeAction(
   }
 
   let success = await metronomeDb.deleteMetronome(Number(metronomeId))
+  const expires = new Date()
+  expires.setSeconds(expires.getSeconds() + 3)
   if (success) {
     cookies().set({
       name: 'command',
       value: 'deleted',
-      expires: Date.now() + 3000,
+      expires,
     })
-    revalidatePath('/')
+    revalidatePath(targetPath)
     redirect(targetPath)
   }
   return {
@@ -300,10 +304,12 @@ export async function deleteUserServerAction(fprevState: any, data: FormData) {
     sameSite: 'lax',
     expires: new Date('January 01, 1970 00:00:00 GMT'),
   })
+  const expires = new Date()
+  expires.setSeconds(expires.getSeconds() + 3)
   cookies().set({
     name: 'command',
     value: 'userdeleted',
-    expires: Date.now() + 3000,
+    expires,
   })
 
   revalidatePath('/')
