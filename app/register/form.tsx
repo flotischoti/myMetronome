@@ -62,6 +62,8 @@ export const SignUpForm = () => {
                 placeholder="Your Username"
                 required={true}
                 autoFocus
+                pattern="[^\s]+"
+                title="1-20 characters, No whitespaces"
               />
             </div>
             <div className="hidden">
@@ -93,6 +95,8 @@ export const SignUpForm = () => {
                 placeholder="••••••••"
                 className="input input-bordered w-full"
                 required={true}
+                pattern="[^\s]+"
+                title="At least 8 characters. No whitespaces."
               />
             </div>
             <div className="form-control">
@@ -107,6 +111,8 @@ export const SignUpForm = () => {
                 placeholder="••••••••"
                 className="input input-bordered w-full"
                 required={true}
+                pattern="[^\s]+"
+                title="At least 8 characters. No whitespaces."
               />
               <label className="label">
                 <span className="label-text-alt">
