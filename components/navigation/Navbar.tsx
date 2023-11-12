@@ -40,7 +40,7 @@ export default async function Navbar() {
             <span>New</span>
           </a>
         </div>
-        <div className="flex-none">
+        <div className="flex-none gap-1">
           {userId ? (
             <NavbarLoggedIn />
           ) : (
