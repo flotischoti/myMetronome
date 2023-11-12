@@ -32,54 +32,53 @@ function SubmitButton() {
 export const Form = ({ userName }: { userName: string }) => {
   const [state, formAction] = useFormState(
     updateUsernameServerAction,
-    initialState
+    initialState,
   )
   return (
-    <>
-      <title>Metronomes - Edit name</title>
-      <div>
-        <div className="text-sm breadcrumbs ">
-          <ul>
-            <li>
-              <Link href="/metronome/recent" prefetch={true}>
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link href="/account" prefetch={true}>
-                Account
-              </Link>
-            </li>
-            <li>
-              <Link href="/account/delete" prefetch={true}>
-                Edit Username
-              </Link>
-            </li>
-          </ul>
-        </div>
-        <form action={formAction}>
-          <h1 className="font-bold text-lg">Change username</h1>
-          <div>
-            <label className="label">
-              <span className="label-text">Username *</span>
-            </label>
-            <div className="join">
-              <input
-                name="username"
-                type="text"
-                maxLength={20}
-                defaultValue={userName!}
-                className="join-item input input-bordered"
-                required
-              />
-              <SubmitButton />
-            </div>
-            {state?.message && (
-              <p className="mt-4 text-error">{state?.message}</p>
-            )}
-          </div>
-        </form>
+    <div>
+      <div className="text-sm breadcrumbs ">
+        <ul>
+          <li>
+            <Link href="/metronome/recent" prefetch={true}>
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link href="/account" prefetch={true}>
+              Account
+            </Link>
+          </li>
+          <li>
+            <Link href="/account/delete" prefetch={true}>
+              Edit Username
+            </Link>
+          </li>
+        </ul>
       </div>
-    </>
+      <form action={formAction}>
+        <h1 className="font-bold text-lg">Change username</h1>
+        <div>
+          <label className="label">
+            <span className="label-text">Username *</span>
+          </label>
+          <div className="join">
+            <input
+              name="username"
+              type="text"
+              maxLength={20}
+              defaultValue={userName!}
+              className="join-item input input-bordered"
+              required
+              pattern="[^\s]+"
+              title="1-20 characters, No whitespaces"
+            />
+            <SubmitButton />
+          </div>
+          {state?.message && (
+            <p className="mt-4 text-error">{state?.message}</p>
+          )}
+        </div>
+      </form>
+    </div>
   )
 }

@@ -249,8 +249,8 @@ export async function updateUsernameServerAction(
   const userName = await getUserAttrFromToken<string>(token, 'name')
   const newUsername = data.get('username')!.toString()
 
-  if (userName === newUsername)
-    return { message: `New username can't be identical to old one` }
+  if (userName?.toLowerCase() === newUsername.toLowerCase())
+    return { message: `Please pick a new name` }
 
   if (await get(newUsername)) return { message: `This name is already taken` }
 
