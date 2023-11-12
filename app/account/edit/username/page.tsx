@@ -1,6 +1,11 @@
 import { cookies } from 'next/headers'
 import { getUserAttrFromToken } from '../../../api/util'
 import { Form } from './form'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Metronomes - Edit username',
+}
 
 const Page = async () => {
   const cookieStore = cookies()

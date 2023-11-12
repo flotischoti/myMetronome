@@ -1,5 +1,7 @@
 import {
   IconBrandGithub,
+  IconBrandGithubCopilot,
+  IconBrandGithubFilled,
   IconBrandInstagram,
   IconCone2,
   IconMail,
@@ -18,7 +20,7 @@ export const Footer = () => {
             Privacy Policy
           </Link>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <a
             target="_blank"
             href="mailto:hello@metronomes.xyz"
@@ -40,8 +42,8 @@ export const Footer = () => {
             href="https://github.com/flotischoti/myMetronome"
             className="link"
           >
-            <IconBrandGithub size="28" className="hidden sm:block" />
-            <IconBrandGithub size="20" className="sm:hidden" />
+            <IconBrandGithub size="24" className="hidden sm:block" />
+            <IconBrandGithub size="19" className="sm:hidden" />
           </a>
         </div>
       </nav>
