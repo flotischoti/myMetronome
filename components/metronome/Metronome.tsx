@@ -12,6 +12,8 @@ import {
 import {
   IconDeviceFloppy,
   IconEdit,
+  IconLock,
+  IconLockOpen,
   IconMinus,
   IconPlayerPause,
   IconPlayerPlay,
@@ -36,6 +38,7 @@ export interface StoredMetronome {
   timerActive: boolean
   timerValue: number
   showStats: boolean
+  locked: boolean
   owner?: number
   lastOpened?: Date
 }
@@ -64,6 +67,7 @@ const defaultStoredMetronome: StoredMetronome = {
   timerActive: false,
   timerValue: 120000,
   showStats: false,
+  locked: false,
 }
 
 const defaultLocalMetronome: LocalMetronomeSettings = {
@@ -214,6 +218,7 @@ const Metronome = ({
     metronome.timerActive,
     metronome.timerValue,
     metronome.name,
+    metronome.locked,
   ])
 
   const scheduleNote = () => {
@@ -456,17 +461,42 @@ const Metronome = ({
     }
   }
 
+  const waitingClick = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
+  const [lastClick, setLastClick] = useState(0)
+  const lockUnlock = (e: MouseEvent<HTMLButtonElement>) => {
+    if (lastClick && e.timeStamp - lastClick < 250 && waitingClick) {
+      setLastClick(0)
+      clearTimeout(waitingClick.current)
+      waitingClick.current = undefined
+      if (metronome.locked) setMetronome({ ...metronome, locked: false })
+    } else {
+      setLastClick(e.timeStamp)
+      waitingClick.current = setTimeout(() => {
+        waitingClick.current = undefined
+        if (metronome.locked) setSuccessState('Double-click to unlock', 'info')
+      }, 251)
+      if (!metronome.locked) setMetronome({ ...metronome, locked: true })
+    }
+  }
+
   return (
     <form className="select-none shadow bg-base-100">
       <div id="metronomeTitleArea-1" className="p-3 sm:p-4">
         {!isEditTitle ? (
-          <div onClick={() => setEditTitle(true)} className="flex items-center">
+          <div
+            onClick={() => (!metronome.locked ? setEditTitle(true) : undefined)}
+            className="flex items-center"
+          >
             <h1 className="text-xl hover:cursor-text break-all">
               {metronome.name || 'Enter metronome title'}
             </h1>
-            <span className="pl-2">
-              <IconEdit size="16" className="hover:cursor-pointer" />
-            </span>
+            {!metronome.locked && (
+              <span className="pl-2">
+                <IconEdit size="16" className="hover:cursor-pointer" />
+              </span>
+            )}
           </div>
         ) : (
           <input
@@ -494,70 +524,86 @@ const Metronome = ({
           {new Array(metronome.beats).map((v, i) => (
             <span key={i + 1}>{i + 1}</span>
           ))}
-          <div id="metronomeBpmControls-1" className="w-full mt-4">
-            <input
-              type="range"
-              min={minBpm}
-              max={maxBpm}
-              value={metronome.bpm}
-              onChange={changeBpm}
-              className="range range-neutral-content my-2"
-            />
-            <div className="join w-full mt-2 flex">
-              <button
-                type="button"
-                onMouseDown={(e) => handleChangeBpm(e, -1)}
-                onTouchStart={(e) => {
-                  handleChangeBpm(e, -1)
-                }}
-                onTouchEnd={(e) => {
-                  stopChangingBpm(e)
-                  e.preventDefault()
-                }}
-                onMouseUp={stopChangingBpm}
-                // onMouseLeave={stopChangingBpm}
-                className="btn grow join-item rounded-full btn-outline no-animation"
-              >
-                <IconMinus />
-              </button>
+          {!metronome.locked && (
+            <div id="metronomeBpmControls-1" className="w-full mt-4">
+              <input
+                type="range"
+                min={minBpm}
+                max={maxBpm}
+                value={metronome.bpm}
+                onChange={changeBpm}
+                className="range my-2"
+              />
+              <div className="join w-full mt-2 flex">
+                <button
+                  type="button"
+                  onMouseDown={(e) => handleChangeBpm(e, -1)}
+                  onTouchStart={(e) => {
+                    handleChangeBpm(e, -1)
+                  }}
+                  onTouchEnd={(e) => {
+                    stopChangingBpm(e)
+                    e.preventDefault()
+                  }}
+                  onMouseUp={stopChangingBpm}
+                  // onMouseLeave={stopChangingBpm}
+                  className="btn grow join-item rounded-full btn-outline no-animation"
+                >
+                  <IconMinus />
+                </button>
 
-              <button
-                type="button"
-                onMouseDown={(e) => handleChangeBpm(e, 1)}
-                onTouchStart={(e) => {
-                  handleChangeBpm(e, 1)
-                }}
-                onTouchEnd={(e) => {
-                  stopChangingBpm(e)
-                  e.preventDefault()
-                }}
-                onMouseUp={stopChangingBpm}
-                // onMouseLeave={stopChangingBpm}
-                className="btn grow join-item rounded-full btn-outline no-animation"
-              >
-                <IconPlus />
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onMouseDown={(e) => handleChangeBpm(e, 1)}
+                  onTouchStart={(e) => {
+                    handleChangeBpm(e, 1)
+                  }}
+                  onTouchEnd={(e) => {
+                    stopChangingBpm(e)
+                    e.preventDefault()
+                  }}
+                  onMouseUp={stopChangingBpm}
+                  // onMouseLeave={stopChangingBpm}
+                  className="btn grow join-item rounded-full btn-outline no-animation"
+                >
+                  <IconPlus />
+                </button>
+              </div>
 
-            {/* <div className="divider m-0"></div> */}
-            <div className="flex mt-4 gap-4">
-              <button
-                type="button"
-                onClick={handleTap}
-                className="btn btn-circle h-24 grow neutral btn-outline"
-              >
-                Tap
-              </button>
-              <button
-                type="button"
-                onClick={playPause}
-                className="btn btn-circle h-24 grow btn-outline"
-              >
-                {metronome.isPlaying ? <IconPlayerPause /> : <IconPlayerPlay />}
-                {metronome.isPlaying ? 'Pause' : 'Play'}
-              </button>
+              {/* <div className="divider m-0"></div> */}
+              <div className="flex mt-4 gap-4">
+                <button
+                  type="button"
+                  onClick={handleTap}
+                  className="btn btn-circle h-24 grow neutral btn-outline"
+                >
+                  Tap
+                </button>
+                <button
+                  type="button"
+                  onClick={playPause}
+                  className="btn btn-circle h-24 grow btn-outline"
+                >
+                  {metronome.isPlaying ? (
+                    <IconPlayerPause />
+                  ) : (
+                    <IconPlayerPlay />
+                  )}
+                  {metronome.isPlaying ? 'Pause' : 'Play'}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+          {metronome.locked && (
+            <button
+              type="button"
+              onClick={playPause}
+              className="btn btn-circle h-24 w-full btn-outline mt-4"
+            >
+              {metronome.isPlaying ? <IconPlayerPause /> : <IconPlayerPlay />}
+              {metronome.isPlaying ? 'Pause' : 'Play'}
+            </button>
+          )}
         </div>
         <div id="metronomeSettingsArea-1">
           <div id="beatArea">
@@ -761,14 +807,21 @@ const Metronome = ({
         </div>
         <div
           id="metronomeButtonArea-1"
-          className={`mt-4 flex items-center w-full ${
-            deletionInProgress ? 'justify-between' : 'justify-end'
-          }`}
+          className={`mt-8 flex items-end w-full justify-between`}
         >
+          {!deletionInProgress && (
+            <button
+              type="button"
+              className="btn btn-outline btn-neutral btn-square btn-sm"
+              onClick={lockUnlock}
+            >
+              {metronome.locked ? <IconLock /> : <IconLockOpen />}
+            </button>
+          )}
           {!metronome.id && (
             <button
               formAction={createMetronome}
-              className={`btn btn-outline ${
+              className={`btn btn-outline btn-primary ${
                 pendingSave || !user ? 'btn-disabled' : 'btn-active'
               }`}
             >
@@ -780,22 +833,25 @@ const Metronome = ({
               Save
             </button>
           )}
-          {metronome.id && !deletionInProgress && !updateInProgress && (
-            <button
-              type="button"
-              className="btn btn-outline btn-error btn-square btn-md"
-              onClick={(e) => setDeletionInProgress(true)}
-            >
-              <IconTrash size="24" />
-            </button>
-          )}
+          {metronome.id &&
+            !metronome.locked &&
+            !deletionInProgress &&
+            !updateInProgress && (
+              <button
+                type="button"
+                className="btn btn-outline btn-error btn-square btn-sm"
+                onClick={(e) => setDeletionInProgress(true)}
+              >
+                <IconTrash size="24" />
+              </button>
+            )}
           {metronome.id && !deletionInProgress && updateInProgress && (
-            <span className="loading loading-spinner loading-xs mt-8"></span>
+            <span className="loading loading-spinner loading-xs"></span>
           )}
           {metronome.id && deletionInProgress && (
             <button
               type="button"
-              className="btn btn-outline"
+              className="btn btn-outline btn-sm"
               onClick={(e) => setDeletionInProgress(false)}
             >
               <IconX />
@@ -805,7 +861,7 @@ const Metronome = ({
           {metronome.id && deletionInProgress && (
             <button
               formAction={deleteMetronome}
-              className={`btn btn-outline btn-error btn-md ${
+              className={`btn btn-outline btn-error btn-sm ${
                 pendingDelete ? 'btn-disabled' : ''
               }`}
             >
