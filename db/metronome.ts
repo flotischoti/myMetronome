@@ -20,7 +20,7 @@ export async function list(
   offset = 0,
   sortBy = 'name',
   sortOrder = 'asc',
-  name?: string
+  name?: string,
 ): Promise<[number, StoredMetronome[]]> {
   return (await prisma.$transaction([
     prisma.metronome.count({
@@ -49,7 +49,7 @@ export async function list(
 
 export async function create(
   metronome: StoredMetronome,
-  userId: number
+  userId: number,
 ): Promise<StoredMetronome> {
   console.log(`user: ${userId}`)
   console.log(`metronome: ${util.inspect(metronome, false, null, true)}`)
@@ -65,13 +65,14 @@ export async function create(
       timerActive: metronome.timerActive,
       timerValue: metronome.timerValue,
       timeUsed: metronome.timeUsed,
+      locked: metronome.locked,
     },
   })
   return createdMetronome as StoredMetronome
 }
 
 export async function updateMetronome(
-  metronome: StoredMetronome
+  metronome: StoredMetronome,
 ): Promise<StoredMetronome> {
   const updatedMetronome = await prisma.metronome.update({
     where: {
@@ -86,6 +87,7 @@ export async function updateMetronome(
       timerActive: metronome.timerActive,
       timerValue: metronome.timerValue,
       timeUsed: metronome.timeUsed,
+      locked: metronome.locked,
     },
   })
   return updatedMetronome as StoredMetronome
@@ -104,7 +106,7 @@ export async function deleteMetronome(metronomeId: number): Promise<boolean> {
 }
 
 export async function get(
-  metronomeId: number
+  metronomeId: number,
 ): Promise<StoredMetronome | null> {
   return (await prisma.metronome.findUnique({
     where: {

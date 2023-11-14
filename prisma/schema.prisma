@@ -21,6 +21,7 @@ model Metronome {
   timerActive Boolean     @default(false)
   timeUsed    Int         @default(0)
   showStats   Boolean     @default(false)
+  locked      Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   ownerRef    User        @relation(fields: [owner], references: [id])
