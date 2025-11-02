@@ -143,13 +143,6 @@ const Metronome = ({
     }
   }, [])
 
-  // useEffect(() => {
-  //   if (metronome.isPlaying) {
-  //     if (schedulerIntervalId.current)
-  //       clearInterval(schedulerIntervalId.current)
-  //     schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
-  //   }
-  // }, [nextNoteTime.current])
   useEffect(() => {
     if (pendingUpdate) {
       pendingUpdatePrev.current = true

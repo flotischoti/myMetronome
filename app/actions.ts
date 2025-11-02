@@ -23,12 +23,6 @@ export async function signupServerAction(prevState: any, formData: FormData) {
 
   if (password !== passwordRepeat) return { message: `Passwords don't match` }
 
-  // if (!utils.isEmailValid(email)) {
-  //   return NextResponse.json(utils.getErrorResponse(`Invalid email`), {
-  //     status: 400,
-  //   })
-  // }
-
   const oldUser = await userDb.get(name)
 
   if (oldUser) {
@@ -42,14 +36,6 @@ export async function signupServerAction(prevState: any, formData: FormData) {
     password: encryptedPw,
     email: undefined,
   })
-
-  // if (email) {
-  //   const verificationToken = await utils.getJwt(
-  //     { userId: user.id!, name },
-  //     '10m'
-  //   )
-  //   utils.sendVerificationMail(user, verificationToken)
-  // }
 
   user.token = await utils.getJwt({ userId: user.id!, name })
 
@@ -144,7 +130,6 @@ export async function deleteMetronomeAction(
   const token = cookies().get('token')?.value
   const userId = await getUserAttrFromToken(token!)
 
-  // TODO replace all this shit by using where clause with metronome + user ID
   const metronome = await metronomeDb.get(Number(metronomeId))
 
   if (!metronome) {
@@ -180,7 +165,6 @@ export async function updateServerAction(newMetronome: StoredMetronome) {
   const token = cookies().get('token')?.value
   const userId = await getUserAttrFromToken(token!)
 
-  // TODO replace all this shit by using where clause with metronome + user ID
   const metronome = await metronomeDb.get(newMetronome.id!)
 
   if (!metronome) {
