@@ -2,6 +2,8 @@
 
 This repository contains the source for [metronomes.xyz](http://www.metronomes.xyz)
 
+This project was created as a use case to familiarize myself with nextjs and solve a problem which I faced as musician when practicing different songs or excercises at the same time: Remembering the progress of each song or excercise with a distinguished metronome.
+
 # Prerequisites
 
 - Node.js >v.16
