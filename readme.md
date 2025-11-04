@@ -20,10 +20,13 @@ Create .env file with following values according to .env.local.template
 # Setup PRISMA
 
 1. Generate client: `npx prisma generate` (also executed automatically after `npm install`)
-2. Migrate database:
+2. Migrate database (database must be up and running):
 
-- Non-Prod: npx prisma migrate dev
-- Prod: npx prisma migrate deploy
+- Non-Prod: `npx prisma migrate dev` or `npm run migrate`
+- Prod: `npx prisma migrate deploy`
+
+3. Seed data (optional)
+   `npm run seed`
 
 # Run locally
 
@@ -47,5 +50,5 @@ Open http://localhost:3000 in browser
 
 The following npm scripts can be used to setup docker:
 
-- `npm run docker:run`: Create container based on postgres image
+- `npm run docker:create`: Create container based on postgres image
 - `npm run docker:start`: Start container
