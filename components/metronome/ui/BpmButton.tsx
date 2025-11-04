@@ -1,4 +1,4 @@
-import { Icon, IconMinus } from '@tabler/icons-react'
+import { Icon } from '@tabler/icons-react'
 import { useRef, MouseEvent, TouchEvent } from 'react'
 
 export function BpmButton({

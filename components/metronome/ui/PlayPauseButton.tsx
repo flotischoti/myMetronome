@@ -1,6 +1,5 @@
 import { Dispatch, MouseEvent, SetStateAction, useEffect, useRef } from 'react'
-import { StoredMetronome } from '../types'
-import { LocalMetronomeSettings } from '../Metronome'
+import { LocalMetronomeSettings, StoredMetronome } from '../Metronome'
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react'
 
 export function PlayPauseButton({
