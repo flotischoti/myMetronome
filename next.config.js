@@ -1,3 +1,12 @@
-const nextConfig = {}
+// required for Azure App Service hosting to avoid CSRF errors
+const nextConfig = {
+  experimental: {
+    serverActions: {
+      allowedOrigins: [process.env.WEBSITE_HOSTNAME, 'localhost:8080'].filter(
+        Boolean,
+      ),
+    },
+  },
+}
 
 module.exports = nextConfig
