@@ -1,0 +1,149 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+
+env:
+  NODE_VERSION: '22'
+  AZURE_WEBAPP_NAME: my-metronome-webapp
+  AZURE_RESOURCE_GROUP: myMetronome-rg
+
+jobs:
+  # Job 1: Tests
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Jest tests
+        run: npm run test -- --ci
+        env:
+          NODE_ENV: test
+          TOKEN_KEY: testsecret
+
+  # Job 2: validate build
+  build:
+    name: Validate Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          WEBSITE_HOSTNAME: ${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
+
+      - name: Check for build errors
+        run: |
+          if [ -d ".next" ]; then
+            echo "✅ Build successful"
+          else
+            echo "❌ Build failed - .next directory not found"
+            exit 1
+          fi
+
+  # Job 3: Deploy to Azure
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    environment:
+      name: development
+      url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Create deployment package
+        run: |
+          # Erstelle ZIP ohne unnötige Dateien
+          zip -r deploy.zip . \
+            -x "*.git*" \
+            -x "node_modules/*" \
+            -x ".next/*" \
+            -x ".env*" \
+            -x "*.log" \
+            -x "coverage/*" \
+            -x "*.test.ts" \
+            -x "*.test.tsx" \
+            -x "__tests__/*"
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: deploy.zip
+
+      - name: Run Prisma migrations
+        run: |
+          az webapp ssh \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --command "cd /home/site/wwwroot && npx prisma migrate deploy"
+        continue-on-error: true
+
+      - name: Restart Web App
+        run: |
+          az webapp restart \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME }}
+
+      - name: Azure logout
+        run: az logout
+        if: always()
+
+  # Job 4: Notify
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always()
+    steps:
+      - name: Deployment Success
+        if: needs.deploy.result == 'success'
+        run: |
+          echo "✅ Deployment successful!"
+          echo "URL: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+
+      - name: Deployment Failed
+        if: needs.deploy.result == 'failure'
+        run: |
+          echo "❌ Deployment failed!"
+          exit 1
