@@ -11,7 +11,7 @@ env:
   AZURE_RESOURCE_GROUP: myMetronome-rg
 
 jobs:
-  # Job 1: Tests
+  # Job 1: Run tests
   test:
     name: Run Tests
     runs-on: ubuntu-latest
@@ -34,9 +34,9 @@ jobs:
           NODE_ENV: test
           TOKEN_KEY: testsecret
 
-  # Job 2: validate build
+  # Job 2: Build application and create deployment artifact
   build:
-    name: Validate Build
+    name: Build Application
     runs-on: ubuntu-latest
     needs: test
     steps:
@@ -60,16 +60,32 @@ jobs:
         env:
           WEBSITE_HOSTNAME: ${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
 
-      - name: Check for build errors
+      - name: Install production dependencies only
         run: |
-          if [ -d ".next" ]; then
-            echo "✅ Build successful"
-          else
-            echo "❌ Build failed - .next directory not found"
-            exit 1
-          fi
+          rm -rf node_modules
+          npm ci --production
 
-  # Job 3: Deploy to Azure
+      - name: Create deployment package
+        run: |
+          mkdir -p deploy-package
+          cp -r .next deploy-package/
+          cp -r node_modules deploy-package/
+          cp -r public deploy-package/ || true
+          cp -r prisma deploy-package/
+          cp package*.json deploy-package/
+          cp next.config.* deploy-package/ || true
+          cd deploy-package
+          zip -r ../deployment.zip .
+          cd ..
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-package
+          path: deployment.zip
+          retention-days: 1
+
+  # Job 3: Deploy pre-built package to Azure
   deploy:
     name: Deploy to Azure
     runs-on: ubuntu-latest
@@ -78,27 +94,10 @@ jobs:
       name: development
       url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Create deployment package
-        run: |
-          # Erstelle ZIP ohne unnötige Dateien
-          zip -r deploy.zip . \
-            -x "*.git*" \
-            -x "node_modules/*" \
-            -x ".next/*" \
-            -x ".env*" \
-            -x "*.log" \
-            -x "coverage/*" \
-            -x "*.test.ts" \
-            -x "*.test.tsx" \
-            -x "__tests__/*"
+          name: deployment-package
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -109,15 +108,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: deploy.zip
-
-      - name: Run Prisma migrations
-        run: |
-          az webapp ssh \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --name ${{ env.AZURE_WEBAPP_NAME }} \
-            --command "cd /home/site/wwwroot && npx prisma migrate deploy"
-        continue-on-error: true
+          package: deployment.zip
 
       - name: Restart Web App
         run: |
@@ -129,7 +120,7 @@ jobs:
         run: az logout
         if: always()
 
-  # Job 4: Notify
+  # Job 4: Notify deployment status
   notify:
     name: Notify Deployment Status
     runs-on: ubuntu-latest
