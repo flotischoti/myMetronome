@@ -71,7 +71,6 @@ jobs:
           cp -r node_modules deploy-package/
           cp -r public deploy-package/ || true
           cp -r prisma deploy-package/
-          cp -r .next/server deploy-package/.next/server || true
           cp package*.json deploy-package/
           cp next.config.* deploy-package/ || true
           cd deploy-package
