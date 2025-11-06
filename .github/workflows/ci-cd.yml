@@ -9,6 +9,7 @@ env:
   NODE_VERSION: '22'
   AZURE_WEBAPP_NAME: my-metronome-webapp
   AZURE_RESOURCE_GROUP: myMetronome-rg
+  AZURE_WEBAPP_URL: my-metronome-webapp-gzgtf0g2ftbadbek.westeurope-01.azurewebsites.net
 
 jobs:
   # Job 1: Run tests
@@ -58,12 +59,10 @@ jobs:
       - name: Build Next.js application
         run: npm run build
         env:
-          WEBSITE_HOSTNAME: ${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
+          WEBSITE_HOSTNAME: ${{ env.AZURE_WEBAPP_URL }}
 
-      - name: Install production dependencies only
-        run: |
-          rm -rf node_modules
-          npm ci --production
+      - name: Prune dev dependencies
+        run: npm prune --production
 
       - name: Create deployment package
         run: |
@@ -72,6 +71,7 @@ jobs:
           cp -r node_modules deploy-package/
           cp -r public deploy-package/ || true
           cp -r prisma deploy-package/
+          cp -r .next/server deploy-package/.next/server || true
           cp package*.json deploy-package/
           cp next.config.* deploy-package/ || true
           cd deploy-package
@@ -92,7 +92,7 @@ jobs:
     needs: [test, build]
     environment:
       name: development
-      url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
+      url: https://${{ env.AZURE_WEBAPP_URL }}
     steps:
       - name: Download deployment artifact
         uses: actions/download-artifact@v4
@@ -116,6 +116,14 @@ jobs:
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.AZURE_WEBAPP_NAME }}
 
+      - name: Warm up application
+        run: |
+          echo "Warming up https://${{ env.AZURE_WEBAPP_URL }}..."
+          sleep 10
+          curl -f -s -o /dev/null -w "HTTP Status: %{http_code}\n" \
+            https://${{ env.AZURE_WEBAPP_URL }} || echo "App is starting..."
+          echo "Warm-up completed"
+
       - name: Azure logout
         run: az logout
         if: always()
@@ -131,7 +139,7 @@ jobs:
         if: needs.deploy.result == 'success'
         run: |
           echo "✅ Deployment successful!"
-          echo "URL: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+          echo "URL: https://${{ env.AZURE_WEBAPP_URL }}"
 
       - name: Deployment Failed
         if: needs.deploy.result == 'failure'
