@@ -61,9 +61,6 @@ jobs:
         env:
           WEBSITE_HOSTNAME: ${{ env.AZURE_WEBAPP_URL }}
 
-      - name: Prune dev dependencies
-        run: npm prune --production
-
       - name: Create deployment package
         run: |
           mkdir -p deploy-package
