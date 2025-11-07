@@ -62,7 +62,9 @@ jobs:
           WEBSITE_HOSTNAME: ${{ env.AZURE_WEBAPP_URL }}
 
       - name: Install production dependenies
-        run: npm ci --production
+        run: |
+          rm -rf node_modules
+          npm ci --production
 
       - name: Create deployment package
         run: |
