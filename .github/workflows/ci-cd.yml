@@ -9,7 +9,7 @@ env:
   NODE_VERSION: '22'
   AZURE_WEBAPP_NAME: my-metronome-webapp
   AZURE_RESOURCE_GROUP: myMetronome-rg
-  AZURE_WEBAPP_URL: my-metronome-webapp-gzgtf0g2ftbadbek.westeurope-01.azurewebsites.net
+  AZURE_WEBAPP_URL: my-metronome-webapp.azurewebsites.net
 
 jobs:
   # Job 1: Run tests
