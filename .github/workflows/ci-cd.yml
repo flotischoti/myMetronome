@@ -6,7 +6,7 @@ on:
       - dev
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '20'
   AZURE_WEBAPP_NAME: my-metronome-webapp
   AZURE_RESOURCE_GROUP: myMetronome-rg
   AZURE_WEBAPP_URL: my-metronome-webapp.azurewebsites.net
@@ -60,12 +60,10 @@ jobs:
         run: npm run build
         env:
           WEBSITE_HOSTNAME: ${{ env.AZURE_WEBAPP_URL }}
-
       - name: Install production dependenies
         run: |
           rm -rf node_modules
           npm ci --production
-
       - name: Create deployment package
         run: |
           mkdir -p deploy-package
@@ -116,6 +114,32 @@ jobs:
           az webapp restart \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.AZURE_WEBAPP_NAME }}
+
+      - name: Get database connection string
+        id: get-db-url
+        run: |
+          DB_URL=$(az webapp config appsettings list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --query "[?name=='POSTGRES_PRISMA_URL'].value" -o tsv)
+          echo "::add-mask::$DB_URL"
+          echo "DATABASE_URL=$DB_URL" >> $GITHUB_ENV
+
+      - name: Checkout repository (for migrations)
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Prisma CLI
+        run: npm install prisma --no-save
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
 
       - name: Warm up application
         run: |

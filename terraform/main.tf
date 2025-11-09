@@ -99,6 +99,7 @@ resource "azurerm_postgresql_flexible_server" "main" {
   sku_name   = var.db_sku_name
   version    = "16"
   storage_mb = 32768
+  zone = "1"
 
   backup_retention_days = 7
   geo_redundant_backup_enabled = false
@@ -125,3 +126,11 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "azure_services" {
   end_ip_address   = "0.0.0.0"
 }
 
+# Firewall rule to allow GitHub Actions (and other public access)
+# WARNING: This allows access from anywhere. Just for test purpose
+resource "azurerm_postgresql_flexible_server_firewall_rule" "github_actions" {
+  name             = "AllowPublicAccess"
+  server_id        = azurerm_postgresql_flexible_server.main.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "255.255.255.255"
+}
