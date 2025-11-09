@@ -123,7 +123,7 @@ jobs:
             --name ${{ env.AZURE_WEBAPP_NAME }} \
             --query "[?name=='POSTGRES_PRISMA_URL'].value" -o tsv)
           echo "::add-mask::$DB_URL"
-          echo "DATABASE_URL=$DB_URL" >> $GITHUB_ENV
+          echo "POSTGRES_PRISMA_URL=$DB_URL" >> $GITHUB_ENV
 
       - name: Checkout repository (for migrations)
         uses: actions/checkout@v4
@@ -139,7 +139,7 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+          POSTGRES_PRISMA_URL: ${{ env.POSTGRES_PRISMA_URL }}
 
       - name: Warm up application
         run: |
