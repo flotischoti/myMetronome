@@ -4,6 +4,28 @@ output "resource_group_name" {
   value       = azurerm_resource_group.main.name
 }
 
+output "container_registry_name" {
+  description = "Name of the Container Registry"
+  value       = azurerm_container_registry.main.name
+}
+
+output "container_registry_login_server" {
+  description = "Login server for Container Registry"
+  value       = azurerm_container_registry.main.login_server
+}
+
+output "container_registry_admin_username" {
+  description = "Admin username for Container Registry"
+  value       = azurerm_container_registry.main.admin_username
+  sensitive   = true
+}
+
+output "container_registry_admin_password" {
+  description = "Admin password for Container Registry"
+  value       = azurerm_container_registry.main.admin_password
+  sensitive   = true
+}
+
 output "app_service_name" {
   description = "Name of the App Service"
   value       = azurerm_linux_web_app.main.name

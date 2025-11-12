@@ -36,6 +36,19 @@ variable "app_service_sku" {
   default     = "B1"
 }
 
+# Container Registry variables
+variable "container_registry_name" {
+  description = "Base name for Container Registry (will have random suffix)"
+  type        = string
+  default     = "mymetronomeacr"
+}
+
+variable "container_registry_sku" {
+  description = "SKU for Container Registry (Basic, Standard, Premium)"
+  type        = string
+  default     = "Basic"
+}
+
 # Database variables
 variable "db_server_name" {
   description = "Name of the PostgreSQL server"

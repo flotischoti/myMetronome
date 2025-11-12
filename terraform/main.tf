@@ -40,6 +40,20 @@ resource "azurerm_resource_group" "main" {
   }
 }
 
+# Container Registry
+resource "azurerm_container_registry" "main" {
+  name                = "${var.container_registry_name}${random_string.suffix.result}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  sku                 = var.container_registry_sku
+  admin_enabled       = true
+
+  tags = {
+    environment = var.environment
+    project     = "myMetronome"
+  }
+}
+
 # App Service Plan
 resource "azurerm_service_plan" "main" {
   name                = var.app_service_plan_name
@@ -127,7 +141,7 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "azure_services" {
 }
 
 # Firewall rule to allow GitHub Actions (and other public access)
-# WARNING: This allows access from anywhere. Just for test purpose
+# WARNING: This allows access from anywhere. For production, use Private Link or VNet integration.
 resource "azurerm_postgresql_flexible_server_firewall_rule" "github_actions" {
   name             = "AllowPublicAccess"
   server_id        = azurerm_postgresql_flexible_server.main.id
