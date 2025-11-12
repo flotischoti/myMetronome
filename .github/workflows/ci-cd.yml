@@ -6,7 +6,7 @@ on:
       - dev
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '20'
   AZURE_WEBAPP_NAME: my-metronome-webapp
   AZURE_RESOURCE_GROUP: myMetronome-rg
   AZURE_WEBAPP_URL: my-metronome-webapp.azurewebsites.net
@@ -174,7 +174,7 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+          POSTGRES_PRISMA_URL: ${{ env.DATABASE_URL }}
 
       - name: Warm up application
         run: |
