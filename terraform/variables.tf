@@ -91,3 +91,9 @@ variable "token_key" {
   type        = string
   sensitive   = true
 }
+
+variable "container_image_name" {
+  description = "Name of the Docker image"
+  type        = string
+  default     = "mymetronome"
+}

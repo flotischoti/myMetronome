@@ -68,7 +68,7 @@ resource "azurerm_service_plan" "main" {
   }
 }
 
-# App Service
+# App Service (Container-based)
 resource "azurerm_linux_web_app" "main" {
   name                = var.app_service_name
   location            = azurerm_resource_group.main.location
@@ -79,20 +79,23 @@ resource "azurerm_linux_web_app" "main" {
     always_on = var.app_service_sku == "B1" ? true : false
     
     application_stack {
-      node_version = "20-lts"
+      docker_image_name        = "${var.container_image_name}:latest"
+      docker_registry_url      = "https://${azurerm_container_registry.main.login_server}"
+      docker_registry_username = azurerm_container_registry.main.admin_username
+      docker_registry_password = azurerm_container_registry.main.admin_password
     }
   }
 
   app_settings = {
-    "WEBSITE_NODE_DEFAULT_VERSION"       = "~20"
-    "NODE_ENV"                           = "production"
-    "SCM_DO_BUILD_DURING_DEPLOYMENT"     = "false"
-    "ENABLE_ORYX_BUILD"                  = "false"
-    "WEBSITE_RUN_FROM_PACKAGE"           = "0"
-    "POST_DEPLOYMENT_COMMAND"            = "cd /home/site/wwwroot && npx prisma migrate deploy"
-    "TOKEN_KEY"                          = var.token_key
-    "POSTGRES_PRISMA_URL"                = "postgresql://${var.db_admin_username}:${var.db_admin_password}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.main.name}?sslmode=require"
-    "POSTGRES_URL_NON_POOLING"           = "postgresql://${var.db_admin_username}:${var.db_admin_password}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.main.name}?sslmode=require"
+    # Container-specific settings
+    "WEBSITES_PORT"                       = "3000"
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
+    
+    # Application settings
+    "NODE_ENV"                 = "production"
+    "TOKEN_KEY"                = var.token_key
+    "POSTGRES_PRISMA_URL"      = "postgresql://${var.db_admin_username}:${var.db_admin_password}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.main.name}?sslmode=require"
+    "POSTGRES_URL_NON_POOLING" = "postgresql://${var.db_admin_username}:${var.db_admin_password}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.main.name}?sslmode=require"
   }
 
   tags = {
@@ -113,9 +116,9 @@ resource "azurerm_postgresql_flexible_server" "main" {
   sku_name   = var.db_sku_name
   version    = "16"
   storage_mb = 32768
-  zone = "1"
+  zone       = "1"
 
-  backup_retention_days = 7
+  backup_retention_days        = 7
   geo_redundant_backup_enabled = false
 
   tags = {
