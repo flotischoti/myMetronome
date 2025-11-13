@@ -63,8 +63,8 @@ jobs:
         with:
           images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,prefix=dev-
             type=raw,value=latest
+            type=sha,prefix=dev-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
