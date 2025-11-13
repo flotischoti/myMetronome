@@ -1,15 +1,20 @@
-name: Run Jest Tests
+name: Run Tests
 
 on:
   push:
     branches:
-      # - dev
-      - disable-workflow
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+env:
+  NODE_VERSION: '20'
 
 jobs:
   test:
+    name: Run Tests
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,7 +22,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci

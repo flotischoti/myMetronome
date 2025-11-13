@@ -1,95 +1,32 @@
-name: CI/CD Pipeline
+name: Build & Deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: ['Run Tests']
+    types:
+      - completed
     branches:
       - dev
 
 env:
-  NODE_VERSION: '20'
   AZURE_WEBAPP_NAME: my-metronome-webapp
   AZURE_RESOURCE_GROUP: myMetronome-rg
   AZURE_WEBAPP_URL: my-metronome-webapp.azurewebsites.net
   ACR_NAME: mymetronomeacrbrhvzl1v
+  IMAGE_NAME: mymetronome
 
 jobs:
-  # Job 1: Run tests
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run Jest tests
-        run: npm run test -- --ci
-        env:
-          NODE_ENV: test
-          TOKEN_KEY: testsecret
-
-  # Job 2: Build application and Docker image
+  # Job 1: Build and push Docker image
   build:
-    name: Build Application & Docker Image
+    name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: test
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
       image-tag: ${{ steps.meta.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma Client
-        run: npx prisma generate
-
-      - name: Build Next.js application
-        run: npm run build
-        env:
-          WEBSITE_HOSTNAME: ${{ env.AZURE_WEBAPP_URL }}
-
-      - name: Install production dependencies
-        run: |
-          rm -rf node_modules
-          npm ci --production
-
-      - name: Create deployment package
-        run: |
-          mkdir -p deploy-package
-          cp -r .next deploy-package/
-          cp -r node_modules deploy-package/
-          cp -r public deploy-package/ || true
-          cp -r prisma deploy-package/
-          cp package*.json deploy-package/
-          cp next.config.* deploy-package/ || true
-          cd deploy-package
-          zip -r ../deployment.zip .
-          cd ..
-
-      - name: Upload deployment artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: deployment-package
-          path: deployment.zip
-          retention-days: 1
-
-      # Docker Build & Push
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -104,7 +41,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.ACR_LOGIN_SERVER }}/mymetronome
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}
           tags: |
             type=sha,prefix=dev-
             type=raw,value=latest
@@ -116,79 +53,35 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/mymetronome:buildcache
-          cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/mymetronome:buildcache,mode=max
+          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
-  # Job 3: Deploy pre-built package to Azure
+  # Job 2: Deploy to Azure App Service
   deploy:
-    name: Deploy to Azure
+    name: Deploy to Azure App Service
+    needs: build
     runs-on: ubuntu-latest
-    needs: [test, build]
     environment:
-      name: development
+      name: production
       url: https://${{ env.AZURE_WEBAPP_URL }}
-    steps:
-      - name: Download deployment artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: deployment-package
 
+    steps:
       - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: deployment.zip
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
 
-      - name: Restart Web App
-        run: |
-          az webapp restart \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --name ${{ env.AZURE_WEBAPP_NAME }}
-
-      - name: Get database connection string
-        id: get-db-url
-        run: |
-          DB_URL=$(az webapp config appsettings list \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --name ${{ env.AZURE_WEBAPP_NAME }} \
-            --query "[?name=='POSTGRES_PRISMA_URL'].value" -o tsv)
-          echo "::add-mask::$DB_URL"
-          echo "DATABASE_URL=$DB_URL" >> $GITHUB_ENV
-
-      - name: Checkout repository (for migrations)
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install Prisma CLI
-        run: npm install prisma --no-save
-
-      - name: Run database migrations
-        run: npx prisma migrate deploy
-        env:
-          POSTGRES_PRISMA_URL: ${{ env.DATABASE_URL }}
-
-      - name: Warm up application
-        run: |
-          echo "Warming up https://${{ env.AZURE_WEBAPP_URL }}..."
-          sleep 10
-          curl -f -s -o /dev/null -w "HTTP Status: %{http_code}\n" \
-            https://${{ env.AZURE_WEBAPP_URL }} || echo "App is starting..."
-          echo "Warm-up completed"
-
-      - name: Azure logout
-        run: az logout
+      - name: Logout from Azure
         if: always()
+        run: az logout
 
-  # Job 4: Notify deployment status
+  # Job 3: Notify deployment status
   notify:
     name: Notify Deployment Status
     runs-on: ubuntu-latest
@@ -200,7 +93,7 @@ jobs:
         run: |
           echo "✅ Deployment successful!"
           echo "URL: https://${{ env.AZURE_WEBAPP_URL }}"
-          echo "Docker Image: ${{ secrets.ACR_LOGIN_SERVER }}/mymetronome:latest"
+          echo "Docker Image: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest"
 
       - name: Deployment Failed
         if: needs.deploy.result == 'failure'
