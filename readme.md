@@ -10,7 +10,7 @@ The repository also contains code to setup Azure cloud via Terraform and deploy 
 
 # Prerequisites
 
-- Node.js >v.16
+- Node.js >v20
 - npm
 - Postgres database
 - Docker (optional)
@@ -65,8 +65,6 @@ To only run the app outside of docker run the following npm scripts:
 
 Open http://localhost:3000 in browser
 
-See
-
 # Vercel build/deploy pipelines
 
 - dev (preview) build: push to dev branch
@@ -90,7 +88,7 @@ Run any of the Launch configurations in `launch.json`:
 
 # Setup PRISMA
 
-When running on docker - locally and remote - no manual Prisma setup should be necessary. Prisma client is generated and database is migrated automatically.
+When running on docker locally with npm given scripts or remote with GitHub actions, no manual Prisma setup should be necessary. Prisma client is generated and database is migrated automatically.
 
 Optionally, manual PRISMA setup steps are:
 
