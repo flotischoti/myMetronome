@@ -9,7 +9,7 @@
     "dev:db:start": "docker-compose -f docker-compose.dev.yml up -d && npx prisma migrate deploy",
     "dev:db:stop": "docker-compose -f docker-compose.dev.yml down",
     "build": "next build",
-    "start": "node ./node_modules/next/dist/bin/next start",
+    "start": "node .next/standalone/server.js",
     "docker:up": "docker-compose up",
     "docker:up:build": "docker-compose up --build",
     "docker:down": "docker-compose down",
