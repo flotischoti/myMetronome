@@ -2,7 +2,11 @@
 
 This repository contains the source for [metronomes.xyz](http://www.metronomes.xyz)
 
-This project was created as a use case to familiarize myself with nextjs and solve a problem which I faced as musician when practicing different songs or excercises at the same time: Remembering the progress of each song or excercise with a distinguished metronome.
+The project was created as a use case to familiarize myself with nextjs and solve a problem which I faced as musician when practicing different songs or excercises at the same time: Remembering the progress of each song or excercise with a distinguished metronome.
+
+The app is run on vercel facilitating the default CI/CD integration with GitHub.
+
+The repository also contains code to setup Azure cloud via Terraform and deploy the app via GitHub workflow as a containerized application (deactivated by default).
 
 # Prerequisites
 
@@ -15,43 +19,58 @@ This project was created as a use case to familiarize myself with nextjs and sol
 
 Run `npm install`
 
-Create .env file with following values according to .env.local.template
+This will also run `npx prisma generate` as postinstall to generate prisma client which is used for all database operations. Caution: The prisma client will use the connection string from environemnt variable `POSTGRES_PRISMA_URL`. Make sure it always points to the right database instance.
 
-# Setup PRISMA
-
-1. Generate client: `npx prisma generate` (also executed automatically after `npm install`)
-2. Migrate database (database must be up and running):
-
-- Non-Prod: `npx prisma migrate dev` or `npm run migrate`
-- Prod: `npx prisma migrate deploy`
-
-3. Seed data (optional)
-   `npm run seed`
+Create .env file and copy content from env.local.template.
+Make sure that postgres user, password and database are the same as in the docker compose files to successfully connect to the local database container. By default, no change needed from env.local.template.
 
 # Run locally
 
-### Development mode
+## Development mode
+
+### Run App
+
+To start the app locally run the following npm script:
 
 `npm run dev`
 
-### Production mode
+Open http://localhost:3000 in browser
 
-1. `npm run build`
-2. `npm run start`
+### Run Database on Docker
+
+To start and stop a local postgres instance within a docker container run the following npm scripts:
+
+- `npm run dev:db:start`: Starts a database container and migrates the database
+- `npm run dev:db:stop`
+
+## Production mode
+
+### Docker Fullstack
+
+The app can be built as a docker image and run in a container together with the database using the following npm scripts:
+
+- `npm run docker:up:build`: Builds the image from Dockerfile via docker-compose and additionally runs a container for the app and the database.
+- `npm run docker:up`: Runs the previously built docker images as containers without building
 
 Open http://localhost:3000 in browser
+
+- `npm run docker:down`: Stops and removes the containers and network
+
+### Docker partial stack
+
+To only run the app outside of docker run the following npm scripts:
+
+1. `npm run build`: Builds the app
+2. `npm run start`: Runs the app
+
+Open http://localhost:3000 in browser
+
+See
 
 # Vercel build/deploy pipelines
 
 - dev (preview) build: push to dev branch
 - prod build: accepted merge request to master branch
-
-# Using docker
-
-The following npm scripts can be used to setup docker:
-
-- `npm run docker:create`: Create container based on postgres image
-- `npm run docker:start`: Start container
 
 # Debug in VSCode
 
@@ -68,3 +87,22 @@ Run any of the Launch configurations in `launch.json`:
 - Write `debugger` where you want to add a breakpoint
 - Run tests with `node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand` (Optional arguments like -t "Test name" can be added)
 - Run launch configuration `Attach debugger to Jest`
+
+# Setup PRISMA
+
+When running on docker - locally and remote - no manual Prisma setup should be necessary. Prisma client is generated and database is migrated automatically.
+
+Optionally, manual PRISMA setup steps are:
+
+1. Generate client: `npx prisma generate` (also executed automatically after `npm install`)
+2. Migrate database (database must be up and running):
+
+   - Non-Prod: `npm run db:migrate`
+   - Prod: `npx prisma migrate deploy`
+
+3. Seed data (optional)
+   `npm run db:seed`
+
+4. Reset the database (optional)
+
+   `npm run db:reset`: This will delete all data and reset the database to the inital migration state.

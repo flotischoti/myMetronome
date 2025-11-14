@@ -1,0 +1,2 @@
+db_admin_password = "password"
+token_key         = "tokenkey"
