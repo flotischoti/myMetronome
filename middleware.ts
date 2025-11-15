@@ -33,6 +33,16 @@ export const config = {
 }
 
 export async function middleware(request: NextRequest) {
+  // Replacing x-forwarded-host was only necessary for azure container app deployment
+  const requestHeaders = new Headers(request.headers)
+  const forwardedHost = requestHeaders.get('x-forwarded-host')
+  const host = requestHeaders.get('host')
+
+  if (forwardedHost === '0.0.0.0:3000' && host) {
+    console.log(`🔧 Fixing x-forwarded-host: ${forwardedHost} → ${host}`)
+    requestHeaders.set('x-forwarded-host', host)
+  }
+
   const userToken =
     request.cookies.get('token')?.value || request.headers.get('x-access-token')
   if (!userToken || !(await verifyToken(userToken))) {
@@ -59,7 +69,6 @@ export async function middleware(request: NextRequest) {
     )
   } else {
     const tokenPayload = await decodeToken(userToken)
-    const requestHeaders = new Headers(request.headers)
     const newToken = await getJwt(tokenPayload!)
 
     if (['', '/', '/metronome/'].includes(request.nextUrl.pathname)) {
