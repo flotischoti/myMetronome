@@ -8,7 +8,6 @@ on:
 env:
   AZURE_WEBAPP_NAME: my-metronome-webapp
   AZURE_RESOURCE_GROUP: myMetronome-rg
-  AZURE_WEBAPP_URL: my-metronome-webapp.azurewebsites.net
   ACR_NAME: mymetronomeacrbrhvzl1v
   IMAGE_NAME: mymetronome
 
@@ -63,8 +62,8 @@ jobs:
         with:
           images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest
             type=sha,prefix=dev-
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -76,14 +75,13 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
-  # Job 3: Deploy to Azure App Service
+  # Job 3: Deploy to Azure Container Apps
   deploy:
-    name: Deploy to Azure App Service
+    name: Deploy to Azure Container Apps
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://${{ env.AZURE_WEBAPP_URL }}
 
     steps:
       - name: Login to Azure
@@ -91,11 +89,22 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
+      - name: Update Container App with new image
+        run: |
+          az containerapp update \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
+
+      - name: Get Container App URL
+        id: get-url
+        run: |
+          URL=$(az containerapp show \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          echo "url=https://$URL" >> $GITHUB_OUTPUT
 
       - name: Logout from Azure
         if: always()
@@ -112,7 +121,6 @@ jobs:
         if: needs.deploy.result == 'success'
         run: |
           echo "✅ Deployment successful!"
-          echo "URL: https://${{ env.AZURE_WEBAPP_URL }}"
           echo "Docker Image: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest"
 
       - name: Deployment Failed

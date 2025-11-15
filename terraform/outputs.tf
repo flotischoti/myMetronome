@@ -26,21 +26,6 @@ output "container_registry_admin_password" {
   sensitive   = true
 }
 
-output "app_service_name" {
-  description = "Name of the App Service"
-  value       = azurerm_linux_web_app.main.name
-}
-
-output "app_service_url" {
-  description = "URL of the deployed App Service"
-  value       = "https://${azurerm_linux_web_app.main.default_hostname}"
-}
-
-output "app_service_default_hostname" {
-  description = "Default hostname for App Service (for GitHub Actions)"
-  value       = azurerm_linux_web_app.main.default_hostname
-}
-
 output "postgresql_server_fqdn" {
   description = "Fully qualified domain name of PostgreSQL server"
   value       = azurerm_postgresql_flexible_server.main.fqdn

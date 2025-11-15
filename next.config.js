@@ -7,7 +7,7 @@ const nextConfig = {
         process.env.WEBSITE_HOSTNAME,
         'localhost:8080',
         'localhost:3000',
-        '0.0.0.0:3000',
+        '*.azurecontainerapps.io',
       ].filter(Boolean),
     },
   },
