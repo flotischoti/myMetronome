@@ -75,10 +75,69 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
-  # Job 3: Deploy to Azure Container Apps
+  # Job 3: Run Database Migrations
+  migrate:
+    name: Run Database Migrations
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Update Migration Job Image
+        run: |
+          az containerapp job update \
+            --name migration-job \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
+
+      - name: Start Migration Job
+        run: |
+          echo "🔄 Starting database migration..."
+          EXECUTION_NAME=$(az containerapp job start \
+            --name migration-job \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query name \
+            --output tsv)
+
+          echo "Migration execution: $EXECUTION_NAME"
+
+          # Wait for completion (max 5 minutes)
+          for i in {1..60}; do
+            STATUS=$(az containerapp job execution show \
+              --name migration-job \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --job-execution-name $EXECUTION_NAME \
+              --query properties.status \
+              --output tsv)
+            
+            echo "Migration status: $STATUS"
+            
+            if [ "$STATUS" = "Succeeded" ]; then
+              echo "✅ Migration completed successfully!"
+              break
+            elif [ "$STATUS" = "Failed" ]; then
+              echo "❌ Migration failed!"
+              az containerapp job execution show \
+                --name migration-job \
+                --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+                --job-execution-name $EXECUTION_NAME
+              exit 1
+            fi
+            
+            sleep 5
+          done
+
+      - name: Logout from Azure
+        if: always()
+        run: az logout
+
+  # Job 4: Deploy to Azure Container Apps
   deploy:
     name: Deploy to Azure Container Apps
-    needs: build
+    needs: [build, migrate]
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -91,6 +150,7 @@ jobs:
 
       - name: Update Container App with new image
         run: |
+          echo "🚀 Deploying new container version..."
           az containerapp update \
             --name ${{ env.AZURE_WEBAPP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
@@ -105,26 +165,44 @@ jobs:
             --query properties.configuration.ingress.fqdn \
             --output tsv)
           echo "url=https://$URL" >> $GITHUB_OUTPUT
+          echo "🌐 Application URL: https://$URL"
+
+      - name: Verify Deployment
+        run: |
+          echo "🔍 Verifying deployment..."
+          sleep 10
+
+          REVISION=$(az containerapp revision list \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "[?properties.active].name | [0]" \
+            --output tsv)
+
+          echo "✅ Active revision: $REVISION"
 
       - name: Logout from Azure
         if: always()
         run: az logout
 
-  # Job 4: Notify deployment status
+  # Job 5: Notify deployment status
   notify:
     name: Notify Deployment Status
     runs-on: ubuntu-latest
-    needs: [deploy]
+    needs: [build, migrate, deploy]
     if: always()
     steps:
       - name: Deployment Success
         if: needs.deploy.result == 'success'
         run: |
           echo "✅ Deployment successful!"
-          echo "Docker Image: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest"
+          echo "🏗️  Image: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}"
+          echo "📊 Migration: ${{ needs.migrate.result }}"
+          echo "🚀 Deploy: ${{ needs.deploy.result }}"
 
       - name: Deployment Failed
-        if: needs.deploy.result == 'failure'
+        if: needs.deploy.result == 'failure' || needs.migrate.result == 'failure'
         run: |
           echo "❌ Deployment failed!"
+          echo "📊 Migration: ${{ needs.migrate.result }}"
+          echo "🚀 Deploy: ${{ needs.deploy.result }}"
           exit 1

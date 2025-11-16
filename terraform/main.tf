@@ -208,6 +208,75 @@ resource "azurerm_container_app" "main" {
   }
 }
 
+# Container App Job for Database Migrations
+resource "azurerm_container_app_job" "migrations" {
+  name                         = "migration-job"
+  container_app_environment_id = azurerm_container_app_environment.main.id
+  resource_group_name          = azurerm_resource_group.main.name
+  location                     = azurerm_resource_group.main.location
+  replica_timeout_in_seconds   = 300
+  replica_retry_limit          = 1
+
+  manual_trigger_config {
+    parallelism              = 1
+    replica_completion_count = 1
+  }
+
+  template {
+    container {
+      name   = "migration"
+      image  = "${azurerm_container_registry.main.login_server}/${var.container_image_name}:latest"
+      cpu    = 0.25
+      memory = "0.5Gi"
+
+      # Führt nur Migration aus, dann beendet sich der Container
+      command = ["/bin/sh", "-c"]
+      args    = ["npx prisma migrate deploy && echo '✅ Migration complete'"]
+
+      env {
+        name        = "POSTGRES_PRISMA_URL"
+        secret_name = "postgres-prisma-url"
+      }
+
+      env {
+        name        = "POSTGRES_URL_NON_POOLING"
+        secret_name = "postgres-url-non-pooling"
+      }
+
+      env {
+        name  = "NODE_ENV"
+        value = "production"
+      }
+    }
+  }
+
+  secret {
+    name  = "postgres-prisma-url"
+    value = "postgresql://${var.db_admin_username}:${var.db_admin_password}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.main.name}?sslmode=require"
+  }
+
+  secret {
+    name  = "postgres-url-non-pooling"
+    value = "postgresql://${var.db_admin_username}:${var.db_admin_password}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.main.name}?sslmode=require"
+  }
+
+  registry {
+    server               = azurerm_container_registry.main.login_server
+    username             = azurerm_container_registry.main.admin_username
+    password_secret_name = "registry-password"
+  }
+
+  secret {
+    name  = "registry-password"
+    value = azurerm_container_registry.main.admin_password
+  }
+
+  tags = {
+    environment = var.environment
+    project     = "myMetronome"
+  }
+}
+
 # Private DNS Zone for PostgreSQL
 resource "azurerm_private_dns_zone" "postgresql" {
   name                = "privatelink.postgres.database.azure.com"
