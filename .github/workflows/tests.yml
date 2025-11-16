@@ -3,7 +3,7 @@ name: Run Tests
 on:
   push:
     branches:
-      - deactivated
+      - dev
 
 env:
   NODE_VERSION: '20'

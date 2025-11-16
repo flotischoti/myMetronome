@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - dev
+      - deactivated
 
 env:
   AZURE_WEBAPP_NAME: my-metronome-webapp
