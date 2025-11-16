@@ -62,7 +62,8 @@ jobs:
         with:
           images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,prefix=dev-
+            type=sha,prefix={{branch}}-,format=short
+            type=raw,value={{date 'YYYYMMDD-HHmmss' tz='Europe/Berlin'}}
             type=raw,value=latest
 
       - name: Build and push Docker image

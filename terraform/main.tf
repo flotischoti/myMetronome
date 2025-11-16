@@ -89,7 +89,7 @@ resource "azurerm_log_analytics_workspace" "main" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   sku                 = "PerGB2018"
-  retention_in_days   = 30
+  retention_in_days   = 7
 
   tags = {
     environment = var.environment
@@ -121,13 +121,13 @@ resource "azurerm_container_app" "main" {
 
   template {
     min_replicas = 0
-    max_replicas = 10
+    max_replicas = 5
 
     container {
       name   = "mymetronome"
       image  = "${azurerm_container_registry.main.login_server}/${var.container_image_name}:latest"
-      cpu    = 0.5
-      memory = "1Gi"
+      cpu    = 0.25
+      memory = "0.5Gi"
 
       env {
         name  = "NODE_ENV"
@@ -137,6 +137,11 @@ resource "azurerm_container_app" "main" {
       env {
         name  = "PORT"
         value = "3000"
+      }
+
+      env {
+        name  = "HOSTNAME"
+        value = "0.0.0.0"
       }
 
       env {
@@ -153,17 +158,11 @@ resource "azurerm_container_app" "main" {
         name        = "POSTGRES_URL_NON_POOLING"
         secret_name = "postgres-url-non-pooling"
       }
+    }
 
-      env {
-        name  = "HOSTNAME"
-        value = "0.0.0.0"
-      }
-
-      env {
-        name  = "NEXT_PRIVATE_ALLOW_UNSAFE_ACTIONS"
-        value = "1"
-      }
-
+    http_scale_rule {
+      name                = "http-requests"
+      concurrent_requests = 10 # Neue Replica bei >10 parallelen Requests
     }
   }
 
