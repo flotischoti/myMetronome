@@ -65,33 +65,38 @@ export async function middleware(request: NextRequest) {
   const hasValidToken = userToken && (await verifyToken(userToken))
 
   if (!hasValidToken) {
-    if (request.nextUrl.pathname.startsWith('/api')) {
+    // Deny access to metronomes api without token
+    if (path.startsWith('/api')) {
       return NextResponse.json(getErrorResponse('Unauthorized'), {
         status: 401,
       })
     }
-    if ([...R_LANDING, '/logout'].includes(request.nextUrl.pathname)) {
+    // Redirect to correct landing page without token
+    if ([...R_LANDING, '/logout'].includes(path)) {
       log(false, path, R_NEW)
       return NextResponse.redirect(new URL(R_NEW, request.url))
     }
-
-    if (R_PUBLIC_AUTH.includes(request.nextUrl.pathname)) {
+    // Forward to auth pages without token
+    if (R_PUBLIC_AUTH.includes(path)) {
       log(false, path, path)
       return NextResponse.next({ request: { headers: requestHeaders } })
     }
+    // Default: Forward to login page if any protected page is requested without token
     log(false, path, `/login?target=${path}`)
     return NextResponse.redirect(new URL(`/login?target=${path}`, request.url))
   } else {
     const tokenPayload = await decodeToken(userToken)
     const newToken = await getJwt(tokenPayload!)
 
-    if ([...R_LANDING, ...R_PUBLIC_AUTH].includes(request.nextUrl.pathname)) {
+    // Redirect to landing page if wrong landing page or auth pages are requested with token
+    if ([...R_LANDING, ...R_PUBLIC_AUTH].includes(path)) {
       log(true, path, R_RECENT)
       return NextResponse.redirect(new URL(R_RECENT, request.url), {
         headers: requestHeaders,
       })
     }
 
+    // Default: Forward to requested page and refresh token expiry
     console.log(true, path, path)
     const response = NextResponse.next({ request: { headers: requestHeaders } })
     const expiry = new Date()
