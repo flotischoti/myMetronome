@@ -15,8 +15,14 @@ import {
 /list/              | next                  /login
 /logout             | next                  /metronome/new
 /account/*          | next                  /login
+/login              | /metronome/recent     /login
+/register           | /metronome/recent     /register
 
 */
+const R_PUBLIC_AUTH = ['/login', '/register']
+const R_LANDING = ['', '/', '/metronome', '/metronome/']
+const R_NEW = '/metronome/new'
+const R_RECENT = '/metronome/recent'
 
 export const config = {
   matcher: [
@@ -25,11 +31,21 @@ export const config = {
     '/metronome/((?!new)[0-9]+)',
     '/metronome/recent',
     '/list',
+    '/login',
+    '/register',
     '/logout',
     '/api/metronomes/(.*)',
     '/account',
     '/account/(.*)',
   ],
+}
+
+function log(hasToken: boolean, source: string, target: string) {
+  console.log(
+    `Middleware | ${hasToken ? 'With Token' : 'Without Token'} | ${source} ${
+      source === target ? 'continue' : 'redirect'
+    } to ${target}`,
+  )
 }
 
 export async function middleware(request: NextRequest) {
@@ -43,46 +59,40 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-forwarded-host', host)
   }
 
+  const path = request.nextUrl.pathname
   const userToken =
     request.cookies.get('token')?.value || request.headers.get('x-access-token')
-  if (!userToken || !(await verifyToken(userToken))) {
+  const hasValidToken = userToken && (await verifyToken(userToken))
+
+  if (!hasValidToken) {
     if (request.nextUrl.pathname.startsWith('/api')) {
       return NextResponse.json(getErrorResponse('Unauthorized'), {
         status: 401,
       })
     }
-    if (
-      ['/', '/metronome', '/metronome/', '/logout'].includes(
-        request.nextUrl.pathname,
-      )
-    ) {
-      console.log(
-        `Middleware | No token | ${request.nextUrl.pathname} to /metronome/new`,
-      )
-      return NextResponse.redirect(new URL('/metronome/new', request.url))
+    if ([...R_LANDING, '/logout'].includes(request.nextUrl.pathname)) {
+      log(false, path, R_NEW)
+      return NextResponse.redirect(new URL(R_NEW, request.url))
     }
-    console.log(
-      `Middleware | No token | ${request.nextUrl.pathname} to /login?target=${request.nextUrl.pathname}`,
-    )
-    return NextResponse.redirect(
-      new URL(`/login?target=${request.nextUrl.pathname}`, request.url),
-    )
+
+    if (R_PUBLIC_AUTH.includes(request.nextUrl.pathname)) {
+      log(false, path, path)
+      return NextResponse.next({ request: { headers: requestHeaders } })
+    }
+    log(false, path, `/login?target=${path}`)
+    return NextResponse.redirect(new URL(`/login?target=${path}`, request.url))
   } else {
     const tokenPayload = await decodeToken(userToken)
     const newToken = await getJwt(tokenPayload!)
 
-    if (['', '/', '/metronome/'].includes(request.nextUrl.pathname)) {
-      console.log(
-        `Middleware | Token | ${request.nextUrl.pathname} to /metronome/recent`,
-      )
-      return NextResponse.redirect(new URL('/metronome/recent', request.url), {
+    if ([...R_LANDING, ...R_PUBLIC_AUTH].includes(request.nextUrl.pathname)) {
+      log(true, path, R_RECENT)
+      return NextResponse.redirect(new URL(R_RECENT, request.url), {
         headers: requestHeaders,
       })
     }
 
-    console.log(
-      `Middleware | Token | ${request.nextUrl.pathname} to ${request.nextUrl.pathname}`,
-    )
+    console.log(true, path, path)
     const response = NextResponse.next({ request: { headers: requestHeaders } })
     const expiry = new Date()
     expiry.setUTCDate(expiry.getUTCDate() + 2)

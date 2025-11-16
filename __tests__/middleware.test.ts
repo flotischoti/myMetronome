@@ -4,7 +4,6 @@ import { NextRequest } from 'next/server'
 import { middleware } from '../middleware'
 import * as utils from '../app/api/util'
 
-
 describe('middleware.ts', () => {
   const mockUrl = 'https://example.com'
   const mockRequest = (path: string, token?: string) =>
@@ -45,6 +44,16 @@ describe('middleware.ts', () => {
     ;(utils.getJwt as jest.Mock).mockResolvedValue('newtoken')
 
     const req = mockRequest('/', 'validtoken')
+    const res = await middleware(req)
+    expect(res.headers.get('location')).toContain('/metronome/recent')
+  })
+
+  test('redirects to /metronome/recent for login path when token present', async () => {
+    ;(utils.verifyToken as jest.Mock).mockResolvedValue(true)
+    ;(utils.decodeToken as jest.Mock).mockResolvedValue({ userId: 1 })
+    ;(utils.getJwt as jest.Mock).mockResolvedValue('newtoken')
+
+    const req = mockRequest('/', 'login')
     const res = await middleware(req)
     expect(res.headers.get('location')).toContain('/metronome/recent')
   })
