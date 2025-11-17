@@ -1,35 +1,38 @@
-import { useRef, useState, MouseEvent } from 'react'
+import { useRef, useState, MouseEvent, Dispatch } from 'react'
 import { MetronomeFull } from '../Metronome'
+import { MetronomeAction } from '../hooks/useMetronomeReducer'
 import { IconLock, IconLockOpen } from '@tabler/icons-react'
 
 export function LockUnlockButton({
   metronome,
-  setMetronome,
+  dispatch,
   setSuccessState,
 }: {
   metronome: MetronomeFull
-  setMetronome: Function
+  dispatch: Dispatch<MetronomeAction>
   setSuccessState: Function
 }) {
   const waitingClick = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
   const [lastClick, setLastClick] = useState(0)
+
   const lockUnlock = (e: MouseEvent<HTMLButtonElement>) => {
     if (lastClick && e.timeStamp - lastClick < 250 && waitingClick) {
       setLastClick(0)
       clearTimeout(waitingClick.current)
       waitingClick.current = undefined
-      if (metronome.locked) setMetronome({ ...metronome, locked: false })
+      if (metronome.locked) dispatch({ type: 'SET_LOCKED', payload: false })
     } else {
       setLastClick(e.timeStamp)
       waitingClick.current = setTimeout(() => {
         waitingClick.current = undefined
         if (metronome.locked) setSuccessState('Double-click to unlock', 'info')
       }, 251)
-      if (!metronome.locked) setMetronome({ ...metronome, locked: true })
+      if (!metronome.locked) dispatch({ type: 'SET_LOCKED', payload: true })
     }
   }
+
   return (
     <button
       type="button"

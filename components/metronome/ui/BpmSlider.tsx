@@ -1,20 +1,22 @@
 import { MetronomeFull } from '../Metronome'
-import { ChangeEvent } from 'react'
+import { MetronomeAction } from '../hooks/useMetronomeReducer'
+import { Dispatch, ChangeEvent } from 'react'
 
 export function BpmSlider({
   minBpm,
   maxBpm,
   metronome,
-  setMetronome,
+  dispatch,
 }: {
   minBpm: number
   maxBpm: number
   metronome: MetronomeFull
-  setMetronome: Function
+  dispatch: Dispatch<MetronomeAction>
 }) {
   const changeBpm = (e: ChangeEvent<HTMLInputElement>) => {
-    setMetronome({ ...metronome, bpm: +e.target.value })
+    dispatch({ type: 'SET_BPM', payload: +e.target.value })
   }
+
   return (
     <input
       type="range"

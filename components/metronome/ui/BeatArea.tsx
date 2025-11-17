@@ -1,31 +1,32 @@
 import { IconMinus, IconPlus } from '@tabler/icons-react'
 import { MetronomeFull } from '../Metronome'
-import { MouseEvent, ChangeEvent } from 'react'
+import { MetronomeAction } from '../hooks/useMetronomeReducer'
+import { METRONOME_CONSTANTS } from '@/constants/metronome'
+import { Dispatch, MouseEvent, ChangeEvent } from 'react'
 
 export function BeatArea({
   metronome,
-  setMetronome,
+  dispatch,
 }: {
   metronome: MetronomeFull
-  setMetronome: Function
+  dispatch: Dispatch<MetronomeAction>
 }) {
-  const maxBeats = 12
-  const minBeats = 2
-
   const decreaseBeats = (e: MouseEvent<HTMLButtonElement>) => {
-    setMetronome({ ...metronome, beats: metronome.beats - 1 })
+    dispatch({ type: 'SET_BEATS', payload: metronome.beats - 1 })
   }
 
   const increaseBeats = (e: MouseEvent<HTMLButtonElement>) => {
-    setMetronome({ ...metronome, beats: metronome.beats + 1 })
+    dispatch({ type: 'SET_BEATS', payload: metronome.beats + 1 })
   }
+
   const stressFirst = (e: ChangeEvent<HTMLInputElement>) => {
-    setMetronome({ ...metronome, stressFirst: !metronome.stressFirst })
+    dispatch({ type: 'SET_STRESS_FIRST', payload: !metronome.stressFirst })
   }
+
   return (
     <div id="beatArea">
       <div id="beatControlArea" className="flex justify-between mt-8">
-        <div id="stressCheckboxPane-1" className="flex items-center ">
+        <div id="stressCheckboxPane-1" className="flex items-center">
           <input
             id="stressCheckbox-1"
             type="checkbox"
@@ -37,7 +38,7 @@ export function BeatArea({
             htmlFor="stressCheckbox-1"
             className="ml-2 text-sm cursor-pointer"
           >
-            <span className="">
+            <span>
               Stress 1<sup>st</sup> beat
             </span>
           </label>
@@ -45,12 +46,12 @@ export function BeatArea({
         {metronome.stressFirst && (
           <div
             id="beatCountArea-1"
-            className="flex items-center justify-between  w-32"
+            className="flex items-center justify-between w-32"
           >
             <button
               type="button"
               className="btn btn-xs btn-outline btn-neutral"
-              disabled={metronome.beats <= minBeats}
+              disabled={metronome.beats <= METRONOME_CONSTANTS.BEATS.MIN}
               onClick={decreaseBeats}
             >
               <IconMinus size="8" />
@@ -62,7 +63,7 @@ export function BeatArea({
             <button
               type="button"
               className="btn btn-xs btn-outline btn-neutral"
-              disabled={metronome.beats >= maxBeats}
+              disabled={metronome.beats >= METRONOME_CONSTANTS.BEATS.MAX}
               onClick={increaseBeats}
             >
               <IconPlus size="8" />

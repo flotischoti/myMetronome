@@ -1,19 +1,16 @@
-import { ChangeEvent } from 'react'
+import { ChangeEvent, Dispatch } from 'react'
 import { MetronomeFull } from '../Metronome'
+import { MetronomeAction } from '../hooks/useMetronomeReducer'
 
 export function UseTimerCheckbox({
   metronome,
-  setMetronome,
+  dispatch,
 }: {
   metronome: MetronomeFull
-  setMetronome: Function
+  dispatch: Dispatch<MetronomeAction>
 }) {
   const setTimer = (e: ChangeEvent<HTMLInputElement>) => {
-    setMetronome({
-      ...metronome,
-      timerActive: !metronome.timerActive,
-      activeTimer: metronome.timerValue,
-    })
+    dispatch({ type: 'SET_TIMER_ACTIVE', payload: !metronome.timerActive })
   }
 
   return (
@@ -29,7 +26,7 @@ export function UseTimerCheckbox({
         className="checkbox checkbox-sm"
       />
       <label htmlFor="timerCheckbox-1" className="ml-2 text-sm cursor-pointer">
-        <span className="">Use timer</span>
+        <span>Use timer</span>
       </label>
     </div>
   )
