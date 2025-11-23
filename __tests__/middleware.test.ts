@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 jest.mock('../app/api/util')
 
 import { NextRequest } from 'next/server'

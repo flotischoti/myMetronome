@@ -1,16 +1,17 @@
-import { useState, MouseEvent } from 'react'
+import { useState, MouseEvent, Dispatch } from 'react'
+import { MetronomeAction } from '../hooks/useMetronomeReducer'
 
 export function TapButton({
   minBpm,
   maxBpm,
-  updateState,
+  dispatch,
 }: {
   minBpm: number
   maxBpm: number
-  updateState: (val: number) => void
+  dispatch: Dispatch<MetronomeAction>
 }) {
   const [tapTimes, setTapTimes] = useState<number[]>([])
-  const handleTap = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleTap = () => {
     const now: number = Date.now()
     setTapTimes([...tapTimes, now])
 
@@ -19,7 +20,7 @@ export function TapButton({
       if (timeDifference < 5000) {
         const newTempo: number = Math.round(60000 / timeDifference) * 2
         const normalizedTempo = Math.min(Math.max(newTempo, minBpm), maxBpm)
-        updateState(normalizedTempo)
+        dispatch({ type: 'SET_BPM', payload: normalizedTempo })
       }
     }
   }

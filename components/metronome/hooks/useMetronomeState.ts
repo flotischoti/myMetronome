@@ -26,7 +26,7 @@ const defaultLocalMetronome: LocalMetronomeSettings = {
 }
 
 /**
- * Custom Hook für Metronome State Management mit useReducer
+ * Custom Hook für Metronome State Management with useReducer
  */
 export const useMetronomeState = (dbMetronome: StoredMetronome | null) => {
   const initialState: MetronomeFull = {

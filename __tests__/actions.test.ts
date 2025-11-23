@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -16,7 +19,6 @@ import {
   updateUsernameServerAction,
   deleteUserServerAction,
 } from '../app/actions'
-
 
 jest.mock('next/headers', () => ({ cookies: jest.fn() }))
 jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }))
@@ -95,7 +97,7 @@ describe('actions.ts', () => {
     expect(res.message).toMatch(/Credentials wrong/)
   })
 
-    test('loginServerAction rejects if name or password missing', async () => {
+  test('loginServerAction rejects if name or password missing', async () => {
     const fd = formData({ name: '', password: '' })
     const res = await loginServerAction({}, fd)
     expect(res.message).toMatch(/missing/)
@@ -117,7 +119,11 @@ describe('actions.ts', () => {
   })
 
   test('loginServerAction redirects if valid', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue({ id: 1, name: 'user', password: 'x' })
+    ;(userDb.get as jest.Mock).mockResolvedValue({
+      id: 1,
+      name: 'user',
+      password: 'x',
+    })
     ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
     ;(utils.getJwt as jest.Mock).mockResolvedValue('token')
     const fd = formData({ name: 'u', password: 'p' })
@@ -229,7 +235,10 @@ describe('actions.ts', () => {
     ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
     ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
     ;(bcrypt.hash as jest.Mock).mockResolvedValue('newhash')
-    await updatePasswordServerAction({}, formData({ oldPw: 'a', newPw: 'b', newPwConfirm: 'b' }))
+    await updatePasswordServerAction(
+      {},
+      formData({ oldPw: 'a', newPw: 'b', newPwConfirm: 'b' }),
+    )
     expect(revalidatePath).toHaveBeenCalledWith('/account')
     expect(redirect).toHaveBeenCalledWith('/account')
   })
@@ -291,5 +300,4 @@ describe('actions.ts', () => {
     expect(revalidatePath).toHaveBeenCalled()
     expect(redirect).toHaveBeenCalledWith('/metronome/new')
   })
-
 })

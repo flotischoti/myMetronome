@@ -147,33 +147,15 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
               />
 
               <div className="join w-full mt-2 flex">
-                <BpmButton
-                  maxBpm={METRONOME_CONSTANTS.BPM.MAX}
-                  minBpm={METRONOME_CONSTANTS.BPM.MIN}
-                  step={-1}
-                  Icon={IconMinus}
-                  updateState={(val) =>
-                    dispatch({ type: 'SET_BPM', payload: metronome.bpm + val })
-                  }
-                />
-                <BpmButton
-                  maxBpm={METRONOME_CONSTANTS.BPM.MAX}
-                  minBpm={METRONOME_CONSTANTS.BPM.MIN}
-                  step={1}
-                  Icon={IconPlus}
-                  updateState={(val) =>
-                    dispatch({ type: 'SET_BPM', payload: metronome.bpm + val })
-                  }
-                />
+                <BpmButton step={-1} Icon={IconMinus} dispatch={dispatch} />
+                <BpmButton step={1} Icon={IconPlus} dispatch={dispatch} />
               </div>
 
               <div className="flex mt-4 gap-4">
                 <TapButton
                   minBpm={METRONOME_CONSTANTS.BPM.MIN}
                   maxBpm={METRONOME_CONSTANTS.BPM.MAX}
-                  updateState={(val) =>
-                    dispatch({ type: 'SET_BPM', payload: val })
-                  }
+                  dispatch={dispatch}
                 />
                 <PlayPauseButton
                   dispatch={dispatch}

@@ -8,6 +8,7 @@ import type { MetronomeFull } from '@/components/metronome/Metronome'
 export type MetronomeAction =
   // Simple property updates
   | { type: 'SET_BPM'; payload: number }
+  | { type: 'CHANGE_BPM'; payload: number }
   | { type: 'SET_NAME'; payload: string }
   | { type: 'SET_BEATS'; payload: number }
   | { type: 'SET_LOCKED'; payload: boolean }
@@ -24,9 +25,6 @@ export type MetronomeAction =
   | { type: 'INCREMENT_TIME' } // Called every second
   | { type: 'INCREASE_TIMER'; payload: number }
   | { type: 'DECREASE_TIMER'; payload: number }
-
-  // Batch updates
-  | { type: 'UPDATE_MULTIPLE'; payload: Partial<MetronomeFull> }
 
 // ========================================
 // HELPER FUNCTIONS
@@ -51,6 +49,9 @@ const metronomeReducer: Reducer<MetronomeFull, MetronomeAction> = (
     // ----------------------------------------
     case 'SET_BPM':
       return { ...state, bpm: clampBpm(action.payload) }
+
+    case 'CHANGE_BPM':
+      return { ...state, bpm: clampBpm(state.bpm + action.payload) }
 
     case 'SET_NAME':
       return { ...state, name: action.payload }
@@ -80,6 +81,9 @@ const metronomeReducer: Reducer<MetronomeFull, MetronomeAction> = (
     case 'SET_ACTIVE_TIMER':
       return { ...state, activeTimer: action.payload }
 
+    case 'TOGGLE_LOCKED':
+      return { ...state, locked: !state.locked }
+
     // ----------------------------------------
     // Complex Updates
     // ----------------------------------------
@@ -87,7 +91,6 @@ const metronomeReducer: Reducer<MetronomeFull, MetronomeAction> = (
       return {
         ...state,
         isPlaying: true,
-        sessionUsed: 0,
         currentUsed: 0,
         activeTimer: state.timerActive ? state.timerValue : 0,
       }
@@ -96,11 +99,7 @@ const metronomeReducer: Reducer<MetronomeFull, MetronomeAction> = (
       return {
         ...state,
         isPlaying: false,
-        currentUsed: 0,
       }
-
-    case 'TOGGLE_LOCKED':
-      return { ...state, locked: !state.locked }
 
     case 'INCREMENT_TIME':
       // Called every second when playing
@@ -120,23 +119,23 @@ const metronomeReducer: Reducer<MetronomeFull, MetronomeAction> = (
 
     case 'INCREASE_TIMER': {
       const interval = action.payload
-      if (state.isPlaying && state.timerActive) {
+      if (state.isPlaying) {
         return {
           ...state,
-          activeTimer: state.activeTimer + interval,
+          activeTimer: Math.min(3570000, state.activeTimer + interval),
         }
       } else {
         return {
           ...state,
-          timerValue: state.timerValue + interval,
-          activeTimer: state.timerValue + interval,
+          timerValue: Math.min(3570000, state.timerValue + interval),
+          activeTimer: Math.min(3570000, state.timerValue + interval),
         }
       }
     }
 
     case 'DECREASE_TIMER': {
       const interval = action.payload
-      if (state.isPlaying && state.timerActive) {
+      if (state.isPlaying) {
         return {
           ...state,
           activeTimer: Math.max(0, state.activeTimer - interval),
@@ -149,12 +148,6 @@ const metronomeReducer: Reducer<MetronomeFull, MetronomeAction> = (
         }
       }
     }
-
-    // ----------------------------------------
-    // Batch Update
-    // ----------------------------------------
-    case 'UPDATE_MULTIPLE':
-      return { ...state, ...action.payload }
 
     default:
       return state

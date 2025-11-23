@@ -1,61 +1,50 @@
 import { Icon } from '@tabler/icons-react'
-import { useRef, MouseEvent, TouchEvent } from 'react'
+import { Dispatch, useRef } from 'react'
+import { MetronomeAction } from '../hooks/useMetronomeReducer'
 
 export function BpmButton({
-  minBpm,
-  maxBpm,
   step,
   Icon,
-  updateState,
+  dispatch,
 }: {
-  minBpm: number
-  maxBpm: number
   step: number
   Icon: Icon
-  updateState: (val: number) => void
+  dispatch: Dispatch<MetronomeAction>
 }) {
   const doChangeBpm = useRef(true)
   const changeBpmClickVerifier = useRef(0)
 
-  const handleChangeBpm = (
-    e: MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>,
-    changeStep: number,
-  ) => {
+  const handleChangeBpm = () => {
     doChangeBpm.current = true
-    updateState(changeStep)
+    dispatch({ type: 'CHANGE_BPM', payload: step })
 
     changeBpmClickVerifier.current++
     const verifier = changeBpmClickVerifier.current
-    holdDownBpmChange(changeStep, verifier)
+    holdDownBpmChange(verifier)
   }
 
-  const holdDownBpmChange = async (changeStep: number, verifier: number) => {
+  const holdDownBpmChange = async (verifier: number) => {
     let delay = 2
     while (doChangeBpm.current) {
       await new Promise((resolve) => setTimeout(resolve, 1000 / delay))
-      if (doChangeBpm.current && verifier == changeBpmClickVerifier.current) {
-        updateState(changeStep)
+      if (doChangeBpm.current && verifier === changeBpmClickVerifier.current) {
+        dispatch({ type: 'CHANGE_BPM', payload: step })
         delay = delay * 1.5
       }
     }
   }
 
-  const stopChangingBpm = (
-    e: MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>,
-  ) => {
-    console.log(e.type)
+  const stopChangingBpm = () => {
     doChangeBpm.current = false
   }
 
   return (
     <button
       type="button"
-      onMouseDown={(e) => handleChangeBpm(e, step)}
-      onTouchStart={(e) => {
-        handleChangeBpm(e, step)
-      }}
+      onMouseDown={handleChangeBpm}
+      onTouchStart={handleChangeBpm}
       onTouchEnd={(e) => {
-        stopChangingBpm(e)
+        stopChangingBpm()
         e.preventDefault()
       }}
       onMouseUp={stopChangingBpm}
