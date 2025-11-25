@@ -1,39 +1,43 @@
 'use client'
 
 import Link from 'next/link'
-import { useFormStatus } from 'react-dom'
-import { useFormState } from 'react-dom'
 import { IconDeviceFloppy } from '@tabler/icons-react'
-import { updateUsernameServerAction } from '@/app/actions'
+import { updateUsernameServerAction } from '@/app/actions/actions'
+import { FormEvent, useTransition } from 'react'
+import { ToastContainer } from '@/components/toast/ToastContainer'
 
-const initialState = {
-  message: '',
+interface ChangeUserProps {
+  userName: string
+  command: string | undefined
 }
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
+export const Form = ({ userName, command }: ChangeUserProps) => {
+  const [isUpdating, startTransition] = useTransition()
 
-  return (
-    <button
-      type="submit"
-      className="btn join-item btn-neutral"
-      disabled={pending}
-    >
-      {pending ? (
-        <span className="loading loading-spinner loading-xs"></span>
-      ) : (
-        <IconDeviceFloppy size="16" />
-      )}
-      Save
-    </button>
-  )
-}
+  const handleUpdate = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    startTransition(async () => {
+      await updateUsernameServerAction(new FormData(e.currentTarget))
+    })
+  }
 
-export const Form = ({ userName }: { userName: string }) => {
-  const [state, formAction] = useFormState(
-    updateUsernameServerAction,
-    initialState,
-  )
+  function SubmitButton() {
+    return (
+      <button
+        type="submit"
+        className="btn join-item btn-neutral"
+        disabled={isUpdating}
+      >
+        {isUpdating ? (
+          <span className="loading loading-spinner loading-xs"></span>
+        ) : (
+          <IconDeviceFloppy size="16" />
+        )}
+        Save
+      </button>
+    )
+  }
+
   return (
     <div>
       <div className="text-sm breadcrumbs ">
@@ -55,7 +59,7 @@ export const Form = ({ userName }: { userName: string }) => {
           </li>
         </ul>
       </div>
-      <form action={formAction}>
+      <form onSubmit={handleUpdate}>
         <h1 className="font-bold text-lg">Change username</h1>
         <div>
           <label className="label">
@@ -74,11 +78,9 @@ export const Form = ({ userName }: { userName: string }) => {
             />
             <SubmitButton />
           </div>
-          {state?.message && (
-            <p className="mt-4 text-error">{state?.message}</p>
-          )}
         </div>
       </form>
+      <ToastContainer command={command} />
     </div>
   )
 }

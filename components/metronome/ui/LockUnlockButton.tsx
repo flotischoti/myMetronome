@@ -2,16 +2,16 @@ import { useRef, useState, MouseEvent, Dispatch } from 'react'
 import { MetronomeFull } from '../Metronome'
 import { MetronomeAction } from '../hooks/useMetronomeReducer'
 import { IconLock, IconLockOpen } from '@tabler/icons-react'
+import { useToast } from '@/contexts/ToastContext'
 
 export function LockUnlockButton({
   metronome,
   dispatch,
-  setSuccessState,
 }: {
   metronome: MetronomeFull
   dispatch: Dispatch<MetronomeAction>
-  setSuccessState: Function
 }) {
+  const toast = useToast()
   const waitingClick = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -27,7 +27,7 @@ export function LockUnlockButton({
       setLastClick(e.timeStamp)
       waitingClick.current = setTimeout(() => {
         waitingClick.current = undefined
-        if (metronome.locked) setSuccessState('Double-click to unlock', 'info')
+        if (metronome.locked) toast.show('Double-click to unlock', 'info')
       }, 251)
       if (!metronome.locked) dispatch({ type: 'SET_LOCKED', payload: true })
     }

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { getUserAttrFromToken } from '../api/util'
 import { Metadata } from 'next'
+import { ToastContainer } from '@/components/toast/ToastContainer'
 
 export const metadata: Metadata = {
   title: 'Metronomes - Account',
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 export default async function Page() {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
+  const command = cookieStore.get('command')
   const userName = await getUserAttrFromToken<string>(token!.value, 'name')
 
   return (
@@ -75,6 +77,7 @@ export default async function Page() {
           Delete Account
         </Link>
       </div>
+      <ToastContainer command={command?.value} />
     </section>
   )
 }

@@ -15,7 +15,6 @@ export const useToast = (duration = 2000) => {
 
   const show = useCallback(
     (message: string, type: Exclude<ToastType, ''>) => {
-      // ✨ Exclude empty string
       setToast({ message, type })
 
       setTimeout(() => {
@@ -25,15 +24,10 @@ export const useToast = (duration = 2000) => {
     [duration],
   )
 
-  const hide = useCallback(() => {
-    setToast({ message: '', type: '' })
-  }, [])
-
   return {
     message: toast.message,
     type: toast.type,
     show,
-    hide,
     isVisible: toast.type !== '',
   }
 }

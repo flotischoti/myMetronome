@@ -1,51 +1,38 @@
+// components/metronome-list/MetronomeCardContainer.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { StoredMetronome } from '../metronome/Metronome'
 import MetronomeCard from './MetronomeCard'
+import { ToastContainer } from '@/components/toast/ToastContainer'
+
+interface MetronomeCardContainerProps {
+  metronomes: StoredMetronome[]
+  command: string | undefined
+}
 
 const MetronomeCardContainer = ({
   metronomes,
   command,
-}: {
-  metronomes: StoredMetronome[]
-  command: string | undefined
-}) => {
-  const [showToast, setShowToast] = useState(false)
-  const [tostMessage, setToastMessage] = useState('')
-  const [metrenomeForDeletion, setMetronomeForDeletion] = useState<
-    undefined | number
+}: MetronomeCardContainerProps) => {
+  const [metronomeForDeletion, setMetronomeForDeletion] = useState<
+    number | undefined
   >(undefined)
-
-  useEffect(() => {
-    if (command === 'deleted') {
-      setShowToast(true)
-      setToastMessage('Metronome deleted')
-      setTimeout(() => {
-        setShowToast(false)
-      }, 2000)
-    }
-  }, [])
 
   return (
     <>
       <div className="shadow rounded-md">
         {metronomes.map((m, i) => (
           <MetronomeCard
-            key={i}
+            key={m.id || i}
             metronome={m}
-            idForDeletion={metrenomeForDeletion}
+            idForDeletion={metronomeForDeletion}
             setForDeletion={setMetronomeForDeletion}
           />
         ))}
       </div>
-      {showToast && (
-        <div className="toast">
-          <div className="alert alert-success">
-            <span>{tostMessage}</span>
-          </div>
-        </div>
-      )}
+
+      <ToastContainer command={command} />
     </>
   )
 }

@@ -10,10 +10,9 @@ import {
 
 import { METRONOME_CONSTANTS } from '@/constants/metronome'
 import { useMetronomeState } from './hooks/useMetronomeState'
-import { useMetronomeActions } from './hooks/useMetronomeActions'
+import { useMetronomeActions } from '../../app/hooks/useMetronomeActions'
 import { useAutoSave } from './hooks/useAutoSave'
-import { useToast, ToastType } from './hooks/useToasts'
-import { useCommandHandler } from './hooks/useCommandHandlers'
+import { useToast } from '@/contexts/ToastContext'
 
 import { TapButton } from './ui/TapButton'
 import { TitleInput } from './ui/TitleInput'
@@ -24,6 +23,7 @@ import { BeatArea } from './ui/BeatArea'
 import { StatsArea } from './ui/StatsArea'
 import { LockUnlockButton } from './ui/LockUnlockButton'
 import { BpmSlider } from './ui/BpmSlider'
+import { ToastContainer } from '../toast/ToastContainer'
 
 export interface StoredMetronome {
   id?: number
@@ -64,7 +64,7 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
   // ========================================
   // TOAST NOTIFICATIONS
   // ========================================
-  const toast = useToast(METRONOME_CONSTANTS.TOAST.DURATION)
+  const toast = useToast()
 
   // ========================================
   // SERVER ACTIONS
@@ -105,11 +105,6 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
     }
     prevIsUpdating.current = isUpdating
   }, [isUpdating, resetSaving])
-
-  // ========================================
-  // COMMAND HANDLER
-  // ========================================
-  useCommandHandler(command, toast.show)
 
   // ========================================
   // LOCAL UI STATE
@@ -197,16 +192,8 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
           id="metronomeButtonArea-1"
           className="mt-8 flex items-end w-full justify-between"
         >
-          {/* Lock/Unlock Button - IMMER sichtbar */}
-          <LockUnlockButton
-            metronome={metronome}
-            dispatch={dispatch}
-            setSuccessState={(msg: string, type: ToastType) => {
-              if (type !== '') toast.show(msg, type)
-            }}
-          />
+          <LockUnlockButton metronome={metronome} dispatch={dispatch} />
 
-          {/* Rechte Seite: Save/Delete/Spinner */}
           <div className="flex items-center gap-2">
             {/* Save Button (new metronome) */}
             {!metronome.id && (
@@ -254,12 +241,10 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
               </>
             )}
 
-            {/* Saving Spinner ODER Delete Button */}
-            {metronome.id && !metronome.locked && !showDeleteConfirm && (
+            {/* Saving Spinner or Delete Button */}
+            {metronome.id && !showDeleteConfirm && (
               <>
-                {showSavingIndicator ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
+                {!metronome.locked && !showSavingIndicator && (
                   <button
                     type="button"
                     className="btn btn-outline btn-error btn-square btn-sm"
@@ -268,6 +253,9 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
                     <IconTrash size="24" />
                   </button>
                 )}
+                {showSavingIndicator && (
+                  <span className="loading loading-spinner loading-xs"></span>
+                )}
               </>
             )}
           </div>
@@ -275,21 +263,7 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
       </div>
 
       {/* Toast Notification */}
-      {toast.isVisible && (
-        <div className="toast toast-end">
-          <div
-            className={`alert ${
-              toast.type === 'success'
-                ? 'alert-success'
-                : toast.type === 'error'
-                  ? 'alert-error'
-                  : 'alert-info'
-            }`}
-          >
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
+      <ToastContainer command={command} />
     </form>
   )
 }

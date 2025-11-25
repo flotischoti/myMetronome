@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
-import { useAsyncAction } from './useAsyncAction'
+import { useAsyncAction } from '../../components/metronome/hooks/useAsyncAction'
 import {
   createMetronomeAction,
   updateServerAction,
   deleteMetronomeAction,
-} from '@/app/actions'
+} from '@/app/actions/actions'
 import type { MetronomeFull } from '@/components/metronome/Metronome'
 
 interface UseMetronomeActionsOptions {
@@ -62,7 +62,6 @@ export const useMetronomeActions = (
     },
   )
 
-  // ✅ FIX: Stabile Referenzen mit useCallback
   const createMetronome = useCallback(() => {
     executeCreate()
   }, [executeCreate])

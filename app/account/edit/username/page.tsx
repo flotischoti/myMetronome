@@ -10,9 +10,10 @@ export const metadata: Metadata = {
 const Page = async () => {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
+  const command = cookieStore.get('command')
   const userName = await getUserAttrFromToken<string>(token!.value, 'name')
 
-  return <Form userName={userName!} />
+  return <Form userName={userName!} command={command?.value} />
 }
 
 export default Page

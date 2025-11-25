@@ -14,7 +14,6 @@ export const useAutoSave = (
   const { delay = 2000, enabled = true } = options
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
-  // ✨ State für "Speichern läuft" (Delay + Server Action)
   const [isSaving, setIsSaving] = useState(false)
 
   const onSaveRef = useRef(onSave)
@@ -28,21 +27,18 @@ export const useAutoSave = (
 
     clearTimeout(timeoutRef.current)
 
-    // ✨ Setze isSaving auf true SOFORT
     setIsSaving(true)
 
     timeoutRef.current = setTimeout(() => {
       onSaveRef.current()
-      // ✨ NICHT hier resetSaving - bleibt true bis Server Action fertig!
     }, delay)
   }, [enabled, delay])
 
-  // ✨ Funktion zum Zurücksetzen (wird von außen nach Server Action aufgerufen)
   const resetSaving = useCallback(() => {
     setIsSaving(false)
   }, [])
 
-  // Auto-save bei relevanten Property-Änderungen
+  // Auto-save triggered by property change
   useEffect(() => {
     trigger()
   }, [
@@ -57,7 +53,7 @@ export const useAutoSave = (
     trigger,
   ])
 
-  // Auto-save alle 30 Sekunden während des Spielens
+  // Auto-save every 30 seconds while playing
   useEffect(() => {
     if (
       metronome.isPlaying &&
