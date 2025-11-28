@@ -6,6 +6,7 @@ import { signupServerAction } from '../actions/actions'
 import { IconUserPlus } from '@tabler/icons-react'
 import { FormEvent, useTransition } from 'react'
 import { ToastContainer } from '@/components/toast/ToastContainer'
+import { useCurrentPath } from '../hooks/useCurrentPath'
 
 interface SignUpFormProps {
   command: string | undefined
@@ -55,6 +56,7 @@ export const SignUpForm = ({ command }: SignUpFormProps) => {
               name="target"
               value={searchParams.get('target') || ''}
             />
+            <input type="hidden" name="currentPath" value={useCurrentPath()} />
             <div>
               <label htmlFor="name" className="label">
                 <span className="label-text">Username *</span>

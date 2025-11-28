@@ -16,28 +16,29 @@ import { setCommand, setErrorCommand, isRedirectError } from './commandHelper'
 // ========================================
 
 export async function signupServerAction(formData: FormData) {
-  const { name, password, passwordRepeat, email, target } = {
+  const { name, password, passwordRepeat, email, target, currentPath } = {
     name: formData.get('name')?.toString(),
     password: formData.get('password')?.toString(),
     passwordRepeat: formData.get('passwordRepeat')?.toString(),
     email: formData.get('email')?.toString(),
     target: formData.get('target')?.toString(),
+    currentPath: formData.get('currentPath')?.toString(),
   }
 
   if (!name || !password) {
     setErrorCommand('Password or name missing')
-    redirect(target || '/register')
+    redirect(currentPath!)
   }
 
   if (password !== passwordRepeat) {
     setErrorCommand(`Passwords don't match`)
-    redirect(target || '/register')
+    redirect(currentPath!)
   }
 
   const oldUser = await userDb.get(name)
   if (oldUser) {
     setErrorCommand('User already exists')
-    redirect(target || '/register')
+    redirect(currentPath!)
   }
 
   try {
@@ -71,26 +72,27 @@ export async function signupServerAction(formData: FormData) {
 }
 
 export async function loginServerAction(payload: FormData) {
-  const { name, password, target } = {
+  const { name, password, target, currentPath } = {
     name: payload.get('name')?.toString(),
     password: payload.get('password')?.toString(),
     target: payload.get('target')?.toString(),
+    currentPath: payload.get('currentPath')?.toString(),
   }
 
   if (!name || !password) {
     setErrorCommand('Password or name missing')
-    redirect(target || '/login')
+    redirect(currentPath!)
   }
 
   const user = await userDb.get(name)
   if (!user) {
     setErrorCommand('User not found')
-    redirect(target || '/login')
+    redirect(currentPath!)
   }
 
   if (!(await bcrypt.compare(password, user.password))) {
     setErrorCommand('Credentials wrong')
-    redirect(target || '/login')
+    redirect(currentPath!)
   }
 
   try {
@@ -420,6 +422,6 @@ export async function deleteUserServerAction(data: FormData) {
 
     console.error('Delete user error:', error)
     setErrorCommand('Error deleting user')
-    redirect('/account')
+    redirect('/account/delete')
   }
 }

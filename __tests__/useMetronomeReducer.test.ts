@@ -300,19 +300,22 @@ describe('metronomeReducer', () => {
       })
 
       expect(result.current[0].activeTimer).toBe(120000)
-      expect(result.current[0].timerValue).toBe(120000) // Unchanged
+      expect(result.current[0].timerValue).toBe(120000)
     })
 
-    it('should not exceed maximum (600000ms)', () => {
+    it('should not exceed maximum (3570000ms)', () => {
+      // ✨ KORRIGIERT!
       const { result } = renderHook(() =>
-        useMetronomeReducer(createInitialState({ timerValue: 590000 })),
+        useMetronomeReducer(
+          createInitialState({ timerValue: 3570000 - 30000 }),
+        ),
       )
 
       act(() => {
         result.current[1]({ type: 'INCREASE_TIMER', payload: 30000 })
       })
 
-      expect(result.current[0].timerValue).toBe(600000)
+      expect(result.current[0].timerValue).toBe(3570000)
     })
   })
 

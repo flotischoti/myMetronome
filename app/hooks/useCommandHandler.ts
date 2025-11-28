@@ -34,16 +34,6 @@ const COMMAND_CONFIG: Record<CommandType, CommandConfig> = {
   notFound: { message: 'Resource not found', type: 'error' },
 }
 
-/**
- * Clear command cookie client-side
- */
-function clearCommandCookie() {
-  if (typeof document !== 'undefined') {
-    document.cookie =
-      'command=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=strict'
-  }
-}
-
 export const useCommandHandler = (
   command: string | undefined,
   onMessage: (message: string, type: ToastType) => void,
@@ -55,7 +45,6 @@ export const useCommandHandler = (
     const config = COMMAND_CONFIG[command as CommandType]
     if (config) {
       onMessage(config.message, config.type)
-      clearCommandCookie()
       return
     }
 
@@ -64,7 +53,6 @@ export const useCommandHandler = (
       const parsed = JSON.parse(command) as { message: string; type: ToastType }
       if (parsed.message && parsed.type) {
         onMessage(parsed.message, parsed.type)
-        clearCommandCookie()
         return
       }
     } catch {
