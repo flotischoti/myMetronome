@@ -24,12 +24,12 @@ export function BpmButton({
   }
 
   const holdDownBpmChange = async (verifier: number) => {
-    let delay = 2
+    let delay = 4
     while (doChangeBpm.current) {
       await new Promise((resolve) => setTimeout(resolve, 1000 / delay))
       if (doChangeBpm.current && verifier === changeBpmClickVerifier.current) {
         dispatch({ type: 'CHANGE_BPM', payload: step })
-        delay = delay * 1.5
+        delay = delay * 1.2
       }
     }
   }
