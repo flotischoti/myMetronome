@@ -1,5 +1,4 @@
 import { StoredMetronome } from '../../components/metronome/Metronome'
-import MetronomeCard from '../../components/metronomeCard/MetronomeCard'
 import * as metronomeDb from '../../db/metronome'
 import Link from 'next/link'
 import ListSearch from '../../components/listSearch/ListSearch'
