@@ -1,4 +1,3 @@
-// __tests__/actions.test.ts
 /**
  * @jest-environment node
  */
@@ -58,7 +57,6 @@ describe('actions.ts', () => {
     mockCookies.mockReturnValue(mockCookiesInstance)
     ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(5)
 
-    // ✨ HIER: Mock mit echtem Next.js Format!
     mockRedirect.mockImplementation((url: string) => {
       const error = new Error('NEXT_REDIRECT') as any
       error.digest = `NEXT_REDIRECT;replace;${url};false`

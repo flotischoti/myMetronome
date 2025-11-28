@@ -77,11 +77,9 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
     isUpdating,
     isDeleting,
   } = useMetronomeActions(metronome, user, {
-    onSaveSuccess: () => toast.show('Metronome created', 'success'),
     onSaveError: (err) => toast.show(err, 'error'),
     onUpdateSuccess: () => toast.show('Saved', 'info'),
     onUpdateError: (err) => toast.show(err, 'error'),
-    onDeleteSuccess: () => toast.show('Metronome deleted', 'success'),
     onDeleteError: (err) => toast.show(err, 'error'),
   })
 

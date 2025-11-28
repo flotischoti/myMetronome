@@ -1,3 +1,4 @@
+// app/hooks/useMetronomeActions.ts
 import { useCallback } from 'react'
 import { useAsyncAction } from '../../components/metronome/hooks/useAsyncAction'
 import {
@@ -8,11 +9,9 @@ import {
 import type { MetronomeFull } from '@/components/metronome/Metronome'
 
 interface UseMetronomeActionsOptions {
-  onSaveSuccess?: () => void
   onSaveError?: (error: string) => void
   onUpdateSuccess?: () => void
   onUpdateError?: (error: string) => void
-  onDeleteSuccess?: () => void
   onDeleteError?: (error: string) => void
 }
 
@@ -21,7 +20,9 @@ export const useMetronomeActions = (
   user: number | null,
   options: UseMetronomeActionsOptions = {},
 ) => {
-  // Create Action
+  // ============================================
+  // CREATE Action - Success via Cookie!
+  // ============================================
   const { execute: executeCreate, isPending: isCreating } = useAsyncAction(
     async () => {
       if (!metronome.name || metronome.name.trim() === '') {
@@ -30,34 +31,37 @@ export const useMetronomeActions = (
       if (!user) {
         throw new Error('User not logged in')
       }
+
       await createMetronomeAction(metronome)
     },
     {
-      onSuccess: options.onSaveSuccess,
       onError: options.onSaveError,
     },
   )
 
-  // Update Action
+  // ============================================
+  // UPDATE Action
+  // ============================================
   const { execute: executeUpdate, isPending: isUpdating } = useAsyncAction(
     async () => {
-      if (!user || !metronome.id) return
+      if (!user || !metronome.id) throw new Error('Update failed')
       await updateServerAction(metronome)
     },
     {
-      onSuccess: options.onUpdateSuccess,
+      onSuccess: options.onUpdateSuccess, // needed, no redicrect on success in actions.ts
       onError: options.onUpdateError,
     },
   )
 
-  // Delete Action
+  // ============================================
+  // DELETE Action
+  // ============================================
   const { execute: executeDelete, isPending: isDeleting } = useAsyncAction(
     async () => {
-      if (!user || !metronome.id) return
+      if (!user || !metronome.id) throw new Error('Delete failed')
       await deleteMetronomeAction(metronome.id, '/metronome/new')
     },
     {
-      onSuccess: options.onDeleteSuccess,
       onError: options.onDeleteError,
     },
   )
