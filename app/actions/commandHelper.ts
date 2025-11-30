@@ -6,7 +6,6 @@ export function setCommand(
   command: string,
   options?: { maxAge?: number; path?: string },
 ) {
-  // ✅ Füge Timestamp hinzu, damit Cookie immer unique ist
   const commandWithTimestamp = `${command}:${Date.now()}`
 
   cookies().set('command', commandWithTimestamp, {

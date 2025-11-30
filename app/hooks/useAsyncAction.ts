@@ -35,22 +35,19 @@ export const useAsyncAction = <T extends any[]>(
     actionRef.current = action
   }, [action])
 
-  const execute = useCallback(
-    (...args: T) => {
-      startTransition(async () => {
-        try {
-          await actionRef.current(...args)
-        } catch (error) {
-          const errorMsg =
-            error instanceof Error
-              ? error.message
-              : optionsRef.current.errorMessage || 'Something went wrong'
-          optionsRef.current.onError?.(errorMsg)
-        }
-      })
-    },
-    [], // ← Leere Dependencies! Alles in Refs!
-  )
+  const execute = useCallback((...args: T) => {
+    startTransition(async () => {
+      try {
+        await actionRef.current(...args)
+      } catch (error) {
+        const errorMsg =
+          error instanceof Error
+            ? error.message
+            : optionsRef.current.errorMessage || 'Something went wrong'
+        optionsRef.current.onError?.(errorMsg)
+      }
+    })
+  }, [])
 
   return {
     execute,

@@ -52,7 +52,7 @@ export const useCommandHandler = (
     console.log('✅ Processing new command:', command)
     lastProcessed.current = command
 
-    // ✅ Extract command without timestamp
+    // Extract command without timestamp
     let actualCommand = command
     const timestampIndex = command.lastIndexOf(':')
     if (timestampIndex > 0) {

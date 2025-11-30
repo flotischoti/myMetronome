@@ -251,7 +251,7 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
-      // ✅ Check for command with timestamp
+      // Check for command with timestamp
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
         expectCommandWithTimestamp('created'),
@@ -298,7 +298,7 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
-      // ✅ Check for command with timestamp
+      // Check for command with timestamp
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
         expectCommandWithTimestamp('deleted'),
@@ -401,7 +401,7 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
-      // ✅ Check for command with timestamp
+      // Check for command with timestamp
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
         expectCommandWithTimestamp('passwordChanged'),
@@ -467,7 +467,7 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
-      // ✅ One call for token, one for command with timestamp
+      // One call for token, one for command with timestamp
       expect(mockCookiesInstance.set).toHaveBeenCalledTimes(2)
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
@@ -526,7 +526,7 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
-      // ✅ Two calls: one for token deletion, one for command
+      // Two calls: one for token deletion, one for command
       expect(mockCookiesInstance.set).toHaveBeenCalledTimes(2)
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',

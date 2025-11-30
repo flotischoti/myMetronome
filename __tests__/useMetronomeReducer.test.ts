@@ -304,7 +304,6 @@ describe('metronomeReducer', () => {
     })
 
     it('should not exceed maximum (3570000ms)', () => {
-      // ✨ KORRIGIERT!
       const { result } = renderHook(() =>
         useMetronomeReducer(
           createInitialState({ timerValue: 3570000 - 30000 }),
