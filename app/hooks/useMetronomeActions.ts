@@ -1,22 +1,26 @@
 // app/hooks/useMetronomeActions.ts
 import { useCallback } from 'react'
-import { useAsyncAction } from '../../components/metronome/hooks/useAsyncAction'
+import { useAsyncAction } from './useAsyncAction'
 import {
   createMetronomeAction,
   updateServerAction,
   deleteMetronomeAction,
 } from '@/app/actions/actions'
-import type { MetronomeFull } from '@/components/metronome/Metronome'
+import type {
+  MetronomeFull,
+  StoredMetronome,
+} from '@/components/metronome/Metronome'
 
 interface UseMetronomeActionsOptions {
   onSaveError?: (error: string) => void
   onUpdateSuccess?: () => void
   onUpdateError?: (error: string) => void
   onDeleteError?: (error: string) => void
+  deleteTarget?: string
 }
 
 export const useMetronomeActions = (
-  metronome: MetronomeFull,
+  metronome: MetronomeFull | StoredMetronome,
   user: number | null,
   options: UseMetronomeActionsOptions = {},
 ) => {
@@ -59,7 +63,10 @@ export const useMetronomeActions = (
   const { execute: executeDelete, isPending: isDeleting } = useAsyncAction(
     async () => {
       if (!user || !metronome.id) throw new Error('Delete failed')
-      await deleteMetronomeAction(metronome.id, '/metronome/new')
+      await deleteMetronomeAction(
+        metronome.id,
+        options.deleteTarget || '/metronome/new',
+      )
     },
     {
       onError: options.onDeleteError,

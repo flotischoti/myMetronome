@@ -59,6 +59,7 @@ export default async function Page({
       <MetronomeCardContainer
         metronomes={metronomes}
         command={command?.value}
+        user={userId}
       />
       {page <= maxPage && (
         <div className="realtive flex justify-center items-center my-4">

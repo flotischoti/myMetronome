@@ -9,11 +9,13 @@ import { ToastContainer } from '@/components/toast/ToastContainer'
 interface MetronomeCardContainerProps {
   metronomes: StoredMetronome[]
   command: string | undefined
+  user: number | null
 }
 
 const MetronomeCardContainer = ({
   metronomes,
   command,
+  user,
 }: MetronomeCardContainerProps) => {
   const [metronomeForDeletion, setMetronomeForDeletion] = useState<
     number | undefined
@@ -26,6 +28,7 @@ const MetronomeCardContainer = ({
           <MetronomeCard
             key={m.id || i}
             metronome={m}
+            user={user}
             idForDeletion={metronomeForDeletion}
             setForDeletion={setMetronomeForDeletion}
           />

@@ -1,30 +1,29 @@
-// components/metronome-list/MetronomeCard.tsx
 'use client'
 
 import { StoredMetronome } from '../metronome/Metronome'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useTransition } from 'react'
 import { IconTrash, IconX } from '@tabler/icons-react'
-import { deleteMetronomeAction } from '@/app/actions/actions'
+import { useMetronomeActions } from '@/app/hooks/useMetronomeActions'
+import { useToast } from '@/contexts/ToastContext'
+
+interface MetronomeCardProperties {
+  metronome: StoredMetronome
+  setForDeletion: (id: number | undefined) => void
+  idForDeletion: number | undefined
+  user: number | null
+}
 
 const MetronomeCard = ({
   metronome,
   setForDeletion,
   idForDeletion,
-}: {
-  metronome: StoredMetronome
-  setForDeletion: (id: number | undefined) => void
-  idForDeletion: number | undefined
-}) => {
-  const pathname = usePathname()
-  const [isDeleting, startTransition] = useTransition()
-
-  const handleDelete = () => {
-    startTransition(async () => {
-      await deleteMetronomeAction(metronome.id!, pathname)
-    })
-  }
+  user,
+}: MetronomeCardProperties) => {
+  const toast = useToast()
+  const { deleteMetronome, isDeleting } = useMetronomeActions(metronome, user, {
+    onDeleteError: (err) => toast.show(err, 'error'),
+    deleteTarget: '/list',
+  })
 
   return (
     <div
@@ -97,7 +96,7 @@ const MetronomeCard = ({
             <button
               type="button"
               className="hover:drop-shadow-xl mr-2 btn btn-error"
-              onClick={handleDelete}
+              onClick={deleteMetronome}
               disabled={isDeleting}
             >
               {isDeleting ? (

@@ -14,7 +14,6 @@ export const useAsyncAction = <T extends any[]>(
   const [isPending, startTransition] = useTransition()
   const prevPending = useRef(false)
 
-  // ✅ FIX: Callbacks in Refs speichern
   const optionsRef = useRef(options)
 
   useEffect(() => {
@@ -30,7 +29,6 @@ export const useAsyncAction = <T extends any[]>(
     }
   }, [isPending])
 
-  // ✅ FIX: action in Ref speichern
   const actionRef = useRef(action)
 
   useEffect(() => {
