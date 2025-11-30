@@ -1,39 +1,41 @@
 'use client'
 
-import { updatePasswordServerAction } from '@/app/actions'
+import { updatePasswordServerAction } from '@/app/actions/actions'
+import { ToastContainer } from '@/components/toast/ToastContainer'
 import { IconDeviceFloppy } from '@tabler/icons-react'
 import Link from 'next/link'
-import { useFormStatus } from 'react-dom'
-import { useFormState } from 'react-dom'
+import { FormEvent, useTransition } from 'react'
 
-const initialState = {
-  message: '',
+interface ChangePasswordProps {
+  command: string | undefined
 }
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
+export const ChangePasswordForm = ({ command }: ChangePasswordProps) => {
+  const [isUpdating, startTransition] = useTransition()
 
-  return (
-    <button
-      type="submit"
-      className="btn btn-square btn-neutral btn-wide mt-4"
-      disabled={pending}
-    >
-      {pending ? (
-        <span className="loading loading-spinner loading-xs"></span>
-      ) : (
-        <IconDeviceFloppy size="16" />
-      )}
-      Save
-    </button>
-  )
-}
+  const handleChangePassword = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    startTransition(async () => {
+      await updatePasswordServerAction(new FormData(e.currentTarget))
+    })
+  }
 
-export const ChangePasswordForm = () => {
-  const [state, formAction] = useFormState(
-    updatePasswordServerAction,
-    initialState,
-  )
+  function SubmitButton() {
+    return (
+      <button
+        type="submit"
+        className="btn btn-square btn-neutral btn-wide mt-4"
+        disabled={isUpdating}
+      >
+        {isUpdating ? (
+          <span className="loading loading-spinner loading-xs"></span>
+        ) : (
+          <IconDeviceFloppy size="16" />
+        )}
+        Save
+      </button>
+    )
+  }
   return (
     <>
       <title>Metronomes - Edit password</title>
@@ -57,7 +59,7 @@ export const ChangePasswordForm = () => {
             </li>
           </ul>
         </div>
-        <form action={formAction}>
+        <form onSubmit={handleChangePassword}>
           <h1 className="font-bold text-lg">Change password</h1>
           <div>
             <label className="label">
@@ -98,10 +100,8 @@ export const ChangePasswordForm = () => {
             />
           </div>
           <SubmitButton />
-          {state?.message && (
-            <p className="mt-4 text-error">{state?.message}</p>
-          )}
         </form>
+        <ToastContainer command={command} />
       </div>
     </>
   )

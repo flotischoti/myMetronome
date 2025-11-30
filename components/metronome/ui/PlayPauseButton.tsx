@@ -1,20 +1,18 @@
-import { Dispatch, MouseEvent, SetStateAction, useEffect, useRef } from 'react'
-import { LocalMetronomeSettings, StoredMetronome } from '../Metronome'
+import { Dispatch, MouseEvent, useEffect, useRef } from 'react'
+import { MetronomeFull } from '../Metronome'
+import { MetronomeAction } from '../hooks/useMetronomeReducer'
+import { METRONOME_CONSTANTS } from '@/constants/metronome'
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react'
 
 export function PlayPauseButton({
   metronome,
-  setMetronome,
-  autosave,
+  dispatch,
   full = false,
 }: {
-  metronome: StoredMetronome & LocalMetronomeSettings
-  setMetronome: Dispatch<SetStateAction<any>>
-  autosave: () => void
+  metronome: MetronomeFull
+  dispatch: Dispatch<MetronomeAction>
   full?: boolean
 }) {
-  const lookahead = 25
-  const scheduleAheadTime = 0.2
   const audioContext = useRef<AudioContext | null>(null)
   const timeInterval = useRef<ReturnType<typeof setInterval> | undefined>(
     undefined,
@@ -24,8 +22,10 @@ export function PlayPauseButton({
   const schedulerIntervalId = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
+
   useEffect(() => {
-    const AudioContext = window.AudioContext || window.webkitAudioContext
+    const AudioContext =
+      window.AudioContext || (window as any).webkitAudioContext
     audioContext.current = new AudioContext()
     return () => {
       if (audioContext.current) {
@@ -42,34 +42,34 @@ export function PlayPauseButton({
       nextNoteTime.current = tmpNextNotetime
       play()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metronome.bpm, metronome.beats, metronome.stressFirst])
 
-  // Pause metronome when activeTimer reached 0
   useEffect(() => {
     if (
       metronome.isPlaying &&
       metronome.timerActive &&
-      metronome.activeTimer == 0
+      metronome.activeTimer === 0
     ) {
       pause()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metronome.activeTimer])
 
   const scheduleNote = () => {
     if (!audioContext.current) return
-
     const time = nextNoteTime.current
     const osc = audioContext.current.createOscillator()
     const envelope = audioContext.current.createGain()
     osc.frequency.value =
-      currentBeatInBar.current == 0 && metronome.stressFirst ? 1000 : 800
+      currentBeatInBar.current === 0 && metronome.stressFirst
+        ? METRONOME_CONSTANTS.AUDIO.FREQUENCY_HIGH
+        : METRONOME_CONSTANTS.AUDIO.FREQUENCY_LOW
     envelope.gain.value = 1
     envelope.gain.exponentialRampToValueAtTime(1, time + 0.001)
     envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02)
-
     osc.connect(envelope)
     envelope.connect(audioContext.current.destination)
-
     osc.start(time)
     osc.stop(time + 0.05)
   }
@@ -79,7 +79,8 @@ export function PlayPauseButton({
     const secondsPerBeat = 60.0 / metronome.bpm
     while (
       nextNoteTime.current <
-      audioContext.current.currentTime + scheduleAheadTime
+      audioContext.current.currentTime +
+        METRONOME_CONSTANTS.AUDIO.SCHEDULE_AHEAD
     ) {
       scheduleNote()
       nextNoteTime.current += secondsPerBeat
@@ -89,43 +90,22 @@ export function PlayPauseButton({
   }
 
   const play = () => {
-    if (!audioContext.current) {
-      return
-    }
-    setMetronome({
-      ...metronome,
-      isPlaying: true,
-      activeTimer: metronome.timerValue,
-    })
+    if (!audioContext.current) return
+    dispatch({ type: 'START_PLAYING' })
     timeInterval.current = setInterval(() => {
-      setMetronome((prev: StoredMetronome & LocalMetronomeSettings) => {
-        return {
-          ...prev,
-          timeUsed: prev.timeUsed + 1000,
-          currentUsed: prev.currentUsed + 1000,
-          sessionUsed: prev.sessionUsed + 1000,
-          activeTimer: !prev.timerActive
-            ? prev.timerValue
-            : prev.activeTimer > 1000
-              ? prev.activeTimer - 1000
-              : 0,
-          isPlaying:
-            !prev.timerActive || prev.activeTimer >= 1000 ? true : false,
-        }
-      })
+      dispatch({ type: 'INCREMENT_TIME' })
     }, 1000)
     currentBeatInBar.current = 0
-    if (nextNoteTime.current == 0)
+    if (nextNoteTime.current === 0)
       nextNoteTime.current = audioContext.current.currentTime + 0.15
-    schedulerIntervalId.current = setInterval(() => scheduler(), lookahead)
+    schedulerIntervalId.current = setInterval(
+      () => scheduler(),
+      METRONOME_CONSTANTS.AUDIO.LOOKAHEAD,
+    )
   }
 
   const pause = () => {
-    setMetronome({
-      ...metronome,
-      isPlaying: false,
-      currentUsed: 0,
-    })
+    dispatch({ type: 'STOP_PLAYING' })
     clearInterval(timeInterval.current)
     currentBeatInBar.current = 0
     nextNoteTime.current = 0
@@ -133,12 +113,7 @@ export function PlayPauseButton({
   }
 
   const playPause = (e?: MouseEvent<HTMLButtonElement>) => {
-    if (metronome.isPlaying) {
-      pause()
-      autosave()
-    } else {
-      play()
-    }
+    metronome.isPlaying ? pause() : play()
   }
 
   return (

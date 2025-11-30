@@ -1,8 +1,17 @@
-import type {Config} from 'jest';
+import type { Config } from 'jest'
 
 const config: Config = {
   preset: 'ts-jest',
-  testEnvironment: "node",
-};
+  testEnvironment: 'jsdom',
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1',
+  },
 
-export default config;
+  testEnvironmentOptions: {
+    customExportConditions: ['node', 'node-addons'],
+  },
+
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+}
+
+export default config

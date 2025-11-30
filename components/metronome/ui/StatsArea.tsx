@@ -1,15 +1,16 @@
 import { MetronomeFull } from '../Metronome'
-import { ChangeEvent } from 'react'
+import { MetronomeAction } from '../hooks/useMetronomeReducer'
+import { Dispatch, ChangeEvent } from 'react'
 
 export function StatsArea({
   metronome,
-  setMetronome,
+  dispatch,
 }: {
   metronome: MetronomeFull
-  setMetronome: Function
+  dispatch: Dispatch<MetronomeAction>
 }) {
   const handleShowStats = (e: ChangeEvent<HTMLInputElement>) => {
-    setMetronome({ ...metronome, showStats: !metronome.showStats })
+    dispatch({ type: 'SET_SHOW_STATS', payload: !metronome.showStats })
   }
 
   return (
@@ -29,7 +30,7 @@ export function StatsArea({
           htmlFor="stopWatchCheckbox-1"
           className="ml-2 text-sm cursor-pointer"
         >
-          <span className="">Show usage</span>
+          <span>Show usage</span>
         </label>
       </div>
       {metronome.showStats &&
@@ -54,19 +55,23 @@ export function StatsArea({
                 className="countdown font-mono text-sm font-sans"
               >
                 <span
-                  style={{
-                    '--value': (
-                      '0' + Math.floor((metronome[timerName] / 60000) % 60)
-                    ).slice(-2),
-                  }}
+                  style={
+                    {
+                      '--value': (
+                        '0' + Math.floor((metronome[timerName] / 60000) % 60)
+                      ).slice(-2),
+                    } as React.CSSProperties
+                  }
                 ></span>
                 :
                 <span
-                  style={{
-                    '--value': (
-                      '0' + Math.floor((metronome[timerName] / 1000) % 60)
-                    ).slice(-2),
-                  }}
+                  style={
+                    {
+                      '--value': (
+                        '0' + Math.floor((metronome[timerName] / 1000) % 60)
+                      ).slice(-2),
+                    } as React.CSSProperties
+                  }
                 ></span>
               </span>
             </div>

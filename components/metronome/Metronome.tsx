@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useRef, useTransition } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   IconDeviceFloppy,
   IconMinus,
@@ -8,11 +8,12 @@ import {
   IconX,
 } from '@tabler/icons-react'
 
-import {
-  createMetronomeAction,
-  deleteMetronomeAction,
-  updateServerAction,
-} from '../../app/actions'
+import { METRONOME_CONSTANTS } from '@/constants/metronome'
+import { useMetronomeState } from './hooks/useMetronomeState'
+import { useMetronomeActions } from '../../app/hooks/useMetronomeActions'
+import { useAutoSave } from './hooks/useAutoSave'
+import { useToast } from '@/contexts/ToastContext'
+
 import { TapButton } from './ui/TapButton'
 import { TitleInput } from './ui/TitleInput'
 import { BpmButton } from './ui/BpmButton'
@@ -22,6 +23,7 @@ import { BeatArea } from './ui/BeatArea'
 import { StatsArea } from './ui/StatsArea'
 import { LockUnlockButton } from './ui/LockUnlockButton'
 import { BpmSlider } from './ui/BpmSlider'
+import { ToastContainer } from '../toast/ToastContainer'
 
 export interface StoredMetronome {
   id?: number
@@ -47,333 +49,210 @@ export interface LocalMetronomeSettings {
 
 export type MetronomeFull = StoredMetronome & LocalMetronomeSettings
 
-const maxBpm = 300
-const minBpm = 20
-
-const defaultStoredMetronome: StoredMetronome = {
-  name: '',
-  bpm: 120,
-  beats: 4,
-  stressFirst: false,
-  timeUsed: 0,
-  timerActive: false,
-  timerValue: 120000,
-  showStats: false,
-  locked: false,
-}
-
-const defaultLocalMetronome: LocalMetronomeSettings = {
-  isPlaying: false,
-  currentUsed: 0,
-  sessionUsed: 0,
-  activeTimer: 0,
-}
-
-const Metronome = ({
-  dbMetronome,
-  user,
-  command,
-}: {
+interface MetronomeProps {
   dbMetronome: StoredMetronome | null
   user: number | null
   command: string | undefined
-}) => {
-  const m = dbMetronome ? dbMetronome : defaultStoredMetronome
+}
 
-  const [metronome, setMetronome] = useState({
-    ...m,
-    ...defaultLocalMetronome,
+const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
+  // ========================================
+  // STATE MANAGEMENT (useReducer)
+  // ========================================
+  const { metronome, dispatch } = useMetronomeState(dbMetronome)
+
+  // ========================================
+  // TOAST NOTIFICATIONS
+  // ========================================
+  const toast = useToast()
+
+  // ========================================
+  // SERVER ACTIONS
+  // ========================================
+  const {
+    createMetronome,
+    updateMetronome,
+    deleteMetronome,
+    isCreating,
+    isUpdating,
+    isDeleting,
+  } = useMetronomeActions(metronome, user, {
+    onSaveError: (err) => toast.show(err, 'error'),
+    onUpdateSuccess: () => toast.show('Saved', 'info'),
+    onUpdateError: (err) => toast.show(err, 'error'),
+    onDeleteError: (err) => toast.show(err, 'error'),
   })
 
-  const [saveState, setSaveState] = useState('')
-  const [tostMessage, setToastMessage] = useState('')
-  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  )
-  const [deletionInProgress, setDeletionInProgress] = useState(false)
-  const [updateInProgress, setUpdateInProgress] = useState(false)
-  let [pendingSave, startTransitionSave] = useTransition()
-  let [pendingDelete, startTransitionDelete] = useTransition()
-  let [pendingUpdate, startTransitionUpdate] = useTransition()
-  const pendingUpdatePrev = useRef(false)
-  const pendingSavePrev = useRef(false)
-  const pendingDeletePrev = useRef(false)
+  // ========================================
+  // AUTO-SAVE
+  // ========================================
+  const { isSaving, resetSaving } = useAutoSave(metronome, updateMetronome, {
+    enabled: !!user && !!metronome.id && !isDeleting,
+    delay: METRONOME_CONSTANTS.AUTOSAVE.DELAY,
+  })
+
+  const prevIsUpdating = useRef(isUpdating)
 
   useEffect(() => {
-    switch (command) {
-      case 'created':
-        setSuccessState(`Metronome created`, 'success')
-        break
-      case 'deleted':
-        setSuccessState(`Metronome deleted`, 'success')
-        break
-      case 'userdeleted':
-        setSuccessState(`User deleted`, 'success')
-        break
+    if (prevIsUpdating.current === true && isUpdating === false) {
+      resetSaving()
     }
-  }, [])
+    prevIsUpdating.current = isUpdating
+  }, [isUpdating, resetSaving])
 
-  useEffect(() => {
-    if (pendingUpdate) {
-      pendingUpdatePrev.current = true
-    } else if (pendingUpdatePrev.current) {
-      setSuccessState('Saved', 'info')
-      setUpdateInProgress(false)
-      pendingUpdatePrev.current = false
-    }
-  }, [pendingUpdate])
+  // ========================================
+  // LOCAL UI STATE
+  // ========================================
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const showSavingIndicator = isSaving || isUpdating
 
-  useEffect(() => {
-    if (pendingSave) {
-      pendingSavePrev.current = true
-      setSuccessState('Saving', 'info')
-    } else if (pendingSavePrev.current) {
-      setSuccessState('Something went wrong', 'error')
-      pendingSavePrev.current = false
-    }
-  }, [pendingSave])
-
-  useEffect(() => {
-    if (pendingDelete) {
-      pendingDeletePrev.current = true
-      setSuccessState('Deleting', 'info')
-    } else if (pendingDeletePrev.current) {
-      setSuccessState('Something went wrong', 'error')
-      pendingDeletePrev.current = false
-    }
-  }, [pendingDelete])
-
-  useEffect(() => {
-    if (metronome.isPlaying && metronome.timeUsed % 30000 == 0) {
-      autosave()
-    }
-  }, [metronome.timeUsed])
-
-  // AutoSave
-  useEffect(() => {
-    if (!pendingDelete) setDeletionInProgress(false)
-    autosave()
-  }, [
-    metronome.showStats,
-    metronome.bpm,
-    metronome.beats,
-    metronome.stressFirst,
-    metronome.timerActive,
-    metronome.timerValue,
-    metronome.name,
-    metronome.locked,
-  ])
-
-  const autosave = () => {
-    if (user && metronome.id && !pendingDelete) {
-      setUpdateInProgress(true)
-      clearTimeout(autoSaveTimer.current)
-      autoSaveTimer.current = setTimeout(() => {
-        startTransitionUpdate(async () => {
-          updateServerAction(metronome)
-        })
-      }, 2000)
-    }
-  }
-
-  const setSuccessState = (message: string, type: string) => {
-    setToastMessage(message)
-    setSaveState(type)
-    setTimeout(() => {
-      setSaveState('')
-    }, 2000)
-  }
-
-  const createMetronome = async () => {
-    if (!metronome.name || metronome.name.trim() == '') {
-      setSuccessState('Provide a name', 'error')
-    } else {
-      startTransitionSave(() => {
-        createMetronomeAction(metronome)
-      })
-    }
-  }
-
-  const deleteMetronome = async () => {
-    if (user) {
-      startTransitionDelete(() => {
-        deleteMetronomeAction(metronome.id!, '/metronome/new')
-      })
-    }
-  }
-
+  // ========================================
+  // RENDER
+  // ========================================
   return (
     <form className="select-none shadow bg-base-100">
       <TitleInput
         locked={metronome.locked}
         name={metronome.name}
-        updateState={(val) => setMetronome({ ...metronome, name: val })}
+        updateState={(val) => dispatch({ type: 'SET_NAME', payload: val })}
       />
+
       <div id="metronomeBodyArea-1" className="px-3 pb-3 sm:px-4">
+        {/* BPM Display */}
         <div id="metronomeBpmArea-1" className="flex flex-col items-center">
           <div id="metronomeBpmDisplay-1">
-            <span className="text-7xl font-bold ">{metronome.bpm}</span>
+            <span className="text-7xl font-bold">{metronome.bpm}</span>
             <span>bpm</span>
           </div>
-          {new Array(metronome.beats).map((v, i) => (
-            <span key={i + 1}>{i + 1}</span>
-          ))}
+
+          {/* BPM Controls (unlocked) */}
           {!metronome.locked && (
             <div id="metronomeBpmControls-1" className="w-full mt-4">
               <BpmSlider
-                minBpm={minBpm}
-                maxBpm={maxBpm}
+                minBpm={METRONOME_CONSTANTS.BPM.MIN}
+                maxBpm={METRONOME_CONSTANTS.BPM.MAX}
                 metronome={metronome}
-                setMetronome={setMetronome}
+                dispatch={dispatch}
               />
+
               <div className="join w-full mt-2 flex">
-                <BpmButton
-                  maxBpm={maxBpm}
-                  minBpm={minBpm}
-                  step={-1}
-                  Icon={IconMinus}
-                  updateState={(val) =>
-                    setMetronome((prev) => {
-                      return {
-                        ...prev,
-                        bpm: Math.min(Math.max(prev.bpm + val, minBpm), maxBpm),
-                      }
-                    })
-                  }
-                />
-                <BpmButton
-                  maxBpm={maxBpm}
-                  minBpm={minBpm}
-                  step={1}
-                  Icon={IconPlus}
-                  updateState={(val) =>
-                    setMetronome((prev) => {
-                      return {
-                        ...prev,
-                        bpm: Math.min(Math.max(prev.bpm + val, minBpm), maxBpm),
-                      }
-                    })
-                  }
-                />
+                <BpmButton step={-1} Icon={IconMinus} dispatch={dispatch} />
+                <BpmButton step={1} Icon={IconPlus} dispatch={dispatch} />
               </div>
 
               <div className="flex mt-4 gap-4">
                 <TapButton
-                  minBpm={minBpm}
-                  maxBpm={maxBpm}
-                  updateState={(val) =>
-                    setMetronome({ ...metronome, bpm: val })
-                  }
+                  minBpm={METRONOME_CONSTANTS.BPM.MIN}
+                  maxBpm={METRONOME_CONSTANTS.BPM.MAX}
+                  dispatch={dispatch}
                 />
-                <PlayPauseButton
-                  setMetronome={setMetronome}
-                  metronome={metronome}
-                  autosave={autosave}
-                />
+                <PlayPauseButton dispatch={dispatch} metronome={metronome} />
               </div>
             </div>
           )}
+
+          {/* Play Button (locked) */}
           {metronome.locked && (
             <PlayPauseButton
-              setMetronome={setMetronome}
+              dispatch={dispatch}
               metronome={metronome}
-              autosave={autosave}
               full={true}
             />
           )}
         </div>
+
+        {/* Settings Area */}
         <div id="metronomeSettingsArea-1">
-          <BeatArea metronome={metronome} setMetronome={setMetronome} />
+          <BeatArea metronome={metronome} dispatch={dispatch} />
         </div>
+
+        {/* Timer Area */}
         <div id="metronomeTimeArea-1">
-          <TimerArea metronome={metronome} setMetronome={setMetronome} />
+          <TimerArea metronome={metronome} dispatch={dispatch} />
         </div>
+
+        {/* Stats Area */}
         <div id="metronomeStatsArea-1" className="mt-3">
-          <StatsArea metronome={metronome} setMetronome={setMetronome} />
+          <StatsArea metronome={metronome} dispatch={dispatch} />
         </div>
+
+        {/* Action Buttons */}
         <div
           id="metronomeButtonArea-1"
-          className={`mt-8 flex items-end w-full justify-between`}
+          className="mt-8 flex items-end w-full justify-between"
         >
-          {!deletionInProgress && (
-            <LockUnlockButton
-              metronome={metronome}
-              setMetronome={setMetronome}
-              setSuccessState={setSuccessState}
-            />
-          )}
-          {!metronome.id && (
-            <button
-              formAction={createMetronome}
-              className={`btn btn-outline btn-primary ${
-                pendingSave || !user ? 'btn-disabled' : 'btn-active'
-              }`}
-            >
-              {pendingSave ? (
-                <span className="loading loading-spinner loading-xs"></span>
-              ) : (
-                <IconDeviceFloppy size="16" />
-              )}
-              Save
-            </button>
-          )}
-          {metronome.id &&
-            !metronome.locked &&
-            !deletionInProgress &&
-            !updateInProgress && (
+          <LockUnlockButton metronome={metronome} dispatch={dispatch} />
+
+          <div className="flex items-center gap-2">
+            {/* Save Button (new metronome) */}
+            {!metronome.id && (
               <button
                 type="button"
-                className="btn btn-outline btn-error btn-square btn-sm"
-                onClick={(e) => setDeletionInProgress(true)}
+                onClick={createMetronome}
+                className={`btn btn-outline btn-primary ${
+                  isCreating || !user ? 'btn-disabled' : 'btn-active'
+                }`}
               >
-                <IconTrash size="24" />
+                {isCreating ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <IconDeviceFloppy size="16" />
+                )}
+                Save
               </button>
             )}
-          {metronome.id && !deletionInProgress && updateInProgress && (
-            <span className="loading loading-spinner loading-xs"></span>
-          )}
-          {metronome.id && deletionInProgress && (
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              onClick={(e) => setDeletionInProgress(false)}
-            >
-              <IconX />
-              Cancel
-            </button>
-          )}
-          {metronome.id && deletionInProgress && (
-            <button
-              formAction={deleteMetronome}
-              className={`btn btn-outline btn-error btn-sm ${
-                pendingDelete ? 'btn-disabled' : ''
-              }`}
-            >
-              {pendingDelete ? (
-                <span className="loading loading-spinner loading-xs"></span>
-              ) : (
-                <IconTrash size="16" />
-              )}
-              Confirm
-            </button>
-          )}
-        </div>
-      </div>
-      {saveState != '' && (
-        <div className="toast toast-end">
-          <div
-            className={`alert ${
-              saveState == 'success'
-                ? 'alert-success'
-                : saveState == 'error'
-                  ? 'alert-error'
-                  : 'alert-info'
-            } `}
-          >
-            <span>{tostMessage}</span>
+
+            {/* Delete Confirmation Buttons */}
+            {metronome.id && showDeleteConfirm && (
+              <>
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  <IconX />
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteMetronome}
+                  className={`btn btn-outline btn-error btn-sm ${
+                    isDeleting ? 'btn-disabled' : ''
+                  }`}
+                >
+                  {isDeleting ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    <IconTrash size="16" />
+                  )}
+                  Confirm
+                </button>
+              </>
+            )}
+
+            {/* Saving Spinner or Delete Button */}
+            {metronome.id && !showDeleteConfirm && (
+              <>
+                {!metronome.locked && !showSavingIndicator && (
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-error btn-square btn-sm"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    <IconTrash size="24" />
+                  </button>
+                )}
+                {showSavingIndicator && (
+                  <span className="loading loading-spinner loading-xs"></span>
+                )}
+              </>
+            )}
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Toast Notification */}
+      <ToastContainer command={command} />
     </form>
   )
 }

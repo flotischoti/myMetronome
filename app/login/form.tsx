@@ -1,40 +1,46 @@
 'use client'
-
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { loginServerAction } from '../actions'
+import { loginServerAction } from '../actions/actions'
 import { IconLogin } from '@tabler/icons-react'
-import { useFormStatus } from 'react-dom'
-import { useFormState } from 'react-dom'
+import { FormEvent, useTransition } from 'react'
+import { ToastContainer } from '@/components/toast/ToastContainer'
+import { useCurrentPath } from '../hooks/useCurrentPath'
 
-const initialState = {
-  message: '',
+interface LoginFormProps {
+  command: string | undefined
 }
 
-const LoginButton = function () {
-  const { pending } = useFormStatus()
-
-  return (
-    <button
-      type="submit"
-      className={`btn ${
-        pending ? 'btn-disabled' : 'btn-neutral'
-      } w-full btn-outline`}
-    >
-      {pending ? (
-        <span className="loading loading-spinner loading-xs" />
-      ) : (
-        <IconLogin />
-      )}
-      Login
-    </button>
-  )
-}
-
-export const LoginForm = () => {
+export const LoginForm = ({ command }: LoginFormProps) => {
   const searchParams = useSearchParams()
   const targetUrl = searchParams.get('target')
-  const [state, formAction] = useFormState(loginServerAction, initialState)
+
+  const [isLoggingIn, startTransition] = useTransition()
+
+  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    startTransition(async () => {
+      await loginServerAction(new FormData(e.currentTarget))
+    })
+  }
+
+  const LoginButton = function () {
+    return (
+      <button
+        type="submit"
+        className={`btn ${
+          isLoggingIn ? 'btn-disabled' : 'btn-neutral'
+        } w-full btn-outline`}
+      >
+        {isLoggingIn ? (
+          <span className="loading loading-spinner loading-xs" />
+        ) : (
+          <IconLogin />
+        )}
+        Login
+      </button>
+    )
+  }
 
   return (
     <section className="flex flex-col items-center h-full justify-between">
@@ -43,12 +49,13 @@ export const LoginForm = () => {
           <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl">
             Login
           </h1>
-          <form className="space-y-4 sm:space-y-6" action={formAction}>
+          <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
             <input
               type="hidden"
               name="target"
               value={searchParams.get('target') || ''}
             />
+            <input type="hidden" name="currentPath" value={useCurrentPath()} />
             <div>
               <label htmlFor="name" className="label">
                 <span className="label-text">Username *</span>
@@ -77,9 +84,6 @@ export const LoginForm = () => {
               />
             </div>
             <LoginButton />
-            {state?.message && (
-              <p className="mt-4 text-error">{state?.message}</p>
-            )}
             <p className="text-sm font-light">
               Don&apos;t have an account yet?{' '}
               <Link
@@ -104,6 +108,7 @@ export const LoginForm = () => {
           inactivity.
         </p>
       </div>
+      <ToastContainer command={command} />
     </section>
   )
 }

@@ -1,5 +1,4 @@
 import { StoredMetronome } from '../../components/metronome/Metronome'
-import MetronomeCard from '../../components/metronomeCard/MetronomeCard'
 import * as metronomeDb from '../../db/metronome'
 import Link from 'next/link'
 import ListSearch from '../../components/listSearch/ListSearch'
@@ -60,6 +59,7 @@ export default async function Page({
       <MetronomeCardContainer
         metronomes={metronomes}
         command={command?.value}
+        user={userId}
       />
       {page <= maxPage && (
         <div className="realtive flex justify-center items-center my-4">

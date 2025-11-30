@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { logoutServerAction } from '../actions'
+import { logoutServerAction } from '../actions/actions'
 
 export default function Page() {
   const [error, setError] = useState(false)

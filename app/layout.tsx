@@ -9,6 +9,7 @@ import { getUserAttrFromToken } from './api/util'
 import type { Metadata } from 'next'
 import { Inter, Pacifico } from 'next/font/google'
 import { Footer } from '@/components/footer/footer'
+import { ToastProvider } from '@/contexts/ToastContext'
 
 export const metadata: Metadata = {
   description:
@@ -51,7 +52,9 @@ export default async function RootLayout({
           <div className="h-full flex flex-col">
             <Navbar />
             <main className="grow">
-              <Suspense fallback={<Loading />}>{children}</Suspense>
+              <Suspense fallback={<Loading />}>
+                <ToastProvider>{children}</ToastProvider>
+              </Suspense>
             </main>
             <Footer />
           </div>

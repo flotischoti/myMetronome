@@ -1,51 +1,34 @@
 import { IconMinus, IconPlus } from '@tabler/icons-react'
 import { MetronomeFull } from '../Metronome'
+import { MetronomeAction } from '../hooks/useMetronomeReducer'
+import { METRONOME_CONSTANTS } from '@/constants/metronome'
 import { UseTimerCheckbox } from './UseTimerCheckbox'
-import { MouseEvent } from 'react'
+import { Dispatch, MouseEvent } from 'react'
 
 export function TimerArea({
   metronome,
-  setMetronome,
+  dispatch,
 }: {
   metronome: MetronomeFull
-  setMetronome: Function
+  dispatch: Dispatch<MetronomeAction>
 }) {
-  const timerChangeInterval = 30000
-
   const increaseTimer = (e: MouseEvent<HTMLButtonElement>) => {
-    // Only increase active timer if the metronome is currently playing
-    if (metronome.isPlaying && metronome.timerActive) {
-      setMetronome({
-        ...metronome,
-        activeTimer: metronome.activeTimer + timerChangeInterval,
-      })
-    } else {
-      setMetronome({
-        ...metronome,
-        timerValue: metronome.timerValue + timerChangeInterval,
-        activeTimer: metronome.timerValue + timerChangeInterval,
-      })
-    }
+    dispatch({
+      type: 'INCREASE_TIMER',
+      payload: METRONOME_CONSTANTS.TIMER.INTERVAL,
+    })
   }
 
   const decreaseTimer = (e: MouseEvent<HTMLButtonElement>) => {
-    if (metronome.isPlaying && metronome.timerActive) {
-      setMetronome({
-        ...metronome,
-        activeTimer: metronome.activeTimer - timerChangeInterval,
-      })
-    } else {
-      setMetronome({
-        ...metronome,
-        timerValue: metronome.timerValue - timerChangeInterval,
-        activeTimer: metronome.timerValue - timerChangeInterval,
-      })
-    }
+    dispatch({
+      type: 'DECREASE_TIMER',
+      payload: METRONOME_CONSTANTS.TIMER.INTERVAL,
+    })
   }
 
   return (
     <div id="metronomeCountdownArea-1" className="flex justify-between mt-4">
-      <UseTimerCheckbox metronome={metronome} setMetronome={setMetronome} />
+      <UseTimerCheckbox metronome={metronome} dispatch={dispatch} />
       {metronome.timerActive && (
         <div
           id="countdownSettingsArea-1"
@@ -56,8 +39,8 @@ export function TimerArea({
             className="btn btn-xs btn-outline btn-neutral"
             disabled={
               metronome.isPlaying
-                ? metronome.activeTimer < timerChangeInterval
-                : metronome.timerValue <= timerChangeInterval
+                ? metronome.activeTimer < METRONOME_CONSTANTS.TIMER.INTERVAL
+                : metronome.timerValue <= METRONOME_CONSTANTS.TIMER.INTERVAL
             }
             onClick={decreaseTimer}
           >
@@ -65,33 +48,37 @@ export function TimerArea({
           </button>
           <span className="countdown font-mono text-base font-sans">
             <span
-              style={{
-                '--value': (
-                  '0' +
-                  Math.floor(
-                    ((metronome.isPlaying
-                      ? metronome.activeTimer
-                      : metronome.timerValue) /
-                      60000) %
-                      60,
-                  )
-                ).slice(-2),
-              }}
+              style={
+                {
+                  '--value': (
+                    '0' +
+                    Math.floor(
+                      ((metronome.isPlaying
+                        ? metronome.activeTimer
+                        : metronome.timerValue) /
+                        60000) %
+                        60,
+                    )
+                  ).slice(-2),
+                } as React.CSSProperties
+              }
             ></span>
             :
             <span
-              style={{
-                '--value': (
-                  '0' +
-                  Math.floor(
-                    ((metronome.isPlaying
-                      ? metronome.activeTimer
-                      : metronome.timerValue) /
-                      1000) %
-                      60,
-                  )
-                ).slice(-2),
-              }}
+              style={
+                {
+                  '--value': (
+                    '0' +
+                    Math.floor(
+                      ((metronome.isPlaying
+                        ? metronome.activeTimer
+                        : metronome.timerValue) /
+                        1000) %
+                        60,
+                    )
+                  ).slice(-2),
+                } as React.CSSProperties
+              }
             ></span>
           </span>
           <button
@@ -99,8 +86,8 @@ export function TimerArea({
             className="btn btn-xs btn-outline btn-neutral"
             disabled={
               metronome.isPlaying
-                ? metronome.activeTimer >= timerChangeInterval * 119
-                : metronome.timerValue >= timerChangeInterval * 119
+                ? metronome.activeTimer >= METRONOME_CONSTANTS.TIMER.MAX
+                : metronome.timerValue >= METRONOME_CONSTANTS.TIMER.MAX
             }
             onClick={increaseTimer}
           >

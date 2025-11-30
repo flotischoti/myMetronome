@@ -1,295 +1,538 @@
+/**
+ * @jest-environment node
+ */
 import { cookies } from 'next/headers'
-import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import * as bcrypt from 'bcrypt'
-import * as userDb from '../db/user'
-import * as metronomeDb from '../db/metronome'
 import * as utils from '../app/api/util'
+import * as metronomeDb from '../db/metronome'
+import * as userDb from '../db/user'
 import {
   signupServerAction,
   loginServerAction,
-  logoutServerAction,
   createMetronomeAction,
   deleteMetronomeAction,
   updateServerAction,
   updatePasswordServerAction,
   updateUsernameServerAction,
   deleteUserServerAction,
-} from '../app/actions'
+} from '../app/actions/actions'
 
-
+// ========================================
+// MOCKS
+// ========================================
 jest.mock('next/headers', () => ({ cookies: jest.fn() }))
-jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }))
 jest.mock('next/navigation', () => ({ redirect: jest.fn() }))
+jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }))
 jest.mock('bcrypt')
-jest.mock('../db/user')
-jest.mock('../db/metronome')
 jest.mock('../app/api/util')
+jest.mock('../db/metronome')
+jest.mock('../db/user')
+
+const mockRedirect = redirect as jest.MockedFunction<typeof redirect>
+const mockCookies = cookies as jest.MockedFunction<typeof cookies>
+const mockRevalidatePath = revalidatePath as jest.MockedFunction<
+  typeof revalidatePath
+>
+
+const createFormData = (data: Record<string, string>): FormData => {
+  const formData = new FormData()
+  Object.entries(data).forEach(([key, value]) => formData.append(key, value))
+  return formData
+}
+
+// ✅ Helper to match command with timestamp
+const expectCommandWithTimestamp = (command: string) => {
+  return expect.stringMatching(new RegExp(`^${command}:\\d+$`))
+}
 
 describe('actions.ts', () => {
-  const formData = (data: Record<string, string>) =>
-    Object.entries(data).reduce((fd, [k, v]) => {
-      fd.append(k, v)
-      return fd
-    }, new FormData())
+  let mockCookiesInstance: any
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(cookies as jest.Mock).mockReturnValue({
-      get: jest.fn().mockReturnValue({ value: 'token' }),
+
+    mockCookiesInstance = {
+      get: jest.fn().mockReturnValue({ value: 'token123' }),
       set: jest.fn(),
       delete: jest.fn(),
-    })
-  })
+    }
 
-  test('signupServerAction rejects if passwords do not match', async () => {
-    const fd = formData({
-      name: 'user',
-      password: '123',
-      passwordRepeat: '321',
-      email: 'u@e.de',
-    })
-    const result = await signupServerAction({}, fd)
-    expect(result.message).toMatch(/Passwords don't match/)
-  })
-
-  test('signupServerAction returns error if user exists', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue({ id: 1 })
-    const fd = formData({
-      name: 'user',
-      password: '123',
-      passwordRepeat: '123',
-    })
-    const result = await signupServerAction({}, fd)
-    expect(result.message).toMatch(/User already exists/)
-  })
-
-  test('signupServerAction creates user if valid', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue(null)
-    ;(bcrypt.hash as jest.Mock).mockResolvedValue('hashed')
-    ;(userDb.create as jest.Mock).mockResolvedValue({ id: 1, name: 'user' })
-    ;(utils.getJwt as jest.Mock).mockResolvedValue('token')
-    const fd = formData({
-      name: 'user',
-      password: '123',
-      passwordRepeat: '123',
-    })
-    await signupServerAction({}, fd)
-    expect(userDb.create).toHaveBeenCalled()
-    expect(utils.getJwt).toHaveBeenCalled()
-    expect(redirect).toHaveBeenCalled()
-  })
-
-  test('loginServerAction rejects if user not found', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue(null)
-    const fd = formData({ name: 'u', password: 'p' })
-    const res = await loginServerAction({}, fd)
-    expect(res.message).toMatch(/User not found/)
-  })
-
-  test('loginServerAction rejects if password wrong', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue({ id: 1, password: 'x' })
-    ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
-    const fd = formData({ name: 'u', password: 'p' })
-    const res = await loginServerAction({}, fd)
-    expect(res.message).toMatch(/Credentials wrong/)
-  })
-
-    test('loginServerAction rejects if name or password missing', async () => {
-    const fd = formData({ name: '', password: '' })
-    const res = await loginServerAction({}, fd)
-    expect(res.message).toMatch(/missing/)
-  })
-
-  test('loginServerAction rejects if user not found', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue(null)
-    const fd = formData({ name: 'u', password: 'p' })
-    const res = await loginServerAction({}, fd)
-    expect(res.message).toMatch(/User not found/)
-  })
-
-  test('loginServerAction rejects if password wrong', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue({ id: 1, password: 'x' })
-    ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
-    const fd = formData({ name: 'u', password: 'p' })
-    const res = await loginServerAction({}, fd)
-    expect(res.message).toMatch(/Credentials wrong/)
-  })
-
-  test('loginServerAction redirects if valid', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue({ id: 1, name: 'user', password: 'x' })
-    ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
-    ;(utils.getJwt as jest.Mock).mockResolvedValue('token')
-    const fd = formData({ name: 'u', password: 'p' })
-    await loginServerAction({}, fd)
-    expect(cookies().set).toHaveBeenCalled()
-    expect(revalidatePath).toHaveBeenCalled()
-    expect(redirect).toHaveBeenCalled()
-  })
-
-  // ----------------------------
-  // logoutServerAction
-  // ----------------------------
-  test('logoutServerAction sets expired token and redirects', async () => {
-    await logoutServerAction()
-    expect(cookies().set).toHaveBeenCalled()
-    expect(revalidatePath).toHaveBeenCalledWith('/')
-    expect(redirect).toHaveBeenCalledWith('/')
-  })
-
-  // ----------------------------
-  // createMetronomeAction
-  // ----------------------------
-  test('createMetronomeAction redirects if savedMetronome exists', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(1)
-    ;(metronomeDb.create as jest.Mock).mockResolvedValue({ id: 10 })
-    await createMetronomeAction({ bpm: 120 } as any)
-    expect(cookies().set).toHaveBeenCalled()
-    expect(redirect).toHaveBeenCalledWith('/metronome/10')
-  })
-
-  test('createMetronomeAction returns message if failed', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(1)
-    ;(metronomeDb.create as jest.Mock).mockResolvedValue(null)
-    const res = await createMetronomeAction({ bpm: 120 } as any)
-    expect(res.message).toMatch(/Something went wrong/)
-  })
-
-  // ----------------------------
-  // deleteMetronomeAction
-  // ----------------------------
-  test('deleteMetronomeAction returns not found if metronome missing', async () => {
-    ;(metronomeDb.get as jest.Mock).mockResolvedValue(null)
-    const res = await deleteMetronomeAction(1, '/target')
-    expect(res.message).toMatch(/not found/)
-  })
-
-  test('deleteMetronomeAction returns unauthorized if user not owner', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(99)
-    ;(metronomeDb.get as jest.Mock).mockResolvedValue({ owner: 1 })
-    const res = await deleteMetronomeAction(1, '/target')
-    expect(res.message).toMatch(/not allowed/)
-  })
-
-  test('deleteMetronomeAction deletes and redirects if success', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(1)
-    ;(metronomeDb.get as jest.Mock).mockResolvedValue({ owner: 1 })
-    ;(metronomeDb.deleteMetronome as jest.Mock).mockResolvedValue(true)
-    await deleteMetronomeAction(1, '/target')
-    expect(cookies().set).toHaveBeenCalled()
-    expect(revalidatePath).toHaveBeenCalledWith('/target')
-    expect(redirect).toHaveBeenCalledWith('/target')
-  })
-
-  // ----------------------------
-  // updateServerAction
-  // ----------------------------
-  test('updateServerAction returns not found', async () => {
-    ;(metronomeDb.get as jest.Mock).mockResolvedValue(null)
-    const res = await updateServerAction({ id: 1 } as any)
-    expect(res.messagen).toBeDefined()
-  })
-
-  test('updateServerAction unauthorized user', async () => {
+    mockCookies.mockReturnValue(mockCookiesInstance)
     ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(5)
-    ;(metronomeDb.get as jest.Mock).mockResolvedValue({ owner: 1 })
-    const res = await updateServerAction({ id: 1 } as any)
-    expect(res.message).toMatch(/not allowed/)
+
+    mockRedirect.mockImplementation((url: string) => {
+      const error = new Error('NEXT_REDIRECT') as any
+      error.digest = `NEXT_REDIRECT;replace;${url};false`
+      throw error
+    })
   })
 
-  test('updateServerAction updates successfully', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(1)
-    ;(metronomeDb.get as jest.Mock).mockResolvedValue({ owner: 1 })
-    ;(metronomeDb.updateMetronome as jest.Mock).mockResolvedValue(true)
-    const res = await updateServerAction({ id: 1 } as any)
-    expect(revalidatePath).toHaveBeenCalledWith('/', 'layout')
-    expect(res.message).toMatch(/updated/)
+  // ========================================
+  // SIGNUP TESTS
+  // ========================================
+  describe('signupServerAction', () => {
+    it('should set error and redirect if passwords mismatch', async () => {
+      const formData = createFormData({
+        name: 'user',
+        password: 'pass1',
+        passwordRepeat: 'pass2',
+        currentPath: '/register',
+        target: '',
+      })
+
+      await expect(signupServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('match'),
+        expect.any(Object),
+      )
+    })
+
+    it('should set error and redirect if user already exists', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue({ id: 1, name: 'user' })
+
+      const formData = createFormData({
+        name: 'user',
+        password: 'pass',
+        passwordRepeat: 'pass',
+        currentPath: '/register',
+        target: '',
+      })
+
+      await expect(signupServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('exists'),
+        expect.any(Object),
+      )
+    })
+
+    it('should create user and redirect on success', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue(null)
+      ;(bcrypt.hash as jest.Mock).mockResolvedValue('hashedpw')
+      ;(userDb.create as jest.Mock).mockResolvedValue({ id: 1, name: 'user' })
+      ;(utils.getJwt as jest.Mock).mockResolvedValue('token')
+
+      const formData = createFormData({
+        name: 'user',
+        password: 'pass',
+        passwordRepeat: 'pass',
+        target: '',
+      })
+
+      await expect(signupServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(userDb.create).toHaveBeenCalled()
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'token' }),
+      )
+    })
   })
 
-  // ----------------------------
-  // updatePasswordServerAction
-  // ----------------------------
-  test('updatePasswordServerAction mismatched new passwords', async () => {
-    const fd = formData({ oldPw: '1', newPw: '2', newPwConfirm: '3' })
-    const res = await updatePasswordServerAction({}, fd)
-    expect(res.message).toMatch(/don't match/)
+  // ========================================
+  // LOGIN TESTS
+  // ========================================
+  describe('loginServerAction', () => {
+    it('should set error and redirect if credentials missing', async () => {
+      const formData = createFormData({
+        name: '',
+        password: '',
+        currentPath: '/login',
+        target: '',
+      })
+
+      await expect(loginServerAction(formData)).rejects.toThrow('NEXT_REDIRECT')
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('missing'),
+        expect.any(Object),
+      )
+    })
+
+    it('should set error and redirect if user not found', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue(null)
+
+      const formData = createFormData({
+        name: 'user',
+        password: 'pass',
+        currentPath: '/login',
+        target: '',
+      })
+
+      await expect(loginServerAction(formData)).rejects.toThrow('NEXT_REDIRECT')
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('not found'),
+        expect.any(Object),
+      )
+    })
+
+    it('should set error and redirect if password wrong', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue({
+        id: 1,
+        name: 'user',
+        password: 'hashed',
+      })
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
+
+      const formData = createFormData({
+        name: 'user',
+        password: 'wrong',
+        currentPath: '/login',
+        target: '',
+      })
+
+      await expect(loginServerAction(formData)).rejects.toThrow('NEXT_REDIRECT')
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('wrong'),
+        expect.any(Object),
+      )
+    })
+
+    it('should login successfully and redirect', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue({
+        id: 1,
+        name: 'user',
+        password: 'hashed',
+      })
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+      ;(utils.getJwt as jest.Mock).mockResolvedValue('newtoken')
+
+      const formData = createFormData({
+        name: 'user',
+        password: 'pass',
+        target: '',
+      })
+
+      await expect(loginServerAction(formData)).rejects.toThrow('NEXT_REDIRECT')
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'token' }),
+      )
+    })
   })
 
-  test('updatePasswordServerAction incorrect old password', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('user')
-    ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
-    ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
-    const fd = formData({ oldPw: 'x', newPw: 'y', newPwConfirm: 'y' })
-    const res = await updatePasswordServerAction({}, fd)
-    expect(res.message).toMatch(/Old password not correct/)
+  // ========================================
+  // METRONOME TESTS
+  // ========================================
+  describe('createMetronomeAction', () => {
+    it('should set error if creation fails', async () => {
+      ;(metronomeDb.create as jest.Mock).mockResolvedValue(null)
+
+      await expect(createMetronomeAction({ bpm: 120 } as any)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Failed'),
+        expect.any(Object),
+      )
+    })
+
+    it('should create metronome and redirect on success', async () => {
+      ;(metronomeDb.create as jest.Mock).mockResolvedValue({ id: 10 })
+
+      await expect(createMetronomeAction({ bpm: 120 } as any)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      // Check for command with timestamp
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expectCommandWithTimestamp('created'),
+        expect.any(Object),
+      )
+    })
   })
 
-  test('updatePasswordServerAction success path', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('user')
-    ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
-    ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
-    ;(bcrypt.hash as jest.Mock).mockResolvedValue('newhash')
-    await updatePasswordServerAction({}, formData({ oldPw: 'a', newPw: 'b', newPwConfirm: 'b' }))
-    expect(revalidatePath).toHaveBeenCalledWith('/account')
-    expect(redirect).toHaveBeenCalledWith('/account')
+  describe('deleteMetronomeAction', () => {
+    it('should set error if metronome not found', async () => {
+      ;(metronomeDb.get as jest.Mock).mockResolvedValue(null)
+
+      await expect(deleteMetronomeAction(1, '/target')).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('not found'),
+        expect.any(Object),
+      )
+    })
+
+    it('should set error if user not owner', async () => {
+      ;(metronomeDb.get as jest.Mock).mockResolvedValue({ owner: 1 })
+      ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(5)
+
+      await expect(deleteMetronomeAction(1, '/target')).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('not allowed'),
+        expect.any(Object),
+      )
+    })
+
+    it('should delete and redirect on success', async () => {
+      ;(metronomeDb.get as jest.Mock).mockResolvedValue({ owner: 5 })
+      ;(metronomeDb.deleteMetronome as jest.Mock).mockResolvedValue(true)
+
+      await expect(deleteMetronomeAction(1, '/target')).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      // Check for command with timestamp
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expectCommandWithTimestamp('deleted'),
+        expect.any(Object),
+      )
+      expect(mockRevalidatePath).toHaveBeenCalledWith('/target')
+    })
   })
 
-  // ----------------------------
-  // updateUsernameServerAction
-  // ----------------------------
-  test('updateUsernameServerAction rejects same name', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('Name')
-    const fd = formData({ username: 'name' })
-    const res = await updateUsernameServerAction({}, fd)
-    expect(res.message).toMatch(/pick a new name/)
+  describe('updateServerAction', () => {
+    it('should throw if metronome not found', async () => {
+      ;(metronomeDb.get as jest.Mock).mockResolvedValue(null)
+
+      await expect(updateServerAction({ id: 1 } as any)).rejects.toThrow(
+        'not found',
+      )
+    })
+
+    it('should throw if user not authorized', async () => {
+      ;(metronomeDb.get as jest.Mock).mockResolvedValue({ owner: 1 })
+      ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(5)
+
+      await expect(updateServerAction({ id: 1 } as any)).rejects.toThrow(
+        'not allowed',
+      )
+    })
+
+    it('should update successfully', async () => {
+      ;(metronomeDb.get as jest.Mock).mockResolvedValue({ owner: 5 })
+      ;(metronomeDb.updateMetronome as jest.Mock).mockResolvedValue(true)
+
+      await updateServerAction({ id: 1 } as any)
+
+      expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout')
+    })
   })
 
-  test('updateUsernameServerAction rejects if name taken', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('old')
-    ;(userDb.get as jest.Mock).mockResolvedValueOnce(true)
-    const fd = formData({ username: 'new' })
-    const res = await updateUsernameServerAction({}, fd)
-    expect(res.message).toMatch(/already taken/)
+  // ========================================
+  // USER ACTIONS TESTS
+  // ========================================
+  describe('updatePasswordServerAction', () => {
+    beforeEach(() => {
+      ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('username')
+    })
+
+    it('should set error if passwords mismatch', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
+
+      const formData = createFormData({
+        oldPw: '1',
+        newPw: '2',
+        newPwConfirm: '3',
+      })
+
+      await expect(updatePasswordServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('match'),
+        expect.any(Object),
+      )
+    })
+
+    it('should set error if old password incorrect', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
+
+      const formData = createFormData({
+        oldPw: 'x',
+        newPw: 'y',
+        newPwConfirm: 'y',
+      })
+
+      await expect(updatePasswordServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('not correct'),
+        expect.any(Object),
+      )
+    })
+
+    it('should update password on success', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+      ;(bcrypt.hash as jest.Mock).mockResolvedValue('newhash')
+      ;(userDb.update as jest.Mock).mockResolvedValue(true)
+
+      const formData = createFormData({
+        oldPw: 'a',
+        newPw: 'b',
+        newPwConfirm: 'b',
+      })
+
+      await expect(updatePasswordServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      // Check for command with timestamp
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expectCommandWithTimestamp('passwordChanged'),
+        expect.any(Object),
+      )
+    })
   })
 
-  test('updateUsernameServerAction success updates token and redirects', async () => {
-    ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('old')
-    ;(userDb.get as jest.Mock)
-      .mockResolvedValueOnce(null) // name not taken
-      .mockResolvedValueOnce({ name: 'old', id: 1 })
-    ;(userDb.update as jest.Mock).mockResolvedValue({ id: 1, name: 'new' })
-    ;(utils.getJwt as jest.Mock).mockResolvedValue('newtoken')
-    const fd = formData({ username: 'new' })
-    await updateUsernameServerAction({}, fd)
-    expect(revalidatePath).toHaveBeenCalledWith('/account')
-    expect(cookies().set).toHaveBeenCalled()
-    expect(redirect).toHaveBeenCalledWith('/account')
+  describe('updateUsernameServerAction', () => {
+    it('should set error if same name', async () => {
+      jest.clearAllMocks()
+      ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('oldname')
+      ;(userDb.get as jest.Mock).mockResolvedValue({ name: 'oldname' })
+
+      const formData = createFormData({ username: 'oldname' })
+
+      await expect(updateUsernameServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('new name'),
+        expect.any(Object),
+      )
+    })
+
+    it('should set error if name already taken', async () => {
+      jest.clearAllMocks()
+      ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('oldname')
+      ;(userDb.get as jest.Mock)
+        .mockResolvedValueOnce({ name: 'newtaken' })
+        .mockResolvedValueOnce({ name: 'oldname' })
+
+      const formData = createFormData({ username: 'newtaken' })
+
+      await expect(updateUsernameServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('taken'),
+        expect.any(Object),
+      )
+    })
+
+    it('should update username and token on success', async () => {
+      ;(userDb.get as jest.Mock).mockReset()
+      ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('oldname')
+      ;(userDb.get as jest.Mock)
+        .mockResolvedValueOnce(null) // 1st: check newname
+        .mockResolvedValueOnce({ id: 1, name: 'oldname' }) // 2nd: get user
+      ;(userDb.update as jest.Mock).mockResolvedValue({
+        id: 1,
+        name: 'newname',
+      })
+      ;(utils.getJwt as jest.Mock).mockResolvedValue('newtoken')
+
+      const formData = createFormData({ username: 'newname' })
+
+      await expect(updateUsernameServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      // One call for token, one for command with timestamp
+      expect(mockCookiesInstance.set).toHaveBeenCalledTimes(2)
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expectCommandWithTimestamp('usernameChanged'),
+        expect.any(Object),
+      )
+    })
   })
 
-  // ----------------------------
-  // deleteUserServerAction
-  // ----------------------------
-  test('deleteUserServerAction fails if user not found', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue(null)
-    const res = await deleteUserServerAction({}, formData({ password: 'pw' }))
-    expect(res.message).toMatch(/not found/)
-  })
+  describe('deleteUserServerAction', () => {
+    beforeEach(() => {
+      ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('username')
+    })
 
-  test('deleteUserServerAction fails if password incorrect', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
-    ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
-    const res = await deleteUserServerAction({}, formData({ password: 'pw' }))
-    expect(res.message).toMatch(/incorrect/)
-  })
+    it('should set error if user not found', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue(null)
 
-  test('deleteUserServerAction success deletes and redirects', async () => {
-    ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
-    ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
-    ;(userDb.remove as jest.Mock).mockResolvedValue(true)
-    await deleteUserServerAction({}, formData({ password: 'pw' }))
-    expect(cookies().set).toHaveBeenCalled()
-    expect(revalidatePath).toHaveBeenCalled()
-    expect(redirect).toHaveBeenCalledWith('/metronome/new')
-  })
+      const formData = createFormData({ password: 'pw' })
 
+      await expect(deleteUserServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('not found'),
+        expect.any(Object),
+      )
+    })
+
+    it('should set error if password incorrect', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
+
+      const formData = createFormData({ password: 'pw' })
+
+      await expect(deleteUserServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('incorrect'),
+        expect.any(Object),
+      )
+    })
+
+    it('should delete user and redirect on success', async () => {
+      ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+      ;(userDb.remove as jest.Mock).mockResolvedValue(true)
+
+      const formData = createFormData({ password: 'pw' })
+
+      await expect(deleteUserServerAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      // Two calls: one for token deletion, one for command
+      expect(mockCookiesInstance.set).toHaveBeenCalledTimes(2)
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expectCommandWithTimestamp('userdeleted'),
+        expect.any(Object),
+      )
+    })
+  })
 })

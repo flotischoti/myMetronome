@@ -2,39 +2,46 @@
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { signupServerAction } from '../actions'
+import { signupServerAction } from '../actions/actions'
 import { IconUserPlus } from '@tabler/icons-react'
-import { useFormStatus } from 'react-dom'
-import { useFormState } from 'react-dom'
+import { FormEvent, useTransition } from 'react'
+import { ToastContainer } from '@/components/toast/ToastContainer'
+import { useCurrentPath } from '../hooks/useCurrentPath'
 
-const SubmitButton = function () {
-  const { pending } = useFormStatus()
-
-  return (
-    <button
-      type="submit"
-      className={`btn ${
-        pending ? 'btn-disabled' : 'btn-neutral'
-      } w-full btn-outline`}
-    >
-      {pending ? (
-        <span className="loading loading-spinner loading-xs" />
-      ) : (
-        <IconUserPlus />
-      )}
-      Sign up
-    </button>
-  )
+interface SignUpFormProps {
+  command: string | undefined
 }
 
-const initialState = {
-  message: '',
-}
-
-export const SignUpForm = () => {
+export const SignUpForm = ({ command }: SignUpFormProps) => {
   const searchParams = useSearchParams()
   const targetUrl = searchParams.get('target')
-  const [state, formAction] = useFormState(signupServerAction, initialState)
+
+  const [isSigningUp, startTransition] = useTransition()
+
+  const handleSignUp = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    startTransition(async () => {
+      await signupServerAction(new FormData(e.currentTarget))
+    })
+  }
+
+  const SubmitButton = function () {
+    return (
+      <button
+        type="submit"
+        className={`btn ${
+          isSigningUp ? 'btn-disabled' : 'btn-neutral'
+        } w-full btn-outline`}
+      >
+        {isSigningUp ? (
+          <span className="loading loading-spinner loading-xs" />
+        ) : (
+          <IconUserPlus />
+        )}
+        Sign up
+      </button>
+    )
+  }
 
   return (
     <section className="flex flex-col h-full justify-between items-center">
@@ -43,12 +50,13 @@ export const SignUpForm = () => {
           <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl">
             Create account
           </h1>
-          <form className="space-y-4 sm:space-y-6" action={formAction}>
+          <form className="space-y-4 sm:space-y-6" onSubmit={handleSignUp}>
             <input
               type="hidden"
               name="target"
               value={searchParams.get('target') || ''}
             />
+            <input type="hidden" name="currentPath" value={useCurrentPath()} />
             <div>
               <label htmlFor="name" className="label">
                 <span className="label-text">Username *</span>
@@ -123,9 +131,6 @@ export const SignUpForm = () => {
             <div>
               <SubmitButton />
             </div>
-            {state?.message && (
-              <p className="mt-4 text-red-600">{state?.message}</p>
-            )}
             <p className="text-sm font-light">
               Already have an account?{' '}
               <Link
@@ -150,6 +155,7 @@ export const SignUpForm = () => {
           inactivity.
         </p>
       </div>
+      <ToastContainer command={command} />
     </section>
   )
 }
