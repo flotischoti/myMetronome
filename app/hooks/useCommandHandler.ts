@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 type ToastType = 'success' | 'error' | 'info'
 
@@ -38,25 +38,52 @@ export const useCommandHandler = (
   command: string | undefined,
   onMessage: (message: string, type: ToastType) => void,
 ) => {
+  const lastProcessed = useRef<string | null>(null)
+
   useEffect(() => {
     if (!command) return
 
+    // Prevent duplicate processing
+    if (lastProcessed.current === command) {
+      console.log('⚠️ Same command as last time, skipping:', command)
+      return
+    }
+
+    console.log('✅ Processing new command:', command)
+    lastProcessed.current = command
+
+    // ✅ Extract command without timestamp
+    let actualCommand = command
+    const timestampIndex = command.lastIndexOf(':')
+    if (timestampIndex > 0) {
+      const possibleTimestamp = command.substring(timestampIndex + 1)
+      if (/^\d+$/.test(possibleTimestamp)) {
+        actualCommand = command.substring(0, timestampIndex)
+        console.log('📅 Extracted command without timestamp:', actualCommand)
+      }
+    }
+
     // 1. Try predefined commands
-    const config = COMMAND_CONFIG[command as CommandType]
+    const config = COMMAND_CONFIG[actualCommand as CommandType]
     if (config) {
+      console.log('✅ Found predefined command:', actualCommand, config)
       onMessage(config.message, config.type)
       return
     }
 
     // 2. Try custom JSON message
     try {
-      const parsed = JSON.parse(command) as { message: string; type: ToastType }
+      const parsed = JSON.parse(actualCommand) as {
+        message: string
+        type: ToastType
+      }
       if (parsed.message && parsed.type) {
+        console.log('✅ Found custom JSON command:', parsed)
         onMessage(parsed.message, parsed.type)
         return
       }
     } catch {
-      console.warn(`Unknown command: ${command}`)
+      console.warn(`❌ Unknown command: ${actualCommand}`)
     }
   }, [command, onMessage])
 }
