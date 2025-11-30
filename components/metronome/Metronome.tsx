@@ -86,11 +86,7 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
   // ========================================
   // AUTO-SAVE
   // ========================================
-  const {
-    trigger: triggerAutoSave,
-    isSaving,
-    resetSaving,
-  } = useAutoSave(metronome, updateMetronome, {
+  const { isSaving, resetSaving } = useAutoSave(metronome, updateMetronome, {
     enabled: !!user && !!metronome.id && !isDeleting,
     delay: METRONOME_CONSTANTS.AUTOSAVE.DELAY,
   })
@@ -150,11 +146,7 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
                   maxBpm={METRONOME_CONSTANTS.BPM.MAX}
                   dispatch={dispatch}
                 />
-                <PlayPauseButton
-                  dispatch={dispatch}
-                  metronome={metronome}
-                  autosave={triggerAutoSave}
-                />
+                <PlayPauseButton dispatch={dispatch} metronome={metronome} />
               </div>
             </div>
           )}
@@ -164,7 +156,6 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
             <PlayPauseButton
               dispatch={dispatch}
               metronome={metronome}
-              autosave={triggerAutoSave}
               full={true}
             />
           )}

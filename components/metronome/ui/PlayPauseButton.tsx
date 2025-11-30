@@ -7,12 +7,10 @@ import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react'
 export function PlayPauseButton({
   metronome,
   dispatch,
-  autosave,
   full = false,
 }: {
   metronome: MetronomeFull
   dispatch: Dispatch<MetronomeAction>
-  autosave: () => void
   full?: boolean
 }) {
   const audioContext = useRef<AudioContext | null>(null)
@@ -115,12 +113,7 @@ export function PlayPauseButton({
   }
 
   const playPause = (e?: MouseEvent<HTMLButtonElement>) => {
-    if (metronome.isPlaying) {
-      pause()
-      autosave()
-    } else {
-      play()
-    }
+    metronome.isPlaying ? pause() : play()
   }
 
   return (

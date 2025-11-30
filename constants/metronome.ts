@@ -22,7 +22,7 @@ export const METRONOME_CONSTANTS = {
   },
   AUTOSAVE: {
     DELAY: 2000, // 2 seconds
-    INTERVAL: 30000, // 30 seconds (während Spielen)
+    INTERVAL: 5000, // 5 seconds
   },
   TOAST: {
     DURATION: 2000, // 2 seconds

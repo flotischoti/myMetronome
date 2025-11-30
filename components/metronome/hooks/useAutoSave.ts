@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import type { MetronomeFull } from '@/components/metronome/Metronome'
+import { METRONOME_CONSTANTS } from '@/constants/metronome'
 
 interface UseAutoSaveOptions {
   delay?: number
@@ -56,8 +57,8 @@ export const useAutoSave = (
   // Auto-save every 30 seconds while playing
   useEffect(() => {
     if (
-      metronome.isPlaying &&
-      metronome.timeUsed % 30000 === 0 &&
+      (!metronome.isPlaying ||
+        metronome.timeUsed % METRONOME_CONSTANTS.AUTOSAVE.INTERVAL === 0) &&
       metronome.timeUsed > 0
     ) {
       trigger()
@@ -72,5 +73,5 @@ export const useAutoSave = (
     }
   }, [])
 
-  return { trigger, isSaving, resetSaving }
+  return { isSaving, resetSaving }
 }
