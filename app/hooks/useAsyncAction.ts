@@ -24,7 +24,6 @@ export const useAsyncAction = <T extends any[]>(
     if (isPending) {
       prevPending.current = true
     } else if (prevPending.current) {
-      optionsRef.current.onSuccess?.(optionsRef.current.successMessage)
       prevPending.current = false
     }
   }, [isPending])

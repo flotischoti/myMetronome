@@ -86,10 +86,14 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
   // ========================================
   // AUTO-SAVE
   // ========================================
-  const { isSaving, resetSaving } = useAutoSave(metronome, updateMetronome, {
-    enabled: !!user && !!metronome.id && !isDeleting,
-    delay: METRONOME_CONSTANTS.AUTOSAVE.DELAY,
-  })
+  const { isSaving, isSilent, resetSaving } = useAutoSave(
+    metronome,
+    updateMetronome,
+    {
+      enabled: !!user && !!metronome.id && !isDeleting,
+      delay: METRONOME_CONSTANTS.AUTOSAVE.DELAY,
+    },
+  )
 
   const prevIsUpdating = useRef(isUpdating)
 
@@ -104,7 +108,7 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
   // LOCAL UI STATE
   // ========================================
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const showSavingIndicator = isSaving || isUpdating
+  const showSavingIndicator = (isSaving || isUpdating) && !isSilent
 
   // ========================================
   // RENDER
@@ -233,15 +237,17 @@ const Metronome = ({ dbMetronome, user, command }: MetronomeProps) => {
             {/* Saving Spinner or Delete Button */}
             {metronome.id && !showDeleteConfirm && (
               <>
-                {!metronome.locked && !showSavingIndicator && (
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-error btn-square btn-sm"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    <IconTrash size="24" />
-                  </button>
-                )}
+                {!metronome.locked &&
+                  !showSavingIndicator &&
+                  !metronome.isPlaying && (
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-error btn-square btn-sm"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <IconTrash size="24" />
+                    </button>
+                  )}
                 {showSavingIndicator && (
                   <span className="loading loading-spinner loading-xs"></span>
                 )}
