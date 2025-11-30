@@ -42,6 +42,11 @@ const createFormData = (data: Record<string, string>): FormData => {
   return formData
 }
 
+// ✅ Helper to match command with timestamp
+const expectCommandWithTimestamp = (command: string) => {
+  return expect.stringMatching(new RegExp(`^${command}:\\d+$`))
+}
+
 describe('actions.ts', () => {
   let mockCookiesInstance: any
 
@@ -73,6 +78,7 @@ describe('actions.ts', () => {
         name: 'user',
         password: 'pass1',
         passwordRepeat: 'pass2',
+        currentPath: '/register',
         target: '',
       })
 
@@ -94,6 +100,7 @@ describe('actions.ts', () => {
         name: 'user',
         password: 'pass',
         passwordRepeat: 'pass',
+        currentPath: '/register',
         target: '',
       })
 
@@ -137,7 +144,12 @@ describe('actions.ts', () => {
   // ========================================
   describe('loginServerAction', () => {
     it('should set error and redirect if credentials missing', async () => {
-      const formData = createFormData({ name: '', password: '', target: '' })
+      const formData = createFormData({
+        name: '',
+        password: '',
+        currentPath: '/login',
+        target: '',
+      })
 
       await expect(loginServerAction(formData)).rejects.toThrow('NEXT_REDIRECT')
 
@@ -154,6 +166,7 @@ describe('actions.ts', () => {
       const formData = createFormData({
         name: 'user',
         password: 'pass',
+        currentPath: '/login',
         target: '',
       })
 
@@ -177,6 +190,7 @@ describe('actions.ts', () => {
       const formData = createFormData({
         name: 'user',
         password: 'wrong',
+        currentPath: '/login',
         target: '',
       })
 
@@ -237,9 +251,10 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
+      // ✅ Check for command with timestamp
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
-        'created',
+        expectCommandWithTimestamp('created'),
         expect.any(Object),
       )
     })
@@ -283,9 +298,10 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
+      // ✅ Check for command with timestamp
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
-        'deleted',
+        expectCommandWithTimestamp('deleted'),
         expect.any(Object),
       )
       expect(mockRevalidatePath).toHaveBeenCalledWith('/target')
@@ -385,9 +401,10 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
+      // ✅ Check for command with timestamp
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
-        'passwordChanged',
+        expectCommandWithTimestamp('passwordChanged'),
         expect.any(Object),
       )
     })
@@ -395,7 +412,7 @@ describe('actions.ts', () => {
 
   describe('updateUsernameServerAction', () => {
     it('should set error if same name', async () => {
-      jest.clearAllMocks() // ✨ Reset!
+      jest.clearAllMocks()
       ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('oldname')
       ;(userDb.get as jest.Mock).mockResolvedValue({ name: 'oldname' })
 
@@ -413,7 +430,7 @@ describe('actions.ts', () => {
     })
 
     it('should set error if name already taken', async () => {
-      jest.clearAllMocks() // ✨ Reset!
+      jest.clearAllMocks()
       ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('oldname')
       ;(userDb.get as jest.Mock)
         .mockResolvedValueOnce({ name: 'newtaken' })
@@ -433,7 +450,6 @@ describe('actions.ts', () => {
     })
 
     it('should update username and token on success', async () => {
-      // ✨ Reset userDb.get komplett!
       ;(userDb.get as jest.Mock).mockReset()
       ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('oldname')
       ;(userDb.get as jest.Mock)
@@ -451,9 +467,13 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
-      console.log('userDb.get calls:', (userDb.get as jest.Mock).mock.calls)
-
+      // ✅ One call for token, one for command with timestamp
       expect(mockCookiesInstance.set).toHaveBeenCalledTimes(2)
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expectCommandWithTimestamp('usernameChanged'),
+        expect.any(Object),
+      )
     })
   })
 
@@ -506,9 +526,11 @@ describe('actions.ts', () => {
         'NEXT_REDIRECT',
       )
 
+      // ✅ Two calls: one for token deletion, one for command
+      expect(mockCookiesInstance.set).toHaveBeenCalledTimes(2)
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
-        'userdeleted',
+        expectCommandWithTimestamp('userdeleted'),
         expect.any(Object),
       )
     })
