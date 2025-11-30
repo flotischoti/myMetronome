@@ -46,12 +46,15 @@ export const useMetronomeActions = (
   // UPDATE Action
   // ============================================
   const { execute: executeUpdate, isPending: isUpdating } = useAsyncAction(
-    async () => {
-      if (!user || !metronome.id) throw new Error('Update failed')
+    async (silent: boolean = false) => {
+      if (!user || !metronome.id) throw new Error('Cannot update')
       await updateServerAction(metronome)
+
+      if (!silent && options.onUpdateSuccess) {
+        options.onUpdateSuccess()
+      }
     },
     {
-      onSuccess: options.onUpdateSuccess, // needed, no redicrect on success in actions.ts
       onError: options.onUpdateError,
     },
   )
@@ -76,9 +79,12 @@ export const useMetronomeActions = (
     executeCreate()
   }, [executeCreate])
 
-  const updateMetronome = useCallback(() => {
-    executeUpdate()
-  }, [executeUpdate])
+  const updateMetronome = useCallback(
+    (silent: boolean = false) => {
+      executeUpdate(silent)
+    },
+    [executeUpdate],
+  )
 
   const deleteMetronome = useCallback(() => {
     executeDelete()

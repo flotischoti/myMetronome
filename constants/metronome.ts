@@ -21,7 +21,7 @@ export const METRONOME_CONSTANTS = {
     FREQUENCY_LOW: 800,
   },
   AUTOSAVE: {
-    DELAY: 2000, // 2 seconds
+    DELAY: 1000, // 1 seconds
     INTERVAL: 5000, // 5 seconds
   },
   TOAST: {

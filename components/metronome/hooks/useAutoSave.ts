@@ -9,13 +9,14 @@ interface UseAutoSaveOptions {
 
 export const useAutoSave = (
   metronome: MetronomeFull,
-  onSave: () => void,
+  onSave: (silent?: boolean) => void,
   options: UseAutoSaveOptions = {},
 ) => {
   const { delay = 2000, enabled = true } = options
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
   const [isSaving, setIsSaving] = useState(false)
+  const [isSilent, setIsSilent] = useState(false)
 
   const onSaveRef = useRef(onSave)
 
@@ -23,17 +24,21 @@ export const useAutoSave = (
     onSaveRef.current = onSave
   }, [onSave])
 
-  const trigger = useCallback(() => {
-    if (!enabled) return
+  const trigger = useCallback(
+    (silent: boolean = false) => {
+      if (!enabled) return
 
-    clearTimeout(timeoutRef.current)
+      clearTimeout(timeoutRef.current)
 
-    setIsSaving(true)
+      setIsSaving(true)
+      setIsSilent(silent)
 
-    timeoutRef.current = setTimeout(() => {
-      onSaveRef.current()
-    }, delay)
-  }, [enabled, delay])
+      timeoutRef.current = setTimeout(() => {
+        onSaveRef.current(silent)
+      }, delay)
+    },
+    [enabled, delay],
+  )
 
   const resetSaving = useCallback(() => {
     setIsSaving(false)
@@ -41,7 +46,7 @@ export const useAutoSave = (
 
   // Auto-save triggered by property change
   useEffect(() => {
-    trigger()
+    trigger(false)
   }, [
     metronome.showStats,
     metronome.bpm,
@@ -54,14 +59,14 @@ export const useAutoSave = (
     trigger,
   ])
 
-  // Auto-save every 30 seconds while playing
+  // Auto-save every interval while playing
   useEffect(() => {
     if (
       (!metronome.isPlaying ||
         metronome.timeUsed % METRONOME_CONSTANTS.AUTOSAVE.INTERVAL === 0) &&
       metronome.timeUsed > 0
     ) {
-      trigger()
+      trigger(true)
     }
   }, [metronome.timeUsed, metronome.isPlaying, trigger])
 
@@ -73,5 +78,5 @@ export const useAutoSave = (
     }
   }, [])
 
-  return { isSaving, resetSaving }
+  return { isSaving, isSilent, resetSaving }
 }
