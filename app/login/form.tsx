@@ -93,6 +93,15 @@ export const LoginForm = ({ command }: LoginFormProps) => {
               >
                 Sign up here
               </Link>
+              <br />
+              Forgot password?{' '}
+              <Link
+                href="/reset-password"
+                prefetch={false}
+                className="font-medium hover:underline"
+              >
+                Reset
+              </Link>
             </p>
           </form>
         </div>

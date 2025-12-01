@@ -30,7 +30,8 @@
     "next": "^14",
     "prisma": "^5",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "resend": "^6.5.2"
   },
   "devDependencies": {
     "@faker-js/faker": "^8",

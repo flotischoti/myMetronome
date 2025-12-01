@@ -17,12 +17,20 @@ The repository also contains code to setup Azure cloud via Terraform and deploy 
 
 # Install locally
 
+## Dependencies
+
 Run `npm install`
 
 This will also run `npx prisma generate` as postinstall to generate prisma client which is used for all database operations. Caution: The prisma client will use the connection string from environemnt variable `POSTGRES_PRISMA_URL`. Make sure it always points to the right database instance.
 
+## Environment Variables
+
 Create .env file and copy content from env.local.template.
-Make sure that postgres user, password and database are the same as in the docker compose files to successfully connect to the local database container. By default, no change needed from env.local.template.
+Make sure that postgres user, password and database are the same as in the docker compose files to successfully connect to the local database container.
+
+### Sending Mails
+
+In order to reset passwords, the app sends mails via resend.com. To use this feature locally, an API Key needs to be registered on [Resend](http://resend.com) and copied to the env file
 
 # Run locally
 

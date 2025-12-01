@@ -1,6 +1,6 @@
 import * as metronomeDb from '../../../db/metronome'
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserAttrFromToken } from '../util'
+import { getUserAttrFromToken } from '../../../lib/jwt'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     getValidNumberOrUndefined(offset),
     sortBy,
     sortOrder,
-    name
+    name,
   )
 
   return NextResponse.json({ metronomes, count }, { status: 200 })
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
 function getSearchParam(
   searchParams: URLSearchParams,
-  name: string
+  name: string,
 ): string | undefined {
   return (searchParams.get(name) == null ? undefined : searchParams.get(name))!
 }

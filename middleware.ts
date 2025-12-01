@@ -1,25 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  getErrorResponse,
-  verifyToken,
-  decodeToken,
-  getJwt,
-} from './app/api/util'
+import { verifyToken, decodeToken, getJwt } from './lib/jwt'
+import { getErrorResponse } from './lib/utils'
 
 /*
-                        Token               No Token    
-/                   | /metronome/recent     /metronome/new
-/metronome/         | /metronome/recent     /metronome/new
-/metronome/recent   | next                  /login
-/metronome/:id      | next                  /login
-/list/              | next                  /login
-/logout             | next                  /metronome/new
-/account/*          | next                  /login
-/login              | /metronome/recent     /login
-/register           | /metronome/recent     /register
+                            Token               No Token    
+/                       | /metronome/recent     /metronome/new
+/metronome/             | /metronome/recent     /metronome/new
+/metronome/recent       | next                  /login
+/metronome/:id          | next                  /login
+/list/                  | next                  /login
+/logout                 | next                  /metronome/new
+/account/*              | next                  /login
+/login                  | /metronome/recent     /login
+/register               | /metronome/recent     /register
+/reset-password         | /metronome/recent     /reset-password
+/reset-password/confirm | /metronome/recent     /reset-password/confirm
 
 */
-const R_PUBLIC_AUTH = ['/login', '/register']
+const R_PUBLIC_AUTH = [
+  '/login',
+  '/register',
+  '/reset-password',
+  '/reset-password/confirm',
+]
 const R_LANDING = ['', '/', '/metronome', '/metronome/']
 const R_NEW = '/metronome/new'
 const R_RECENT = '/metronome/recent'
@@ -37,6 +40,7 @@ export const config = {
     '/api/metronomes/(.*)',
     '/account',
     '/account/(.*)',
+    '/reset(.*)',
   ],
 }
 

@@ -3,22 +3,22 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import * as bcrypt from 'bcrypt'
-import { getUserAttrFromToken } from '../api/util'
+import { getUserAttrFromToken } from '../../lib/jwt'
 import * as metronomeDb from '../../db/metronome'
 import { StoredMetronome } from '../../components/metronome/Metronome'
 import * as userDb from '../../db/user'
-import * as utils from '../api/util'
+import * as utils from '../../lib/jwt'
 import { setCommand, setErrorCommand, isRedirectError } from './commandHelper'
+import { isEmailValid, sendPasswordResetEmail } from '@/lib/mail'
 
 // ========================================
 // AUTH ACTIONS
 // ========================================
 
 export async function signupServerAction(formData: FormData) {
-  const { name, password, passwordRepeat, email, target, currentPath } = {
+  const { name, password, email, target, currentPath } = {
     name: formData.get('name')?.toString(),
     password: formData.get('password')?.toString(),
-    passwordRepeat: formData.get('passwordRepeat')?.toString(),
     email: formData.get('email')?.toString(),
     target: formData.get('target')?.toString(),
     currentPath: formData.get('currentPath')?.toString(),
@@ -29,14 +29,14 @@ export async function signupServerAction(formData: FormData) {
     redirect(currentPath!)
   }
 
-  if (password !== passwordRepeat) {
-    setErrorCommand(`Passwords don't match`)
-    redirect(currentPath!)
-  }
-
   const oldUser = await userDb.get(name)
   if (oldUser) {
     setErrorCommand('User already exists')
+    redirect(currentPath!)
+  }
+
+  if (email && !isEmailValid(email)) {
+    setErrorCommand('Invalid email')
     redirect(currentPath!)
   }
 
@@ -45,10 +45,10 @@ export async function signupServerAction(formData: FormData) {
     const user: userDb.User = await userDb.create({
       name,
       password: encryptedPw,
-      email: undefined,
+      email,
     })
 
-    user.token = await utils.getJwt({ userId: user.id!, name })
+    user.token = await utils.getJwt({ userId: user.id!, name, email })
 
     cookies().set({
       name: 'token',
@@ -60,6 +60,7 @@ export async function signupServerAction(formData: FormData) {
     })
 
     revalidatePath('/')
+    setCommand('signedUp')
     redirect(target || '/metronome/new')
   } catch (error) {
     if (isRedirectError(error)) throw error
@@ -95,7 +96,11 @@ export async function loginServerAction(payload: FormData) {
   }
 
   try {
-    user.token = await utils.getJwt({ userId: user.id!, name })
+    user.token = await utils.getJwt({
+      userId: user.id!,
+      name,
+      email: user.email,
+    })
     cookies().set({
       name: 'token',
       value: user.token!,
@@ -110,6 +115,7 @@ export async function loginServerAction(payload: FormData) {
     revalidatePath('/metronome/recent')
     if (target) revalidatePath(target)
 
+    setCommand('loggedIn')
     redirect(target || '/metronome/recent')
   } catch (error) {
     if (isRedirectError(error)) throw error
@@ -323,7 +329,7 @@ export async function updateUsernameServerAction(data: FormData) {
     const newUsername = data.get('username')!.toString()
 
     if (userName.toLowerCase() === newUsername.toLowerCase()) {
-      setErrorCommand('Please pick a new name')
+      setErrorCommand('Enter new value')
       redirect('/account/edit/username')
     }
 
@@ -345,6 +351,7 @@ export async function updateUsernameServerAction(data: FormData) {
       const newToken = await utils.getJwt({
         userId: updatedUser.id!,
         name: updatedUser.name,
+        email: updatedUser.email,
       })
 
       cookies().set({
@@ -368,6 +375,73 @@ export async function updateUsernameServerAction(data: FormData) {
 
     console.error('Update username error:', error)
     setErrorCommand('Changing username failed')
+    redirect('/account')
+  }
+}
+
+export async function updateEmailServerAction(data: FormData) {
+  try {
+    const token = cookies().get('token')?.value
+    if (!token) {
+      setCommand('unauthorized')
+      redirect('/login')
+    }
+
+    const payload = await utils.decodeToken(token)
+    if (!payload?.name) {
+      setCommand('unauthorized')
+      redirect('/login')
+    }
+
+    const newEMail = data.get('email')?.toString()
+
+    if (payload.email && payload.email === newEMail) {
+      setErrorCommand('Enter new value')
+      redirect('/account/edit/email')
+    }
+
+    if (newEMail && (await userDb.getByMail(newEMail))) {
+      setErrorCommand('Update failed')
+      redirect('/account/edit/email')
+    }
+
+    const user = await userDb.get(payload.name)
+    if (!user) {
+      setErrorCommand('User not found')
+      redirect('/account/edit/email')
+    }
+
+    user.email = newEMail
+    const updatedUser = await userDb.update(user)
+
+    if (updatedUser && updatedUser.email === newEMail) {
+      const newToken = await utils.getJwt({
+        userId: updatedUser.id!,
+        name: updatedUser.name,
+        email: updatedUser.email,
+      })
+
+      cookies().set({
+        name: 'token',
+        value: newToken,
+        httpOnly: true,
+        path: '/',
+        sameSite: 'lax',
+        secure: true,
+      })
+
+      setCommand('emailChanged')
+      revalidatePath('/account')
+      redirect('/account')
+    }
+
+    setErrorCommand('Changing email failed')
+    redirect('/account')
+  } catch (error) {
+    if (isRedirectError(error)) throw error
+
+    console.error('Update email error:', error)
+    setErrorCommand('Changing email failed')
     redirect('/account')
   }
 }
@@ -422,5 +496,111 @@ export async function deleteUserServerAction(data: FormData) {
     console.error('Delete user error:', error)
     setErrorCommand('Error deleting user')
     redirect('/account/delete')
+  }
+}
+
+// ========================================
+// REQUEST PASSWORD RESET
+// ========================================
+export async function requestPasswordResetAction(formData: FormData) {
+  try {
+    const email = formData.get('email')?.toString()
+
+    if (!email) {
+      setErrorCommand('Email required')
+      redirect('/reset-password')
+    }
+
+    const user = await userDb.getByMail(email)
+
+    if (!user) {
+      setCommand('resetEmailSent')
+      console.log(`Reset Request: No user found for mail ${email}`)
+      redirect('/login')
+    }
+
+    const resetToken = await utils.getJwt(
+      {
+        userId: user.id!,
+        name: user.name,
+        email,
+      },
+      '1h',
+    )
+
+    const emailResult = await sendPasswordResetEmail(email, resetToken)
+
+    if (!emailResult.success) {
+      console.error('Failed to send reset email:', emailResult.error)
+      setErrorCommand('Mail dispatch failed')
+      redirect('/reset-password')
+    }
+
+    setCommand('resetEmailSent')
+    redirect('/login')
+  } catch (error) {
+    if (isRedirectError(error)) throw error
+
+    console.error('Password reset request error:', error)
+    setErrorCommand('Something went wrong')
+    redirect('/reset-password')
+  }
+}
+
+// ========================================
+// CONFIRM PASSWORD RESET
+// ========================================
+export async function confirmPasswordResetAction(formData: FormData) {
+  try {
+    const token = formData.get('token')?.toString()
+    const newPassword = formData.get('password')?.toString()
+
+    if (!token || !newPassword) {
+      setErrorCommand('Password required')
+      redirect(`/reset-password/confirm?token=${token}`)
+    }
+
+    const payload = await utils.decodeToken(token)
+
+    if (!payload) {
+      setErrorCommand('Invalid or expired')
+      redirect('/login')
+    }
+
+    const user = await userDb.get(`${payload.name}`)
+
+    if (!user) {
+      setErrorCommand('User not found')
+      redirect('/login')
+    }
+
+    if (user.email !== payload.email) {
+      setErrorCommand('Invalid reset link')
+      redirect('/login')
+    }
+
+    // Update Passwort
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    user.password = hashedPassword
+    await userDb.update(user)
+
+    cookies().set({
+      name: 'token',
+      value: '',
+      path: '/',
+      secure: true,
+      httpOnly: true,
+      sameSite: 'lax',
+      expires: new Date(0),
+    })
+
+    setCommand('passwordChanged')
+    redirect('/login')
+  } catch (error) {
+    if (isRedirectError(error)) throw error
+
+    console.error('Password reset confirm error:', error)
+    setErrorCommand('Password reset failed')
+    redirect('/reset-password')
   }
 }

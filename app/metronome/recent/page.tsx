@@ -3,7 +3,7 @@ import Metronome, {
   StoredMetronome,
 } from '../../../components/metronome/Metronome'
 import * as metronomeDb from '../../../db/metronome'
-import { getUserAttrFromToken } from '../../api/util'
+import { getUserAttrFromToken } from '../../../lib/jwt'
 import { redirect } from 'next/navigation'
 import { Metadata } from 'next'
 

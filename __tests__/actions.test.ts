@@ -5,7 +5,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import * as bcrypt from 'bcrypt'
-import * as utils from '../app/api/util'
+import * as utils from '../lib/jwt'
 import * as metronomeDb from '../db/metronome'
 import * as userDb from '../db/user'
 import {
@@ -18,6 +18,11 @@ import {
   updateUsernameServerAction,
   deleteUserServerAction,
 } from '../app/actions/actions'
+import { sendPasswordResetEmail } from '../lib/mail'
+import {
+  requestPasswordResetAction,
+  confirmPasswordResetAction,
+} from '../app/actions/actions'
 
 // ========================================
 // MOCKS
@@ -26,10 +31,15 @@ jest.mock('next/headers', () => ({ cookies: jest.fn() }))
 jest.mock('next/navigation', () => ({ redirect: jest.fn() }))
 jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }))
 jest.mock('bcrypt')
-jest.mock('../app/api/util')
+jest.mock('../lib/utils')
+jest.mock('../lib/jwt')
+jest.mock('../lib/mail')
 jest.mock('../db/metronome')
 jest.mock('../db/user')
 
+const mockSendEmail = sendPasswordResetEmail as jest.MockedFunction<
+  typeof sendPasswordResetEmail
+>
 const mockRedirect = redirect as jest.MockedFunction<typeof redirect>
 const mockCookies = cookies as jest.MockedFunction<typeof cookies>
 const mockRevalidatePath = revalidatePath as jest.MockedFunction<
@@ -73,26 +83,6 @@ describe('actions.ts', () => {
   // SIGNUP TESTS
   // ========================================
   describe('signupServerAction', () => {
-    it('should set error and redirect if passwords mismatch', async () => {
-      const formData = createFormData({
-        name: 'user',
-        password: 'pass1',
-        passwordRepeat: 'pass2',
-        currentPath: '/register',
-        target: '',
-      })
-
-      await expect(signupServerAction(formData)).rejects.toThrow(
-        'NEXT_REDIRECT',
-      )
-
-      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
-        'command',
-        expect.stringContaining('match'),
-        expect.any(Object),
-      )
-    })
-
     it('should set error and redirect if user already exists', async () => {
       ;(userDb.get as jest.Mock).mockResolvedValue({ id: 1, name: 'user' })
 
@@ -344,26 +334,6 @@ describe('actions.ts', () => {
       ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('username')
     })
 
-    it('should set error if passwords mismatch', async () => {
-      ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
-
-      const formData = createFormData({
-        oldPw: '1',
-        newPw: '2',
-        newPwConfirm: '3',
-      })
-
-      await expect(updatePasswordServerAction(formData)).rejects.toThrow(
-        'NEXT_REDIRECT',
-      )
-
-      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
-        'command',
-        expect.stringContaining('match'),
-        expect.any(Object),
-      )
-    })
-
     it('should set error if old password incorrect', async () => {
       ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
       ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
@@ -424,7 +394,7 @@ describe('actions.ts', () => {
 
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
-        expect.stringContaining('new name'),
+        expect.stringContaining('new value'),
         expect.any(Object),
       )
     })
@@ -533,6 +503,318 @@ describe('actions.ts', () => {
         expectCommandWithTimestamp('userdeleted'),
         expect.any(Object),
       )
+    })
+  })
+})
+
+describe('Password Reset Actions', () => {
+  let mockCookiesInstance: any
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+
+    mockCookiesInstance = {
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+    }
+
+    mockCookies.mockReturnValue(mockCookiesInstance)
+
+    mockRedirect.mockImplementation((url: string) => {
+      const error = new Error('NEXT_REDIRECT') as any
+      error.digest = `NEXT_REDIRECT;replace;${url};false`
+      throw error
+    })
+  })
+
+  describe('requestPasswordResetAction', () => {
+    it('should set error and redirect if email is missing', async () => {
+      const formData = createFormData({ email: '' })
+
+      await expect(requestPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Email required'),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/reset-password')
+    })
+
+    it('should show success message even if user not found (security)', async () => {
+      ;(userDb.getByMail as jest.Mock).mockResolvedValue(null)
+
+      const formData = createFormData({ email: 'nonexistent@example.com' })
+
+      await expect(requestPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringMatching(/^resetEmailSent:\d+$/),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/login')
+    })
+
+    it('should send reset email successfully', async () => {
+      const mockUser = { id: 1, name: 'testuser', email: 'test@example.com' }
+      ;(userDb.getByMail as jest.Mock).mockResolvedValue(mockUser)
+      ;(utils.getJwt as jest.Mock).mockResolvedValue('reset-token-123')
+      mockSendEmail.mockResolvedValue({ success: true })
+
+      const formData = createFormData({ email: 'test@example.com' })
+
+      await expect(requestPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(utils.getJwt).toHaveBeenCalledWith(
+        {
+          userId: 1,
+          name: 'testuser',
+          email: 'test@example.com',
+        },
+        '1h',
+      )
+      expect(mockSendEmail).toHaveBeenCalledWith(
+        'test@example.com',
+        'reset-token-123',
+      )
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringMatching(/^resetEmailSent:\d+$/),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/login')
+    })
+
+    it('should handle email send failure', async () => {
+      const mockUser = { id: 1, name: 'testuser', email: 'test@example.com' }
+      ;(userDb.getByMail as jest.Mock).mockResolvedValue(mockUser)
+      ;(utils.getJwt as jest.Mock).mockResolvedValue('reset-token-123')
+      mockSendEmail.mockResolvedValue({
+        success: false,
+        error: 'SMTP error',
+      })
+
+      const formData = createFormData({ email: 'test@example.com' })
+
+      await expect(requestPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Mail dispatch failed'),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/reset-password')
+    })
+
+    it('should handle unexpected errors', async () => {
+      ;(userDb.getByMail as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      )
+
+      const formData = createFormData({ email: 'test@example.com' })
+
+      await expect(requestPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Something went wrong'),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/reset-password')
+    })
+  })
+
+  describe('confirmPasswordResetAction', () => {
+    it('should set error if token is missing', async () => {
+      const formData = createFormData({
+        token: '',
+        password: 'newpassword123',
+      })
+
+      await expect(confirmPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Password required'),
+        expect.any(Object),
+      )
+    })
+
+    it('should set error if password is missing', async () => {
+      const formData = createFormData({
+        token: 'valid-token',
+        password: '',
+      })
+
+      await expect(confirmPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Password required'),
+        expect.any(Object),
+      )
+    })
+
+    it('should set error if token is invalid', async () => {
+      ;(utils.decodeToken as jest.Mock).mockResolvedValue(null)
+
+      const formData = createFormData({
+        token: 'invalid-token',
+        password: 'newpassword123',
+      })
+
+      await expect(confirmPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Invalid or expired'),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/login')
+    })
+
+    it('should set error if user not found', async () => {
+      ;(utils.decodeToken as jest.Mock).mockResolvedValue({
+        userId: 1,
+        name: 'testuser',
+        email: 'test@example.com',
+      })
+      ;(userDb.get as jest.Mock).mockResolvedValue(null)
+
+      const formData = createFormData({
+        token: 'valid-token',
+        password: 'newpassword123',
+      })
+
+      await expect(confirmPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('User not found'),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/login')
+    })
+
+    it('should set error if email mismatch', async () => {
+      ;(utils.decodeToken as jest.Mock).mockResolvedValue({
+        userId: 1,
+        name: 'testuser',
+        email: 'test@example.com',
+      })
+      ;(userDb.get as jest.Mock).mockResolvedValue({
+        id: 1,
+        name: 'testuser',
+        email: 'different@example.com',
+      })
+
+      const formData = createFormData({
+        token: 'valid-token',
+        password: 'newpassword123',
+      })
+
+      await expect(confirmPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Invalid reset link'),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/login')
+    })
+
+    it('should reset password successfully', async () => {
+      const mockUser = {
+        id: 1,
+        name: 'testuser',
+        email: 'test@example.com',
+        password: 'oldhash',
+      }
+
+      ;(utils.decodeToken as jest.Mock).mockResolvedValue({
+        userId: 1,
+        name: 'testuser',
+        email: 'test@example.com',
+      })
+      ;(userDb.get as jest.Mock).mockResolvedValue(mockUser)
+      ;(bcrypt.hash as jest.Mock).mockResolvedValue('newhash')
+      ;(userDb.update as jest.Mock).mockResolvedValue(true)
+
+      const formData = createFormData({
+        token: 'valid-token',
+        password: 'newpassword123',
+      })
+
+      await expect(confirmPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(bcrypt.hash).toHaveBeenCalledWith('newpassword123', 10)
+      expect(userDb.update).toHaveBeenCalledWith({
+        ...mockUser,
+        password: 'newhash',
+      })
+
+      // Check token cookie was cleared
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'token',
+          value: '',
+          expires: new Date(0),
+        }),
+      )
+
+      // Check success command
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringMatching(/^passwordChanged:\d+$/),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/login')
+    })
+
+    it('should handle unexpected errors', async () => {
+      ;(utils.decodeToken as jest.Mock).mockRejectedValue(
+        new Error('JWT error'),
+      )
+
+      const formData = createFormData({
+        token: 'valid-token',
+        password: 'newpassword123',
+      })
+
+      await expect(confirmPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Password reset failed'),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/reset-password')
     })
   })
 })

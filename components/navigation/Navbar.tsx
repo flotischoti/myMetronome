@@ -4,7 +4,7 @@ import NavbarAccountDropdown from './NavbarAccountDropdown'
 import NavbarLoggedIn from './NavbarLoggedIn'
 import Modal from '../searchModal/modal'
 import { cookies } from 'next/headers'
-import { getUserAttrFromToken } from '@/app/api/util'
+import { getUserAttrFromToken } from '@/lib/jwt'
 import { StoredMetronome } from '../metronome/Metronome'
 import * as metronomeDb from '../../db/metronome'
 

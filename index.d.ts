@@ -7,6 +7,7 @@ declare module 'jose' {
   export interface JWTPayload {
     userId: number
     name: string
+    email?: string
   }
 }
 

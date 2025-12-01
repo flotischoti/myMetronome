@@ -74,23 +74,7 @@ export const SignUpForm = ({ command }: SignUpFormProps) => {
                 title="1-20 characters, No whitespaces"
               />
             </div>
-            <div className="hidden">
-              <label htmlFor="email" className="label">
-                <span className="label-text">Recovery Email</span>
-              </label>
-              <input
-                type="hidden"
-                name="email"
-                id="email"
-                className="input input-bordered w-full"
-                placeholder="Your Email"
-              />
-              <label className="label">
-                <span className="label-text-alt">
-                  Optional. Only needed to recover password.
-                </span>
-              </label>
-            </div>
+
             <div>
               <label htmlFor="password" className="label">
                 <span className="label-text">Password *</span>
@@ -107,24 +91,20 @@ export const SignUpForm = ({ command }: SignUpFormProps) => {
                 title="At least 8 characters. No whitespaces."
               />
             </div>
-            <div className="form-control">
-              <label htmlFor="passwordRepeat" className="label">
-                <span className="label-text">Password Repeat*</span>
+            <div>
+              <label htmlFor="email" className="label">
+                <span className="label-text">Recovery Email</span>
               </label>
               <input
-                type="password"
-                name="passwordRepeat"
-                id="passwordRepeat"
-                minLength={8}
-                placeholder="••••••••"
+                type="email"
+                name="email"
+                id="email"
                 className="input input-bordered w-full"
-                required={true}
-                pattern="[^\s]+"
-                title="At least 8 characters. No whitespaces."
+                placeholder="hello@metronomes.com"
               />
               <label className="label">
                 <span className="label-text-alt">
-                  Take care. Password reset not possible.
+                  Optional. Only needed to recover password.
                 </span>
               </label>
             </div>
