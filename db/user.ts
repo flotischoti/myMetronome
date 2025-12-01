@@ -21,6 +21,17 @@ export async function get(name: string): Promise<User | null> {
   })) as User | null
 }
 
+export async function getByMail(mail: string): Promise<User | null> {
+  return (await prisma.user.findFirst({
+    where: {
+      email: {
+        equals: mail,
+        mode: 'insensitive',
+      },
+    },
+  })) as User | null
+}
+
 export async function create(user: User): Promise<User> {
   return (await prisma.user.create({
     data: user,

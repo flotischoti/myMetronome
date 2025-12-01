@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
-import { getUserAttrFromToken } from '../api/util'
+import { getUserAttrFromToken } from '../../lib/jwt'
 import { Metadata } from 'next'
 import { ToastContainer } from '@/components/toast/ToastContainer'
 
@@ -13,6 +13,7 @@ export default async function Page() {
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
   const userName = await getUserAttrFromToken<string>(token!.value, 'name')
+  const email = await getUserAttrFromToken<string>(token!.value, 'email')
 
   return (
     <section>
@@ -44,6 +45,26 @@ export default async function Page() {
           />
           <Link
             href="/account/edit/username"
+            className="join-item btn btn-square btn-neutral"
+            prefetch={true}
+          >
+            EDIT
+          </Link>
+        </div>
+      </div>
+      <div>
+        <label className="label">
+          <span className="label-text">Email</span>
+        </label>
+        <div className="join">
+          <input
+            type="text"
+            value={email || ''}
+            className="join-item input input-bordered input-disabled"
+            readOnly
+          />
+          <Link
+            href="/account/edit/email"
             className="join-item btn btn-square btn-neutral"
             prefetch={true}
           >

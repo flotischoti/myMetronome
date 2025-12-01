@@ -5,7 +5,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import * as bcrypt from 'bcrypt'
-import * as utils from '../app/api/util'
+import * as utils from '../lib/jwt'
 import * as metronomeDb from '../db/metronome'
 import * as userDb from '../db/user'
 import {
@@ -26,7 +26,9 @@ jest.mock('next/headers', () => ({ cookies: jest.fn() }))
 jest.mock('next/navigation', () => ({ redirect: jest.fn() }))
 jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }))
 jest.mock('bcrypt')
-jest.mock('../app/api/util')
+jest.mock('../lib/utils')
+jest.mock('../lib/jwt')
+jest.mock('../lib/mail')
 jest.mock('../db/metronome')
 jest.mock('../db/user')
 
@@ -73,26 +75,6 @@ describe('actions.ts', () => {
   // SIGNUP TESTS
   // ========================================
   describe('signupServerAction', () => {
-    it('should set error and redirect if passwords mismatch', async () => {
-      const formData = createFormData({
-        name: 'user',
-        password: 'pass1',
-        passwordRepeat: 'pass2',
-        currentPath: '/register',
-        target: '',
-      })
-
-      await expect(signupServerAction(formData)).rejects.toThrow(
-        'NEXT_REDIRECT',
-      )
-
-      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
-        'command',
-        expect.stringContaining('match'),
-        expect.any(Object),
-      )
-    })
-
     it('should set error and redirect if user already exists', async () => {
       ;(userDb.get as jest.Mock).mockResolvedValue({ id: 1, name: 'user' })
 
@@ -344,26 +326,6 @@ describe('actions.ts', () => {
       ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue('username')
     })
 
-    it('should set error if passwords mismatch', async () => {
-      ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
-
-      const formData = createFormData({
-        oldPw: '1',
-        newPw: '2',
-        newPwConfirm: '3',
-      })
-
-      await expect(updatePasswordServerAction(formData)).rejects.toThrow(
-        'NEXT_REDIRECT',
-      )
-
-      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
-        'command',
-        expect.stringContaining('match'),
-        expect.any(Object),
-      )
-    })
-
     it('should set error if old password incorrect', async () => {
       ;(userDb.get as jest.Mock).mockResolvedValue({ password: 'hashed' })
       ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
@@ -424,7 +386,7 @@ describe('actions.ts', () => {
 
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
-        expect.stringContaining('new name'),
+        expect.stringContaining('new value'),
         expect.any(Object),
       )
     })

@@ -6,11 +6,15 @@ type CommandType =
   | 'created'
   | 'deleted'
   | 'updated'
+  | 'loggedIn'
+  | 'signedUp'
   | 'userdeleted'
   | 'passwordChanged'
   | 'usernameChanged'
+  | 'emailChanged'
   | 'unauthorized'
   | 'notFound'
+  | 'resetEmailSent'
 
 interface CommandConfig {
   message: string
@@ -22,14 +26,21 @@ const COMMAND_CONFIG: Record<CommandType, CommandConfig> = {
   deleted: { message: 'Metronome deleted', type: 'success' },
   updated: { message: 'Metronome updated', type: 'success' },
   userdeleted: { message: 'User deleted', type: 'info' },
+  loggedIn: { message: 'Logged In', type: 'info' },
+  signedUp: { message: 'User created', type: 'info' },
   passwordChanged: {
-    message: 'Password changed successfully',
+    message: 'Password changed',
     type: 'success',
   },
   usernameChanged: {
-    message: 'Username changed successfully',
+    message: 'Username changed',
     type: 'success',
   },
+  emailChanged: {
+    message: 'Email changed',
+    type: 'success',
+  },
+  resetEmailSent: { message: 'Mail sent', type: 'success' },
   unauthorized: { message: 'You are not authorized', type: 'error' },
   notFound: { message: 'Resource not found', type: 'error' },
 }

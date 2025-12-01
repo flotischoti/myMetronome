@@ -2,11 +2,11 @@
  * @jest-environment node
  */
 
-jest.mock('../app/api/util')
+jest.mock('../lib/jwt')
 
 import { NextRequest } from 'next/server'
 import { middleware } from '../middleware'
-import * as utils from '../app/api/util'
+import * as utils from '../lib/jwt'
 
 describe('middleware.ts', () => {
   const mockUrl = 'https://example.com'

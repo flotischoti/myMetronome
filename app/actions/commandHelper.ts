@@ -10,7 +10,7 @@ export function setCommand(
 
   cookies().set('command', commandWithTimestamp, {
     httpOnly: false,
-    maxAge: options?.maxAge ?? 5,
+    maxAge: options?.maxAge ?? 2,
     path: options?.path ?? '/',
     sameSite: 'strict',
   })

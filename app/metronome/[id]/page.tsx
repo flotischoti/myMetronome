@@ -2,7 +2,8 @@ import Metronome, {
   StoredMetronome,
 } from '../../../components/metronome/Metronome'
 import { cookies } from 'next/headers'
-import { getUserAttrFromToken, isValidNumber } from '../../api/util'
+import { getUserAttrFromToken } from '../../../lib/jwt'
+import { isValidNumber } from '@/lib/utils'
 import * as metronomeDb from '../../../db/metronome'
 import { notFound } from 'next/navigation'
 
@@ -42,7 +43,10 @@ export default async function Page({ params }: { params: { id: string } }) {
   return (
     <>
       <title>{`Metronomes - ${metronome.name}`}</title>
-      <div id="idMetronomeContainer" className="max-w-sm mx-auto py-1 px-1 sm:px-0">
+      <div
+        id="idMetronomeContainer"
+        className="max-w-sm mx-auto py-1 px-1 sm:px-0"
+      >
         <Metronome
           dbMetronome={metronome}
           user={userId}

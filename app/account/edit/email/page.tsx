@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { getUserAttrFromToken } from '../../../../lib/jwt'
-import { Form } from './form'
+import { UpdateMailForm } from './form'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -11,9 +11,9 @@ const Page = async () => {
   const cookieStore = cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
-  const userName = await getUserAttrFromToken<string>(token!.value, 'name')
+  const email = await getUserAttrFromToken<string>(token!.value, 'email')
 
-  return <Form userName={userName!} command={command?.value} />
+  return <UpdateMailForm email={email!} command={command?.value} />
 }
 
 export default Page
