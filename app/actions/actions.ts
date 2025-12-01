@@ -511,11 +511,6 @@ export async function requestPasswordResetAction(formData: FormData) {
       redirect('/reset-password')
     }
 
-    if (!isEmailValid(email)) {
-      setErrorCommand('Email Invalid')
-      redirect('/reset-password')
-    }
-
     const user = await userDb.getByMail(email)
 
     if (!user) {

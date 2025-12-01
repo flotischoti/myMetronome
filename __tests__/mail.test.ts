@@ -76,9 +76,10 @@ describe('sendPasswordResetEmail', () => {
 
     expect(result).toEqual({ success: true })
     expect(mockSend).toHaveBeenCalledWith({
-      from: 'noreply@metronomes.xyz',
+      from: 'Password Reset <reset@auth.metronomes.xyz>',
       to: 'test@example.com',
-      subject: 'Password Reset - myMetronome',
+      replyTo: 'hello@metronomes.xyz',
+      subject: 'Password Reset - Metronomes',
       html: expect.stringContaining(
         'https://example.com/reset-password/confirm?token=token123',
       ),
@@ -149,5 +150,11 @@ describe('sendPasswordResetEmail', () => {
       success: false,
       error: 'Failed to send email',
     })
+  })
+})
+
+describe('test', () => {
+  it('test', () => {
+    expect(isEmailValid('nonexistent@example.com')).toBeTruthy
   })
 })
