@@ -6,13 +6,7 @@ export async function sendPasswordResetEmail(
 ): Promise<{ success: boolean; error?: string }> {
   const resend = new Resend(process.env.RESEND_API_KEY)
 
-  if (!process.env.RESEND_API_KEY) {
-    console.error('RESEND_API_KEY is not set')
-    return { success: false, error: 'Email service not configured' }
-  }
-
-  if (!process.env.WEBSITE_HOSTNAME) {
-    console.error('WEBSITE_HOSTNAME is not set')
+  if (!process.env.RESEND_API_KEY || !process.env.WEBSITE_HOSTNAME) {
     return { success: false, error: 'Email service not configured' }
   }
 
@@ -20,16 +14,23 @@ export async function sendPasswordResetEmail(
     const resetUrl = `${process.env.WEBSITE_HOSTNAME}/reset-password/confirm?token=${resetToken}`
 
     const result = await resend.emails.send({
-      from: 'noreply@metronomes.xyz',
+      from: 'Password Reset <reset@auth.metronomes.xyz>',
+      replyTo: 'hello@metronomes.xyz',
       to: email,
-      subject: 'Password Reset - myMetronome',
+      subject: 'Password Reset - Metronomes',
       html: `
         <h1>Password Reset Request</h1>
-        <p>You requested a password reset for your myMetronome account.</p>
+        <p>You requested a password reset for your Metronomes account.</p>
         <p>Click the link below to reset your password:</p>
-        <p><a href="${resetUrl}">${resetUrl}</a></p>
+        <p><a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #0070f3; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a></p>
+        <p>Or copy this link: ${resetUrl}</p>
         <p>This link will expire in 1 hour.</p>
         <p>If you didn't request this, please ignore this email.</p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+        <p style="color: #666; font-size: 12px;">
+          Need help? Contact us at <a href="mailto:hello@metronomes.xyz">hello@metronomes.xyz</a>
+        </p>
       `,
     })
 
