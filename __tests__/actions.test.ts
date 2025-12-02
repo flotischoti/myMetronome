@@ -18,7 +18,7 @@ import {
   updateUsernameServerAction,
   deleteUserServerAction,
 } from '../app/actions/actions'
-import { sendPasswordResetEmail } from '../lib/mail'
+import { isEmailValid, sendPasswordResetEmail } from '../lib/mail'
 import {
   requestPasswordResetAction,
   confirmPasswordResetAction,
@@ -39,6 +39,9 @@ jest.mock('../db/user')
 
 const mockSendEmail = sendPasswordResetEmail as jest.MockedFunction<
   typeof sendPasswordResetEmail
+>
+const mockIsEmailValid = isEmailValid as jest.MockedFunction<
+  typeof isEmailValid
 >
 const mockRedirect = redirect as jest.MockedFunction<typeof redirect>
 const mockCookies = cookies as jest.MockedFunction<typeof cookies>
@@ -526,6 +529,8 @@ describe('Password Reset Actions', () => {
       error.digest = `NEXT_REDIRECT;replace;${url};false`
       throw error
     })
+
+    mockIsEmailValid.mockReturnValue(true)
   })
 
   describe('requestPasswordResetAction', () => {
@@ -539,6 +544,24 @@ describe('Password Reset Actions', () => {
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
         expect.stringContaining('Email required'),
+        expect.any(Object),
+      )
+      expect(mockRedirect).toHaveBeenCalledWith('/reset-password')
+    })
+
+    it('should set error and redirect if email is invalid', async () => {
+      mockIsEmailValid.mockReturnValue(false)
+
+      const formData = createFormData({ email: 'invalid-email' })
+
+      await expect(requestPasswordResetAction(formData)).rejects.toThrow(
+        'NEXT_REDIRECT',
+      )
+
+      expect(mockIsEmailValid).toHaveBeenCalledWith('invalid-email')
+      expect(mockCookiesInstance.set).toHaveBeenCalledWith(
+        'command',
+        expect.stringContaining('Email invalid'),
         expect.any(Object),
       )
       expect(mockRedirect).toHaveBeenCalledWith('/reset-password')

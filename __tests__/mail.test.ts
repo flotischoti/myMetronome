@@ -152,9 +152,3 @@ describe('sendPasswordResetEmail', () => {
     })
   })
 })
-
-describe('test', () => {
-  it('test', () => {
-    expect(isEmailValid('nonexistent@example.com')).toBeTruthy
-  })
-})
