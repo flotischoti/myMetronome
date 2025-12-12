@@ -76,8 +76,8 @@ describe('actions.ts', () => {
     ;(utils.getUserAttrFromToken as jest.Mock).mockResolvedValue(5)
 
     mockRedirect.mockImplementation((url: string) => {
-      const error = new Error('NEXT_REDIRECT') as any
-      error.digest = `NEXT_REDIRECT;replace;${url};false`
+      const error: any = new Error('NEXT_REDIRECT')
+      error.digest = `NEXT_REDIRECT;replace;${url};307`
       throw error
     })
   })
@@ -525,8 +525,8 @@ describe('Password Reset Actions', () => {
     mockCookies.mockReturnValue(mockCookiesInstance)
 
     mockRedirect.mockImplementation((url: string) => {
-      const error = new Error('NEXT_REDIRECT') as any
-      error.digest = `NEXT_REDIRECT;replace;${url};false`
+      const error: any = new Error('NEXT_REDIRECT')
+      error.digest = `NEXT_REDIRECT;replace;${url};307`
       throw error
     })
 
