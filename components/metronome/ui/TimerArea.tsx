@@ -39,18 +39,15 @@ export function TimerArea({
       <UseTimerCheckbox metronome={metronome} dispatch={dispatch} />
       {metronome.timerActive && (
         <div id="countdownSettingsArea-1" className="flex gap-2">
-          <button
-            type="button"
-            className={isEnabledRestore ? 'cursor-pointer' : 'curser-auto'}
-            disabled={!isEnabledRestore}
-            onClick={resetTimer}
-          >
-            <IconRestore
-              size="20"
-              stroke={1}
-              color={!isEnabledRestore ? 'lightgrey' : 'black'}
-            />
-          </button>
+          {isEnabledRestore && (
+            <button
+              type="button"
+              className={isEnabledRestore ? 'cursor-pointer' : 'curser-auto'}
+              onClick={resetTimer}
+            >
+              <IconRestore size="20" stroke={1} className="text-base-content" />
+            </button>
+          )}
           <div
             id="countdownControlButtons"
             className="flex items-center justify-between w-28"

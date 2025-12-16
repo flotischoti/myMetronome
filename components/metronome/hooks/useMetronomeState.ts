@@ -32,6 +32,7 @@ export const useMetronomeState = (dbMetronome: StoredMetronome | null) => {
   const initialState: MetronomeFull = {
     ...(dbMetronome || defaultStoredMetronome),
     ...defaultLocalMetronome,
+    activeTimer: dbMetronome?.timerValue || defaultLocalMetronome.activeTimer,
   }
 
   const [metronome, dispatch] = useMetronomeReducer(initialState)

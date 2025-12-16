@@ -439,6 +439,85 @@ describe('metronomeReducer', () => {
     })
   })
 
+  describe('RESTART_AUDIO', () => {
+    it('should start playing and reset currentUsed', () => {
+      const { result } = renderHook(() =>
+        useMetronomeReducer(
+          createInitialState({
+            currentUsed: 5000,
+            isPlaying: false,
+          }),
+        ),
+      )
+
+      act(() => {
+        result.current[1]({ type: 'RESTART_AUDIO' })
+      })
+
+      expect(result.current[0].isPlaying).toBe(true)
+      expect(result.current[0].currentUsed).toBe(0)
+    })
+
+    it('should preserve activeTimer when restarting (key feature)', () => {
+      const { result } = renderHook(() =>
+        useMetronomeReducer(
+          createInitialState({
+            timerActive: true,
+            timerValue: 120000,
+            activeTimer: 75000, // Timer counting down
+            isPlaying: false,
+          }),
+        ),
+      )
+
+      act(() => {
+        result.current[1]({ type: 'RESTART_AUDIO' })
+      })
+
+      expect(result.current[0].isPlaying).toBe(true)
+      expect(result.current[0].activeTimer).toBe(75000) // Preserved!
+      expect(result.current[0].currentUsed).toBe(0) // Reset
+    })
+
+    it('should preserve timer even when timer is not active', () => {
+      const { result } = renderHook(() =>
+        useMetronomeReducer(
+          createInitialState({
+            timerActive: false,
+            activeTimer: 0,
+          }),
+        ),
+      )
+
+      act(() => {
+        result.current[1]({ type: 'RESTART_AUDIO' })
+      })
+
+      expect(result.current[0].isPlaying).toBe(true)
+      expect(result.current[0].activeTimer).toBe(0)
+    })
+
+    it('should preserve partially counted down timer', () => {
+      const { result } = renderHook(() =>
+        useMetronomeReducer(
+          createInitialState({
+            timerActive: true,
+            timerValue: 180000, // 3 minutes
+            activeTimer: 95000, // 1:35 remaining
+            currentUsed: 85000,
+          }),
+        ),
+      )
+
+      act(() => {
+        result.current[1]({ type: 'RESTART_AUDIO' })
+      })
+
+      expect(result.current[0].activeTimer).toBe(95000) // Still 1:35
+      expect(result.current[0].currentUsed).toBe(0) // Session reset
+    })
+  })
+
   describe('INCREMENT_TIME', () => {
     it('should increment all time counters by 1000ms', () => {
       const { result } = renderHook(() =>
@@ -578,6 +657,31 @@ describe('metronomeReducer', () => {
 
       expect(result.current[0].bpm).toBe(130)
       expect(result.current[0].isPlaying).toBe(true) // Should still be playing
+    })
+
+    it('should preserve timer when using RESTART_AUDIO after BPM change', () => {
+      const { result } = renderHook(() =>
+        useMetronomeReducer(
+          createInitialState({
+            bpm: 120,
+            timerActive: true,
+            timerValue: 120000, // 2 minutes
+            activeTimer: 90000, // 1:30 remaining
+            isPlaying: true,
+          }),
+        ),
+      )
+
+      // Simulate BPM change while playing (what PlayPauseButton does)
+      act(() => {
+        result.current[1]({ type: 'CHANGE_BPM', payload: 20 }) // 120 -> 140 BPM
+        result.current[1]({ type: 'STOP_PLAYING' }) // Pause to restart audio
+        result.current[1]({ type: 'RESTART_AUDIO' }) // Restart with new BPM
+      })
+
+      expect(result.current[0].bpm).toBe(140) // BPM changed
+      expect(result.current[0].isPlaying).toBe(true) // Playing again
+      expect(result.current[0].activeTimer).toBe(90000) // Timer preserved!
     })
 
     it('should handle lock/unlock without affecting other state', () => {
