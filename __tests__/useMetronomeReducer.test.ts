@@ -389,18 +389,19 @@ describe('metronomeReducer', () => {
       expect(result.current[0].currentUsed).toBe(0)
     })
 
-    it('should set activeTimer when timer is active', () => {
+    it('should reset active timer when pressed', () => {
       const { result } = renderHook(() =>
         useMetronomeReducer(
           createInitialState({
             timerActive: true,
             timerValue: 120000,
+            activeTimer: 8000,
           }),
         ),
       )
 
       act(() => {
-        result.current[1]({ type: 'START_PLAYING' })
+        result.current[1]({ type: 'RESET_TIMER' })
       })
 
       expect(result.current[0].activeTimer).toBe(120000)
@@ -526,6 +527,7 @@ describe('metronomeReducer', () => {
           createInitialState({
             timerActive: true,
             timerValue: 3000, // 3 seconds
+            activeTimer: 3000, // 3 seconds
           }),
         ),
       )

@@ -40,7 +40,7 @@ export function PlayPauseButton({
       const tmpNextNotetime = nextNoteTime.current
       pause()
       nextNoteTime.current = tmpNextNotetime
-      play()
+      play(true) // Preserve timer when restarting for settings changes
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metronome.bpm, metronome.beats, metronome.stressFirst])
@@ -89,9 +89,9 @@ export function PlayPauseButton({
     }
   }
 
-  const play = () => {
+  const play = (preserveTimer = false) => {
     if (!audioContext.current) return
-    dispatch({ type: 'START_PLAYING' })
+    dispatch({ type: preserveTimer ? 'RESTART_AUDIO' : 'START_PLAYING' })
     timeInterval.current = setInterval(() => {
       dispatch({ type: 'INCREMENT_TIME' })
     }, 1000)

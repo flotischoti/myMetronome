@@ -19,7 +19,9 @@ export type MetronomeAction =
   | { type: 'SET_ACTIVE_TIMER'; payload: number }
 
   // Complex state transitions
+  | { type: 'RESET_TIMER' }
   | { type: 'START_PLAYING' }
+  | { type: 'RESTART_AUDIO' } // Restart playback without resetting timer
   | { type: 'STOP_PLAYING' }
   | { type: 'TOGGLE_LOCKED' }
   | { type: 'INCREMENT_TIME' } // Called every second
@@ -84,15 +86,24 @@ const metronomeReducer: Reducer<MetronomeFull, MetronomeAction> = (
     case 'TOGGLE_LOCKED':
       return { ...state, locked: !state.locked }
 
+    case 'RESET_TIMER':
+      return { ...state, activeTimer: state.timerValue }
     // ----------------------------------------
     // Complex Updates
     // ----------------------------------------
+
     case 'START_PLAYING':
       return {
         ...state,
         isPlaying: true,
         currentUsed: 0,
-        activeTimer: state.timerActive ? state.timerValue : 0,
+      }
+
+    case 'RESTART_AUDIO':
+      return {
+        ...state,
+        isPlaying: true,
+        currentUsed: 0,
       }
 
     case 'STOP_PLAYING':
