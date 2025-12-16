@@ -45,11 +45,7 @@ export function TimerArea({
               className={isEnabledRestore ? 'cursor-pointer' : 'curser-auto'}
               onClick={resetTimer}
             >
-              <IconRestore
-                size="20"
-                stroke={1}
-                className="text-black dark:text-gray-300"
-              />
+              <IconRestore size="20" stroke={1} className="text-base-content" />
             </button>
           )}
           <div
