@@ -23,6 +23,7 @@ export type MetronomeAction =
   | { type: 'START_PLAYING' }
   | { type: 'RESTART_AUDIO' } // Restart playback without resetting timer
   | { type: 'STOP_PLAYING' }
+  | { type: 'STOP_AND_RESET' }
   | { type: 'TOGGLE_LOCKED' }
   | { type: 'INCREMENT_TIME' } // Called every second
   | { type: 'INCREASE_TIMER'; payload: number }
@@ -110,6 +111,13 @@ const metronomeReducer: Reducer<MetronomeFull, MetronomeAction> = (
       return {
         ...state,
         isPlaying: false,
+      }
+
+    case 'STOP_AND_RESET':
+      return {
+        ...state,
+        isPlaying: false,
+        activeTimer: state.timerValue,
       }
 
     case 'INCREMENT_TIME':
