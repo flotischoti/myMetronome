@@ -51,7 +51,7 @@ export function PlayPauseButton({
       metronome.timerActive &&
       metronome.activeTimer === 0
     ) {
-      pause()
+      pause(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metronome.activeTimer])
@@ -104,8 +104,10 @@ export function PlayPauseButton({
     )
   }
 
-  const pause = () => {
-    dispatch({ type: 'STOP_PLAYING' })
+  const pause = (resetActiveTimer: boolean = false) => {
+    resetActiveTimer
+      ? dispatch({ type: 'STOP_AND_RESET' })
+      : dispatch({ type: 'STOP_PLAYING' })
     clearInterval(timeInterval.current)
     currentBeatInBar.current = 0
     nextNoteTime.current = 0

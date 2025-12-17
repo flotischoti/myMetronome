@@ -559,11 +559,12 @@ describe('metronomeReducer', () => {
       expect(result.current[0].activeTimer).toBe(4000)
     })
 
-    it('should stop playing when timer reaches 0', () => {
+    it('should stop playing and reset active timer when timer reaches 0', () => {
       const { result } = renderHook(() =>
         useMetronomeReducer(
           createInitialState({
             timerActive: true,
+            timerValue: 2000,
             activeTimer: 500, // Less than 1000
             isPlaying: true,
           }),
@@ -575,6 +576,7 @@ describe('metronomeReducer', () => {
       })
 
       expect(result.current[0].activeTimer).toBe(0)
+      expect(result.current[0].timerValue).toBe(2000)
       expect(result.current[0].isPlaying).toBe(false)
     })
 
