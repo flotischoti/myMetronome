@@ -30,7 +30,7 @@ export function StatsArea({
           htmlFor="stopWatchCheckbox-1"
           className="ml-2 text-sm cursor-pointer"
         >
-          <span>Show usage</span>
+          <span>Stats</span>
         </label>
       </div>
       {metronome.showStats &&
@@ -54,6 +54,21 @@ export function StatsArea({
                 id={`${type}TimeNumbers-1`}
                 className="countdown font-mono text-sm font-sans"
               >
+                {metronome[timerName] > 1000 * 60 * 60 && (
+                  <>
+                    <span
+                      style={
+                        {
+                          '--value': (
+                            '0' +
+                            Math.floor(metronome[timerName] / (1000 * 60 * 60))
+                          ).slice(-2),
+                        } as React.CSSProperties
+                      }
+                    ></span>
+                    :
+                  </>
+                )}
                 <span
                   style={
                     {
