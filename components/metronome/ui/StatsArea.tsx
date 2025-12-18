@@ -54,7 +54,7 @@ export function StatsArea({
                 id={`${type}TimeNumbers-1`}
                 className="countdown font-mono text-sm font-sans"
               >
-                {metronome[timerName] / (1000 * 60 * 60) > 0 && (
+                {metronome[timerName] > 1000 * 60 * 60 && (
                   <>
                     <span
                       style={
