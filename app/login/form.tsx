@@ -3,9 +3,10 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { loginServerAction } from '../actions/actions'
 import { IconLogin } from '@tabler/icons-react'
-import { FormEvent, useTransition } from 'react'
+import { FormEvent, useState, useTransition } from 'react'
 import { ToastContainer } from '@/components/toast/ToastContainer'
 import { useCurrentPath } from '../hooks/useCurrentPath'
+import { PasswordInput } from '@/components/passwordInput/passwordInput'
 
 interface LoginFormProps {
   command: string | undefined
@@ -28,9 +29,9 @@ export const LoginForm = ({ command }: LoginFormProps) => {
     return (
       <button
         type="submit"
-        className={`btn ${
+        className={`btn  ${
           isLoggingIn ? 'btn-disabled' : 'btn-neutral'
-        } w-full btn-outline`}
+        } w-full btn-outline !animate-none`}
       >
         {isLoggingIn ? (
           <span className="loading loading-spinner loading-xs" />
@@ -70,19 +71,7 @@ export const LoginForm = ({ command }: LoginFormProps) => {
                 autoFocus
               />
             </div>
-            <div>
-              <label htmlFor="password" className="label">
-                <span className="label-text">Password *</span>
-              </label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="••••••••"
-                className="input input-bordered w-full"
-                required={true}
-              />
-            </div>
+            <PasswordInput />
             <LoginButton />
             <p className="text-sm font-light">
               Don&apos;t have an account yet?{' '}

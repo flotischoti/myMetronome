@@ -7,6 +7,7 @@ import { IconUserPlus } from '@tabler/icons-react'
 import { FormEvent, useTransition } from 'react'
 import { ToastContainer } from '@/components/toast/ToastContainer'
 import { useCurrentPath } from '../hooks/useCurrentPath'
+import { PasswordInput } from '@/components/passwordInput/passwordInput'
 
 interface SignUpFormProps {
   command: string | undefined
@@ -74,23 +75,7 @@ export const SignUpForm = ({ command }: SignUpFormProps) => {
                 title="1-20 characters, No whitespaces"
               />
             </div>
-
-            <div>
-              <label htmlFor="password" className="label">
-                <span className="label-text">Password *</span>
-              </label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                minLength={8}
-                placeholder="••••••••"
-                className="input input-bordered w-full"
-                required={true}
-                pattern="[^\s]+"
-                title="At least 8 characters. No whitespaces."
-              />
-            </div>
+            <PasswordInput />
             <div>
               <label htmlFor="email" className="label">
                 <span className="label-text">Recovery Email</span>
