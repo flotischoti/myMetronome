@@ -32,13 +32,15 @@ async function getMetronomes(
 export default async function Page({
   searchParams,
 }: {
-  searchParams: { page: number; s: string }
+  searchParams: Promise<{ page: string; s: string }>
 }) {
   const cookieStore = await cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
   const userId = await getUserAttrFromToken(token!.value)
-  let { page = 1, s = '' } = await searchParams
+  const params = await searchParams
+  const page = Number(params.page) || 1
+  const s = params.s || ''
   const [count, metronomes] = await getMetronomes(userId!, page, s)
   const maxPage = Math.ceil(count / pageSize)
 

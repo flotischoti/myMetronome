@@ -32,7 +32,11 @@ async function getMetronome(
   return metronome
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const cookieStore = await cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
