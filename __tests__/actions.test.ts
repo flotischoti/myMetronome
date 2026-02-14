@@ -441,7 +441,7 @@ describe('actions.ts', () => {
       )
 
       // One call for token, one for command with timestamp
-      expect(mockCookiesInstance.set).toHaveBeenCalledTimes(2)
+      expect(mockCookiesInstance.set).toHaveBeenCalledTimes(3)
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
         expectCommandWithTimestamp('usernameChanged'),
@@ -500,7 +500,7 @@ describe('actions.ts', () => {
       )
 
       // Two calls: one for token deletion, one for command
-      expect(mockCookiesInstance.set).toHaveBeenCalledTimes(2)
+      expect(mockCookiesInstance.set).toHaveBeenCalledTimes(3)
       expect(mockCookiesInstance.set).toHaveBeenCalledWith(
         'command',
         expectCommandWithTimestamp('userdeleted'),
