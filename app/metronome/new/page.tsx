@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   title: 'Metronomes - New',
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const cookieStore = cookies()
+export default async function Page() {
+  const cookieStore = await cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
   const user = await getUserAttrFromToken(token?.value)

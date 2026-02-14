@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: 'Metronomes - Recent',
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page() {
   async function getLastMetronome(userId: number): Promise<StoredMetronome[]> {
     const [count, metronomes] = await metronomeDb.list(
       userId,
@@ -25,7 +25,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     return metronomes
   }
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
   const userId = await getUserAttrFromToken(token!.value)

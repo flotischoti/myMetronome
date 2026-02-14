@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: 'Metronomes - Sign Up',
 }
 
-export default function Page() {
-  const cookieStore = cookies()
+export default async function Page() {
+  const cookieStore = await cookies()
   const command = cookieStore.get('command')
   return <SignUpForm command={command?.value} />
 }

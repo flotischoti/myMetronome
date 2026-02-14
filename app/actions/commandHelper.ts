@@ -1,14 +1,13 @@
 import { cookies } from 'next/headers'
 
-export { isRedirectError } from 'next/dist/client/components/redirect'
+export { isRedirectError } from 'next/dist/client/components/redirect-error'
 
-export function setCommand(
+export async function setCommand(
   command: string,
   options?: { maxAge?: number; path?: string },
 ) {
   const commandWithTimestamp = `${command}:${Date.now()}`
-
-  cookies().set('command', commandWithTimestamp, {
+  ;(await cookies()).set('command', commandWithTimestamp, {
     httpOnly: false,
     maxAge: options?.maxAge ?? 2,
     path: options?.path ?? '/',
@@ -16,10 +15,10 @@ export function setCommand(
   })
 }
 
-export function setErrorCommand(
+export async function setErrorCommand(
   message: string,
   options?: { maxAge?: number; path?: string },
 ) {
   const command = JSON.stringify({ message, type: 'error' })
-  setCommand(command, options)
+  await setCommand(command, options)
 }

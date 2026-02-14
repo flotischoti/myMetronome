@@ -13,7 +13,7 @@ export const useAutoSave = (
   options: UseAutoSaveOptions = {},
 ) => {
   const { delay = 2000, enabled = true } = options
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   const [isSaving, setIsSaving] = useState(false)
   const [isSilent, setIsSilent] = useState(false)

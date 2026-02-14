@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 }
 
 export default async function Page() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
   const userName = await getUserAttrFromToken<string>(token!.value, 'name')

@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Metronomes - Privacy Policy',
 }
 
-export default function Page() {
+export default async function Page() {
   return (
     <section className="p-2">
       <h1 className="text-xl font-bold">
