@@ -34,11 +34,11 @@ export default async function Page({
 }: {
   searchParams: { page: number; s: string }
 }) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
   const userId = await getUserAttrFromToken(token!.value)
-  let { page = 1, s = '' } = searchParams
+  let { page = 1, s = '' } = await searchParams
   const [count, metronomes] = await getMetronomes(userId!, page, s)
   const maxPage = Math.ceil(count / pageSize)
 

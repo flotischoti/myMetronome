@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: 'Metronomes - Reset Password',
 }
 
-export default function Page() {
-  const cookieStore = cookies()
+export default async function Page() {
+  const cookieStore = await cookies()
   const command = cookieStore.get('command')
   return <ConfirmPasswordResetForm command={command?.value} />
 }

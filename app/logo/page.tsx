@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Metronomes - Logo',
 }
 
-export default function Page() {
+export default async function Page() {
   return (
     <div className="flex w-full justify-center h-full  items-center md:scale-125 lg:scale-150">
       <div className="md:scale-125 lg:scale-150">

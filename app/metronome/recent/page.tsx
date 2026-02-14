@@ -25,7 +25,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     return metronomes
   }
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
   const userId = await getUserAttrFromToken(token!.value)

@@ -25,18 +25,18 @@ export async function signupServerAction(formData: FormData) {
   }
 
   if (!name || !password) {
-    setErrorCommand('Password or name missing')
+    await setErrorCommand('Password or name missing')
     redirect(currentPath!)
   }
 
   const oldUser = await userDb.get(name)
   if (oldUser) {
-    setErrorCommand('User already exists')
+    await setErrorCommand('User already exists')
     redirect(currentPath!)
   }
 
   if (email && !isEmailValid(email)) {
-    setErrorCommand('Invalid email')
+    await setErrorCommand('Invalid email')
     redirect(currentPath!)
   }
 
@@ -45,12 +45,11 @@ export async function signupServerAction(formData: FormData) {
     const user: userDb.User = await userDb.create({
       name,
       password: encryptedPw,
-      email,
+      email: email || name,
     })
 
     user.token = await utils.getJwt({ userId: user.id!, name, email })
-
-    cookies().set({
+    ;(await cookies()).set({
       name: 'token',
       value: user.token!,
       path: '/',
@@ -60,13 +59,13 @@ export async function signupServerAction(formData: FormData) {
     })
 
     revalidatePath('/')
-    setCommand('signedUp')
+    await setCommand('signedUp')
     redirect(target || '/metronome/new')
   } catch (error) {
     if (isRedirectError(error)) throw error
 
     console.error('Signup error:', error)
-    setErrorCommand('Failed to create account')
+    await setErrorCommand('Failed to create account')
     redirect(target || '/register')
   }
 }
@@ -80,18 +79,18 @@ export async function loginServerAction(payload: FormData) {
   }
 
   if (!name || !password) {
-    setErrorCommand('Password or name missing')
+    await setErrorCommand('Password or name missing')
     redirect(currentPath!)
   }
 
   const user = await userDb.get(name)
   if (!user) {
-    setErrorCommand('User not found')
+    await setErrorCommand('User not found')
     redirect(currentPath!)
   }
 
   if (!(await bcrypt.compare(password, user.password))) {
-    setErrorCommand('Credentials wrong')
+    await setErrorCommand('Credentials wrong')
     redirect(currentPath!)
   }
 
@@ -99,9 +98,9 @@ export async function loginServerAction(payload: FormData) {
     user.token = await utils.getJwt({
       userId: user.id!,
       name,
-      email: user.email,
+      email: user.email === user.name ? '' : user.email,
     })
-    cookies().set({
+    ;(await cookies()).set({
       name: 'token',
       value: user.token!,
       path: '/',
@@ -115,19 +114,19 @@ export async function loginServerAction(payload: FormData) {
     revalidatePath('/metronome/recent')
     if (target) revalidatePath(target)
 
-    setCommand('loggedIn')
+    await setCommand('loggedIn')
     redirect(target || '/metronome/recent')
   } catch (error) {
     if (isRedirectError(error)) throw error
 
     console.error('Login error:', error)
-    setErrorCommand('Login failed')
+    await setErrorCommand('Login failed')
     redirect(target || '/login')
   }
 }
 
 export async function logoutServerAction() {
-  cookies().set({
+  ;(await cookies()).set({
     name: 'token',
     value: 'abc',
     path: '/',
@@ -146,32 +145,32 @@ export async function logoutServerAction() {
 
 export async function createMetronomeAction(metronome: StoredMetronome) {
   try {
-    const token = cookies().get('token')?.value
+    const token = (await cookies()).get('token')?.value
     if (!token) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const userId = await getUserAttrFromToken(token!)
     if (!userId) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const savedMetronome = await metronomeDb.create(metronome, userId)
 
     if (!savedMetronome) {
-      setErrorCommand('Failed to create metronome')
+      await setErrorCommand('Failed to create metronome')
       redirect('/metronome/new')
     }
 
-    setCommand('created')
+    await setCommand('created')
     redirect(`/metronome/${savedMetronome.id}`)
   } catch (error) {
     if (isRedirectError(error)) throw error
 
     console.error('Create metronome error:', error)
-    setErrorCommand('Something went wrong')
+    await setErrorCommand('Something went wrong')
     redirect('/metronome/new')
   }
 }
@@ -181,29 +180,29 @@ export async function deleteMetronomeAction(
   targetPath: string,
 ) {
   try {
-    const token = cookies().get('token')?.value
+    const token = (await cookies()).get('token')?.value
     if (!token) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const userId = await getUserAttrFromToken(token!)
     if (!userId) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const metronome = await metronomeDb.get(Number(metronomeId))
 
     if (!metronome) {
-      setErrorCommand(
+      await setErrorCommand(
         `Delete metronome failed. Metronome ${metronomeId} not found`,
       )
       redirect(targetPath)
     }
 
     if (metronome!.owner !== userId) {
-      setErrorCommand(
+      await setErrorCommand(
         `Delete metronome failed. User ${userId} not allowed to delete metronome ${metronomeId}`,
       )
       redirect(targetPath)
@@ -212,24 +211,24 @@ export async function deleteMetronomeAction(
     const success = await metronomeDb.deleteMetronome(Number(metronomeId))
 
     if (success) {
-      setCommand('deleted')
+      await setCommand('deleted')
       revalidatePath(targetPath)
       redirect(targetPath)
     }
 
-    setErrorCommand('Error deleting metronome')
+    await setErrorCommand('Error deleting metronome')
     redirect(targetPath)
   } catch (error) {
     if (isRedirectError(error)) throw error
 
     console.error('Delete metronome error:', error)
-    setErrorCommand('Error deleting metronome')
+    await setErrorCommand('Error deleting metronome')
     redirect(targetPath)
   }
 }
 
 export async function updateServerAction(newMetronome: StoredMetronome) {
-  const token = cookies().get('token')?.value
+  const token = (await cookies()).get('token')?.value
   if (!token) {
     throw new Error('Unauthorized')
   }
@@ -263,15 +262,15 @@ export async function updateServerAction(newMetronome: StoredMetronome) {
 
 export async function updatePasswordServerAction(data: FormData) {
   try {
-    const token = cookies().get('token')?.value
+    const token = (await cookies()).get('token')?.value
     if (!token) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const userName = await getUserAttrFromToken<string>(token, 'name')
     if (!userName) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
@@ -280,18 +279,18 @@ export async function updatePasswordServerAction(data: FormData) {
     const newPwConfirm = data.get('newPwConfirm')!.toString()
 
     if (newPw !== newPwConfirm) {
-      setErrorCommand(`New passwords don't match`)
+      await setErrorCommand(`New passwords don't match`)
       redirect('/account/edit/password')
     }
 
     const user = await userDb.get(userName)
     if (!user) {
-      setErrorCommand('User not found')
+      await setErrorCommand('User not found')
       redirect('/account/edit/password')
     }
 
     if (!(await bcrypt.compare(oldPw, user.password))) {
-      setErrorCommand('Old password not correct')
+      await setErrorCommand('Old password not correct')
       redirect('/account/edit/password')
     }
 
@@ -300,47 +299,47 @@ export async function updatePasswordServerAction(data: FormData) {
 
     await userDb.update(user)
 
-    setCommand('passwordChanged')
+    await setCommand('passwordChanged')
     revalidatePath('/account')
     redirect('/account')
   } catch (error) {
     if (isRedirectError(error)) throw error
 
     console.error('Update password error:', error)
-    setErrorCommand('Changing password failed')
+    await setErrorCommand('Changing password failed')
     redirect('/account')
   }
 }
 
 export async function updateUsernameServerAction(data: FormData) {
   try {
-    const token = cookies().get('token')?.value
+    const token = (await cookies()).get('token')?.value
     if (!token) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const userName = await getUserAttrFromToken<string>(token, 'name')
     if (!userName) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const newUsername = data.get('username')!.toString()
 
     if (userName.toLowerCase() === newUsername.toLowerCase()) {
-      setErrorCommand('Enter new value')
+      await setErrorCommand('Enter new value')
       redirect('/account/edit/username')
     }
 
     if (await userDb.get(newUsername)) {
-      setErrorCommand('This name is already taken')
+      await setErrorCommand('This name is already taken')
       redirect('/account/edit/username')
     }
 
     const user = await userDb.get(userName)
     if (!user) {
-      setErrorCommand('User not found')
+      await setErrorCommand('User not found')
       redirect('/account/edit/username')
     }
 
@@ -354,7 +353,7 @@ export async function updateUsernameServerAction(data: FormData) {
         email: updatedUser.email,
       })
 
-      cookies().set({
+      ;(await cookies()).set({
         name: 'token',
         value: newToken,
         httpOnly: true,
@@ -363,65 +362,65 @@ export async function updateUsernameServerAction(data: FormData) {
         secure: true,
       })
 
-      setCommand('usernameChanged')
+      await setCommand('usernameChanged')
       revalidatePath('/account')
       redirect('/account')
     }
 
-    setErrorCommand('Changing username failed')
+    await setErrorCommand('Changing username failed')
     redirect('/account')
   } catch (error) {
     if (isRedirectError(error)) throw error
 
     console.error('Update username error:', error)
-    setErrorCommand('Changing username failed')
+    await setErrorCommand('Changing username failed')
     redirect('/account')
   }
 }
 
 export async function updateEmailServerAction(data: FormData) {
   try {
-    const token = cookies().get('token')?.value
+    const token = (await cookies()).get('token')?.value
     if (!token) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const payload = await utils.decodeToken(token)
     if (!payload?.name) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const newEMail = data.get('email')?.toString()
 
     if (payload.email && payload.email === newEMail) {
-      setErrorCommand('Enter new value')
+      await setErrorCommand('Enter new value')
       redirect('/account/edit/email')
     }
 
     if (newEMail && (await userDb.getByMail(newEMail))) {
-      setErrorCommand('Update failed')
+      await setErrorCommand('Update failed')
       redirect('/account/edit/email')
     }
 
     const user = await userDb.get(payload.name)
     if (!user) {
-      setErrorCommand('User not found')
+      await setErrorCommand('User not found')
       redirect('/account/edit/email')
     }
 
-    user.email = newEMail
+    user.email = newEMail || user.name
     const updatedUser = await userDb.update(user)
 
-    if (updatedUser && updatedUser.email === newEMail) {
+    if (updatedUser && updatedUser.email === user.email) {
       const newToken = await utils.getJwt({
         userId: updatedUser.id!,
         name: updatedUser.name,
-        email: updatedUser.email,
+        email: updatedUser.email === user.email ? '' : updatedUser.email,
       })
 
-      cookies().set({
+      ;(await cookies()).set({
         name: 'token',
         value: newToken,
         httpOnly: true,
@@ -430,33 +429,33 @@ export async function updateEmailServerAction(data: FormData) {
         secure: true,
       })
 
-      setCommand('emailChanged')
+      await setCommand('emailChanged')
       revalidatePath('/account')
       redirect('/account')
     }
 
-    setErrorCommand('Changing email failed')
+    await setErrorCommand('Changing email failed')
     redirect('/account')
   } catch (error) {
     if (isRedirectError(error)) throw error
 
     console.error('Update email error:', error)
-    setErrorCommand('Changing email failed')
+    await setErrorCommand('Changing email failed')
     redirect('/account')
   }
 }
 
 export async function deleteUserServerAction(data: FormData) {
   try {
-    const token = cookies().get('token')?.value
+    const token = (await cookies()).get('token')?.value
     if (!token) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
     const userName = await getUserAttrFromToken<string>(token, 'name')
     if (!userName) {
-      setCommand('unauthorized')
+      await setCommand('unauthorized')
       redirect('/login')
     }
 
@@ -464,18 +463,17 @@ export async function deleteUserServerAction(data: FormData) {
     const user = await userDb.get(userName)
 
     if (!user) {
-      setErrorCommand('User not found')
+      await setErrorCommand('User not found')
       redirect('/account/delete')
     }
 
     if (!(await bcrypt.compare(oldPw, user.password))) {
-      setErrorCommand('Password incorrect')
+      await setErrorCommand('Password incorrect')
       redirect('/account/delete')
     }
 
     await userDb.remove(user)
-
-    cookies().set({
+    ;(await cookies()).set({
       name: 'token',
       value: 'abc',
       secure: true,
@@ -484,7 +482,7 @@ export async function deleteUserServerAction(data: FormData) {
       expires: new Date('January 01, 1970 00:00:00 GMT'),
     })
 
-    setCommand('userdeleted')
+    await setCommand('userdeleted')
 
     revalidatePath('/')
     revalidatePath('/account')
@@ -494,7 +492,7 @@ export async function deleteUserServerAction(data: FormData) {
     if (isRedirectError(error)) throw error
 
     console.error('Delete user error:', error)
-    setErrorCommand('Error deleting user')
+    await setErrorCommand('Error deleting user')
     redirect('/account/delete')
   }
 }
@@ -507,19 +505,19 @@ export async function requestPasswordResetAction(formData: FormData) {
     const email = formData.get('email')?.toString()
 
     if (!email) {
-      setErrorCommand('Email required')
+      await setErrorCommand('Email required')
       redirect('/reset-password')
     }
 
     if (!isEmailValid(email)) {
-      setErrorCommand('Email invalid')
+      await setErrorCommand('Email invalid')
       redirect('/reset-password')
     }
 
     const user = await userDb.getByMail(email)
 
     if (!user) {
-      setCommand('resetEmailSent')
+      await setCommand('resetEmailSent')
       console.log(`Reset Request: No user found for mail ${email}`)
       redirect('/login')
     }
@@ -537,17 +535,17 @@ export async function requestPasswordResetAction(formData: FormData) {
 
     if (!emailResult.success) {
       console.error('Failed to send reset email:', emailResult.error)
-      setErrorCommand('Mail dispatch failed')
+      await setErrorCommand('Mail dispatch failed')
       redirect('/reset-password')
     }
 
-    setCommand('resetEmailSent')
+    await setCommand('resetEmailSent')
     redirect('/login')
   } catch (error) {
     if (isRedirectError(error)) throw error
 
     console.error('Password reset request error:', error)
-    setErrorCommand('Something went wrong')
+    await setErrorCommand('Something went wrong')
     redirect('/reset-password')
   }
 }
@@ -561,26 +559,26 @@ export async function confirmPasswordResetAction(formData: FormData) {
     const newPassword = formData.get('password')?.toString()
 
     if (!token || !newPassword) {
-      setErrorCommand('Password required')
+      await setErrorCommand('Password required')
       redirect(`/reset-password/confirm?token=${token}`)
     }
 
     const payload = await utils.decodeToken(token)
 
     if (!payload) {
-      setErrorCommand('Invalid or expired')
+      await setErrorCommand('Invalid or expired')
       redirect('/login')
     }
 
     const user = await userDb.get(`${payload.name}`)
 
     if (!user) {
-      setErrorCommand('User not found')
+      await setErrorCommand('User not found')
       redirect('/login')
     }
 
     if (user.email !== payload.email) {
-      setErrorCommand('Invalid reset link')
+      await setErrorCommand('Invalid reset link')
       redirect('/login')
     }
 
@@ -588,8 +586,7 @@ export async function confirmPasswordResetAction(formData: FormData) {
     const hashedPassword = await bcrypt.hash(newPassword, 10)
     user.password = hashedPassword
     await userDb.update(user)
-
-    cookies().set({
+    ;(await cookies()).set({
       name: 'token',
       value: '',
       path: '/',
@@ -599,13 +596,13 @@ export async function confirmPasswordResetAction(formData: FormData) {
       expires: new Date(0),
     })
 
-    setCommand('passwordChanged')
+    await setCommand('passwordChanged')
     redirect('/login')
   } catch (error) {
     if (isRedirectError(error)) throw error
 
     console.error('Password reset confirm error:', error)
-    setErrorCommand('Password reset failed')
+    await setErrorCommand('Password reset failed')
     redirect('/reset-password')
   }
 }

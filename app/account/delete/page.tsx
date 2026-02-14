@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: 'Metronomes - Delete account',
 }
 
-export default function Page() {
-  const cookieStore = cookies()
+export default async function Page() {
+  const cookieStore = await cookies()
   const command = cookieStore.get('command')
   return <DeleteUserForm command={command?.value} />
 }

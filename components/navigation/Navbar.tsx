@@ -16,7 +16,7 @@ async function getRecent(userId: number): Promise<[number, StoredMetronome[]]> {
 }
 
 export default async function Navbar() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get('token')
   const userId = await getUserAttrFromToken(token?.value)
   const [count, recentMetronomes] = userId ? await getRecent(userId) : [0, []]

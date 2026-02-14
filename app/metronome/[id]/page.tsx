@@ -33,12 +33,13 @@ async function getMetronome(
 }
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get('token')
   const command = cookieStore.get('command')
   const userId = await getUserAttrFromToken(token!.value)
+  const p = await params
 
-  let metronome: StoredMetronome = await getMetronome(params.id, userId!)
+  let metronome: StoredMetronome = await getMetronome(p.id, userId!)
 
   return (
     <>
